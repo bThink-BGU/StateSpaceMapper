@@ -19,3 +19,29 @@ This is a *proof of concept*, will probably not work if there are funky event na
 
 .Transition System of a link:WORK/pancake-core.js[b-program]. Nodes with violations are hexagons. Hot nodes have thicker border and are dark yellow.
 image:WORK/pancake-core-space.png[DataTags Logo]
+
+== Usage
+
+Basically, you want to run the main class `statespacemapper.SpaceMapperRunner` and provide it with paths to the source files of the b-program. The program will output a representation of the b-program's state-space/transition system in the *dot* language.
+
+There's also a UNIX shell script in link:dist[the dist directory], you can use like so:
+
+[code, bash]
+------
+./ssm file1.js file2.js ... filen.js
+------
+
+Normally you'd want to redirect ssm's `stdout` to Graphviz for drawing:
+
+[code, bash]
+------
+./ssm file1.js file2.js ... filen.js | dot -Tpdf > my-prog.pdf
+------
+
+You can also direct it to a file, for manual manipulation:
+
+[code, bash]
+------
+./ssm file1.js file2.js ... filen.js > my-prog.gv
+------
+

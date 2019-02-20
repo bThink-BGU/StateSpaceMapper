@@ -1,0 +1,4 @@
+#!/bin/bash
+DIRNAME=$(dirname $0)
+java -cp $DIRNAME/BPjs-0.9.9.uber.jar:$DIRNAME/StateSpaceMapper.jar statespacemapper.SpaceMapperRunner $*
+
