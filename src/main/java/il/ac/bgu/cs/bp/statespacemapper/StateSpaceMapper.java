@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package statespacemapper;
+package il.ac.bgu.cs.bp.statespacemapper;
 
 import il.ac.bgu.cs.bp.bpjs.analysis.DfsBProgramVerifier;
 import il.ac.bgu.cs.bp.bpjs.analysis.DfsTraversalNode;

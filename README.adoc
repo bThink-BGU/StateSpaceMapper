@@ -10,38 +10,46 @@ ifdef::env-github[]
 endif::[]
 = BPjs State Space Mapper
 
-A very simple proof of concept program, that generates a drawing of the transition system of https://github.com/bthink-BGU/bpjs[BPjs] b-programs. Uses http://graphviz.org[Graphviz]. 
+A very simple proof of concept program, that generates a drawing of the transition system of https://github.com/bthink-BGU/bpjs[BPjs] b-programs. Relies on http://graphviz.org[Graphviz] to do the actual drawing. 
 
 Node names are given by a b-thread called `stateTitler`. This b-thread passes the title in its sync statement data field.
 
 [WARNING]
-This is a *proof of concept*, will probably not work if there are funky event names, or if the hash codes of the states collide. It's also not very "engineered" at this point. Use at your own risk.
+This is a *proof of concept*, not a well "engineered" tool. It may not work well if there are funky event names, or if the hash codes of the states collide. Use at your own risk.
 
 .Transition System of a link:WORK/pancake-core.js[b-program]. Nodes with violations are hexagons. Hot nodes have thicker border and are dark yellow.
-image:WORK/pancake-core-space.png[DataTags Logo]
+image:WORK/pancake-core-space.png[Pancake core program state space.]
 
 == Usage
 
-Basically, you want to run the main class `statespacemapper.SpaceMapperRunner` and provide it with paths to the source files of the b-program. The program will output a representation of the b-program's state-space/transition system in the *dot* language.
+Basically, you want to run the main class `il.ac.bgu.cs.bp.statespacemapper.SpaceMapperRunner` and provide it with paths to the source files of the b-program. The program will output a 
+representation of the b-program's state-space/transition system using the *dot* language.
 
-There's also a UNIX shell script in link:dist[the dist directory], you can use like so:
+=== Building the mapper
 
-[code, bash]
-------
-./ssm file1.js file2.js ... filen.js
-------
+This is a https://maven.apache.org[Maven] project. You'll need Maven installed, or a Java IDE that supports Maven (http://netbeans.apache.org[e.g. NetBeans]). 
 
-Normally you'd want to redirect ssm's `stdout` to Graphviz for drawing:
+To build a self-contained version of StateSpaceMapper (i.e. with all dependencies bundled in it), run `mvn package -P uber-jar` using your platform's terminal
+application. This will generate an executable `.jar` file in the `target` directory.
 
-[code, bash]
-------
-./ssm file1.js file2.js ... filen.js | dot -Tpdf > my-prog.pdf
-------
-
-You can also direct it to a file, for manual manipulation:
+=== Running the mapper
 
 [code, bash]
 ------
-./ssm file1.js file2.js ... filen.js > my-prog.gv
+./java -jar path-to-StateSpaceMapper.jar file1.js file2.js ... filen.js
+------
+
+Normally you'd want to redirect Java's `stdout` to Graphviz for drawing:
+
+[code, bash]
+------
+./java -jar path-to-StateSpaceMapper.jar file1.js file2.js ... filen.js | dot -Tpdf > my-prog.pdf
+------
+
+You can also direct it to a file, for later manual manipulation:
+
+[code, bash]
+------
+./java -jar path-to-StateSpaceMapper.jar file1.js file2.js ... filen.js > my-prog.gv
 ------
 
