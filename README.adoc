@@ -32,7 +32,7 @@ As an aside, the mapper will output the details of each b-thread in each synchro
 This is a https://maven.apache.org[Maven] project. You'll need Maven installed, or a Java IDE that supports Maven (http://netbeans.apache.org[e.g. NetBeans]). 
 
 To build a self-contained version of StateSpaceMapper (i.e. with all dependencies bundled in it), run `mvn package -P uber-jar` using your platform's terminal
-application. This will generate an executable `.jar` file in the `target` directory. A built jar file can be downloaded from the link:releases[Releases] page.
+application. This will generate an executable `.jar` file in the `target` directory. A built jar file can be downloaded from the link:../../releases[Releases] page.
 
 === Running the mapper
 
