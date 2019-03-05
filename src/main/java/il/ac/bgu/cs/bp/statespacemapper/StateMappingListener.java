@@ -43,7 +43,7 @@ public class StateMappingListener implements ExecutionTraceInspection, DfsBProgr
         if ( et.isCyclic() ) {
             out.println( bpssNodeId(et.getLastState()) + " -> " 
                 + bpssNodeId(et.getFinalCycle().get(0).getState())
-                + "[label=\"" + et.getLastEvent().toString() + "\"]");
+                + "[label=\"" + et.getLastEvent().getName() + "\"]");
         } else {
             out.println(newNode(et.getLastState(), inspection.isEmpty()));
             if ( et.getStateCount() > 1 ) {
@@ -53,7 +53,6 @@ public class StateMappingListener implements ExecutionTraceInspection, DfsBProgr
             } else {
                 out.println( "start -> " + bpssNodeId(et.getLastState()) + " [color=blue]");
             }
-            
         }
         
         // We prune on failed assertions.
@@ -94,13 +93,20 @@ public class StateMappingListener implements ExecutionTraceInspection, DfsBProgr
     private static final String HOT_NODE_STYLE = " penwidth=2 color=\"#888800\" ";
     
     private String newNode( BProgramSyncSnapshot bpss, boolean isValid ) {
-        return bpssNodeId(bpss) + "[label=\"" + bpssNodeTitle(bpss) + "\""
+        String bpssNodeTitle = bpssNodeTitle(bpss);
+        System.err.println( bpssNodeTitle + ":" );
+        for ( BThreadSyncSnapshot btss : bpss.getBThreadSnapshots() ) {
+            System.err.println("  " + btss.getName() + "@" + btss.getContinuationProgramState().getProgramCounter());
+            System.err.println("   : " + btss.getSyncStatement());
+        }
+        return bpssNodeId(bpss) + "[label=\"" + bpssNodeTitle + "\""
             + (isValid? (bpss.isHot()?HOT_NODE_STYLE:"") :INVALID_NODE_STYLE) + "]";
     }
     
     private String bpssNodeTitle( BProgramSyncSnapshot bpss ) {
         Optional<BThreadSyncSnapshot> obt = bpss.getBThreadSnapshots().stream().filter( s -> s.getName().equals("stateTitler")).findAny();
-        return obt.map( bt -> bt.getSyncStatement().getData().toString() ).orElse(Integer.toHexString(bpss.hashCode()));
+//        return obt.map( bt -> bt.getSyncStatement().getData().toString() ).orElse(Integer.toHexString(bpss.hashCode()));
+        return obt.map( bt -> bt.getSyncStatement().getData().toString() + "\\n" ).orElse("") + Integer.toHexString(bpss.hashCode());
     }
     
     private String bpssNodeId( BProgramSyncSnapshot bpss ) {

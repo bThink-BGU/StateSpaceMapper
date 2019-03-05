@@ -1,14 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package il.ac.bgu.cs.bp.statespacemapper;
 
 import il.ac.bgu.cs.bp.bpjs.analysis.DfsBProgramVerifier;
-import il.ac.bgu.cs.bp.bpjs.analysis.DfsTraversalNode;
-import il.ac.bgu.cs.bp.bpjs.analysis.HashVisitedStateStore;
-import il.ac.bgu.cs.bp.bpjs.analysis.violations.Violation;
 import il.ac.bgu.cs.bp.bpjs.model.BProgram;
 import il.ac.bgu.cs.bp.bpjs.model.StringBProgram;
 import java.io.IOException;
