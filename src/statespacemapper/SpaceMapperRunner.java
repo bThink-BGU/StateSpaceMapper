@@ -1,4 +1,9 @@
-package il.ac.bgu.cs.bp.statespacemapper;
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package statespacemapper;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,7 +19,6 @@ public class SpaceMapperRunner {
     
     
     public static void main(String[] args) throws Exception {
-        System.out.println("// start");
         if ( args.length == 0 ) {
             System.err.println("Missing input files");
             System.exit(1);
@@ -34,6 +38,5 @@ public class SpaceMapperRunner {
         inputPaths.stream().forEach( mpr::addFile );
         
         mpr.mapSpace();
-        System.out.println("// done");
     }
 }

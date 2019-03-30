@@ -1,7 +1,14 @@
-package il.ac.bgu.cs.bp.statespacemapper;
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package statespacemapper;
 
 import il.ac.bgu.cs.bp.bpjs.analysis.DfsBProgramVerifier;
-import il.ac.bgu.cs.bp.bpjs.analysis.VerificationResult;
+import il.ac.bgu.cs.bp.bpjs.analysis.DfsTraversalNode;
+import il.ac.bgu.cs.bp.bpjs.analysis.HashVisitedStateStore;
+import il.ac.bgu.cs.bp.bpjs.analysis.violations.Violation;
 import il.ac.bgu.cs.bp.bpjs.model.BProgram;
 import il.ac.bgu.cs.bp.bpjs.model.StringBProgram;
 import java.io.IOException;
@@ -34,10 +41,7 @@ public class StateSpaceMapper {
         vfr.addInspection(stateMappingInspection);
         vfr.setProgressListener(stateMappingInspection);
         
-        VerificationResult res = vfr.verify(bprog);
-        System.out.println("// states: " + res.getScannedStatesCount());
-        System.out.println("// edges: " + res.getScannedEdgesCount());
-        System.out.println("// count: " + stateMappingInspection.count);
+        vfr.verify(bprog);
     }
 
     private BProgram createBProgram() throws IOException {

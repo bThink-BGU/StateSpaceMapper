@@ -11,7 +11,7 @@ bp.registerBThread("Dry", function(){
 }});
 
 bp.registerBThread("Wet", function(){
-    for ( var i=0; i<DOSE_COUNT; i++ ){
+    for ( var j=0; j<DOSE_COUNT; j++ ){
         bp.sync({request:ADD_WET});
 }});
 
@@ -19,21 +19,25 @@ bp.registerBThread("Wet", function(){
 bp.registerBThread("enhot", function(){
     var d = 0;
     var w = 0;
+    var le = null;
     while( true ) {
-        var le = bp.hot(d>w).sync({waitFor:[ADD_DRY, ADD_WET]});
+        le = bp.hot(d>w).sync({waitFor:[ADD_DRY, ADD_WET]});
         if ( le.equals(ADD_DRY) ) d = d+1;
         if ( le.equals(ADD_WET) ) w = w+1;
+        le = null;
     }
 });
 
 bp.registerBThread("not-extreme", function(){
     var d = 0;
     var w = 0;
+    var le = null;
     while( true ) {
-        var le = bp.sync({waitFor:[ADD_DRY, ADD_WET]});
+        le = bp.sync({waitFor:[ADD_DRY, ADD_WET]});
         if ( le.equals(ADD_DRY) ) d = d+1;
         if ( le.equals(ADD_WET) ) w = w+1;
         bp.ASSERT( Math.abs(d-w)<4, "d/w difference too extreme" );
+        le = null;
     }
 });
 
