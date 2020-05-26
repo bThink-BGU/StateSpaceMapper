@@ -6,6 +6,7 @@ import il.ac.bgu.cs.bp.bpjs.analysis.ExecutionTrace;
 import il.ac.bgu.cs.bp.bpjs.analysis.ExecutionTraceInspection;
 import il.ac.bgu.cs.bp.bpjs.analysis.ExecutionTraceInspections;
 import il.ac.bgu.cs.bp.bpjs.analysis.violations.Violation;
+import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgram;
 import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
 import il.ac.bgu.cs.bp.bpjs.model.BThreadSyncSnapshot;
@@ -68,13 +69,13 @@ public class StateMappingListener implements ExecutionTraceInspection, DfsBProgr
         if ( et.isCyclic() ) {
             out.println( bpssNodeId(et.getLastState()) + " -> " 
                 + bpssNodeId(et.getFinalCycle().get(0).getState())
-                + "[label=\"" + et.getLastEvent().getName() + "\"] // cycle");
+                + "[label=\"" + eventToStr(et.getLastEvent()) + "\"] // cycle");
         } else {
             out.println(newNode(et.getLastState(), !inspection.isPresent()));
             if ( et.getStateCount() > 1 ) {
                 out.println( bpssNodeId(et.getNodes().get(et.getStateCount()-2).getState()) + " -> " 
                     + bpssNodeId(et.getLastState())
-                    + "[label=\"" + et.getLastEvent().getName() + "\"] // new");
+                    + "[label=\"" + eventToStr(et.getLastEvent()) + "\"] // new");
             } else {
                 out.println( "start -> " + bpssNodeId(et.getLastState()) + " [color=blue]");
             }
@@ -97,11 +98,6 @@ public class StateMappingListener implements ExecutionTraceInspection, DfsBProgr
     @Override
     public void iterationCount(long iteration, long statesFound, DfsBProgramVerifier dbpv) {
         System.err.println(" - " + iteration + "/" + statesFound);
-    }
-
-    @Override
-    public void maxTraceLengthHit(ExecutionTrace list, DfsBProgramVerifier dbpv) {
-        System.err.println("Max trace length hit");
     }
 
     @Override
@@ -148,5 +144,15 @@ public class StateMappingListener implements ExecutionTraceInspection, DfsBProgr
         });
         System.err.println("/Trace");
     }
+
+    
+    private String eventToStr( BEvent evt ) {
+        final StringBuilder outb = new StringBuilder(evt.getName());
+        evt.getDataField().ifPresent( d -> outb.append("\\n").append(d.toString()));
+        return outb.toString();
+    }
+
+    @Override
+    public void maxTraceLengthHit(ExecutionTrace aTrace, DfsBProgramVerifier vfr) {}
     
 }

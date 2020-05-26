@@ -15,7 +15,7 @@
         <dependency>
             <groupId>com.github.bthink-bgu</groupId>
             <artifactId>BPjs</artifactId>
-            <version>0.10.3</version>
+            <version>0.10.5</version>
         </dependency>
     </dependencies>
     <description>Draws a b-program's state space using graphviz.</description>

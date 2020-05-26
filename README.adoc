@@ -17,6 +17,10 @@ Node names are given by a b-thread called `stateTitler`. This b-thread passes th
 [WARNING]
 This is a *proof of concept*, will probably not work if there are funky event names, for example. It's also very "engineered" at this point.
 
+[WARNING]
+`stateTitler` cannot have state! Not even an implicit one. This is because this state would affect the general b-program state. Future versions will move away from this design.
+
+
 .Transition System of a link:WORK/pancake-core.js[b-program]. Nodes with violations are hexagons. Hot nodes have thicker border and are dark yellow.
 image:WORK/pancake-core.png[Sample graph]
 
@@ -29,6 +33,8 @@ There's also a UNIX shell script in link:dist[the dist directory], you can use l
 [code, bash]
 ------
 ./ssm file1.js file2.js ... filen.js
+# or, from source using maven:
+mvn exec:java -Dexec.args="file1.js file2.js ..."
 ------
 
 Normally you'd want to redirect ssm's `stdout` to Graphviz for drawing:
