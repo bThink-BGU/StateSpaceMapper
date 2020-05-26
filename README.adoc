@@ -15,7 +15,7 @@ A very simple proof of concept program, that generates a drawing of the transiti
 Node names are given by a b-thread called `stateTitler`. This b-thread passes the title in its sync statement data field.
 
 [WARNING]
-This is a *proof of concept*, will probably not work if there are funky event names, for example. It's also very "engineered" at this point.
+This is a *proof of concept*, will probably not work if there are funky event names, for example. It's also not very "engineered" at this point.
 
 [WARNING]
 `stateTitler` cannot have state! Not even an implicit one. This is because this state would affect the general b-program state. Future versions will move away from this design.
