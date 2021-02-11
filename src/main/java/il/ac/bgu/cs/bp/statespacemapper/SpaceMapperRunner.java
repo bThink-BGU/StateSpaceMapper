@@ -21,6 +21,7 @@ public class SpaceMapperRunner {
             System.exit(1);
         }
 
+        Files.createDirectories(Paths.get("graphs"));
         StateSpaceMapper mpr = new StateSpaceMapper(args[0]);
         mpr.mapSpace();
         System.out.println("// done");
