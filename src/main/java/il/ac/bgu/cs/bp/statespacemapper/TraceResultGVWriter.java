@@ -18,7 +18,7 @@ public class TraceResultGVWriter extends TraceResultWriter {
   }
 
   @Override
-  public void write() {
+  protected void innerWrite() {
     level = 0;
     out.println("digraph " + sanitize(name) + " {");
     level++;

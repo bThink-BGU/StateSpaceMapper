@@ -18,7 +18,7 @@ public class TraceResultJsonWriter extends TraceResultWriter {
   }
 
   @Override
-  public void write() {
+  protected void innerWrite() {
     int level = 0;
     out.println("{");
     level++;

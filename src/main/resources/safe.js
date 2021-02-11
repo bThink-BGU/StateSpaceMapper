@@ -9,22 +9,20 @@ const events = arr.map(n=>bp.Event(n))
 const code = [2,4,2,2].map(n=>n.toString())
 
 bp.registerBThread('try', function() {
-  for(let i=0; i < 100; i++) {
-    bp.sync({request:events})
-  }
+  // for(let i=0; i < code.length; i++)
+  while(true)
+    bp.sync({request:events},10)
 })
 
 bp.registerBThread('correct code', function() {
-  let correct = true
   for(let i=0; i < code.length; i++) {
     if (code[i] != bp.sync({waitFor: bp.all}).name) {
-      correct = false
-      break
+      bp.registerBThread('incorrect code', function () {
+        bp.sync({request: INCORRECT, block: INCORRECT.negate()})
+      })
+      return
     }
   }
-  if(correct)
-    bp.sync({request: CORRECT, block: CORRECT.negate()})
-  else
-    bp.sync({request: INCORRECT, block: INCORRECT.negate()})
-  bp.sync({block:bp.all})
+  bp.sync({request: CORRECT, block: CORRECT.negate()})
+  bp.sync({block: bp.all})
 })

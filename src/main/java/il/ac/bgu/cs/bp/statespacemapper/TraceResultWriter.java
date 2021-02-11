@@ -17,7 +17,13 @@ public abstract class TraceResultWriter {
     this.result = result;
     this.name = name;
   }
-  public abstract void write();
+
+  protected abstract void innerWrite();
+
+  public final void write() {
+    innerWrite();
+    out.flush();
+  }
 
   protected String nodeName(BProgramSyncSnapshot node) {
     return result.states.get(node).toString();

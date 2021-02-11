@@ -5,6 +5,7 @@ import il.ac.bgu.cs.bp.bpjs.analysis.DfsBProgramVerifier;
 import il.ac.bgu.cs.bp.bpjs.analysis.listeners.PrintDfsVerifierListener;
 import il.ac.bgu.cs.bp.bpjs.model.BProgram;
 import il.ac.bgu.cs.bp.bpjs.model.ResourceBProgram;
+import il.ac.bgu.cs.bp.bpjs.model.eventselection.PrioritizedBSyncEventSelectionStrategy;
 
 import java.io.PrintStream;
 
@@ -21,6 +22,9 @@ public class StateSpaceMapper {
 
   public void mapSpace() throws Exception {
     var bprog = createBProgram();
+    var ess = new PrioritizedBSyncEventSelectionStrategy();
+    ess.setDefaultPriority(0);
+    bprog.setEventSelectionStrategy(ess);
     var vfr = new DfsBProgramVerifier();
 
     vfr.setVisitedStateStore(new BProgramSnapshotVisitedStateStore());
@@ -28,7 +32,7 @@ public class StateSpaceMapper {
 
     vfr.addInspection(tracesInspection);
     vfr.setProgressListener(new PrintDfsVerifierListener());
-    vfr.setDebugMode(true);
+//    vfr.setDebugMode(true);
     var res = vfr.verify(bprog);
     var mapperRes = tracesInspection.getResult();
 
