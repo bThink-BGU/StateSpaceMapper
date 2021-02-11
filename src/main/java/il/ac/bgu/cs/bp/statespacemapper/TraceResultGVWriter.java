@@ -19,7 +19,7 @@ public class TraceResultGVWriter extends TraceResultWriter {
   @Override
   public void write() {
     level = 0;
-    out.println("digraph " + GVUtils.sanitize(name) + " {");
+    out.println("digraph " + sanitize(name) + " {");
     level++;
     out.println(result.states.stream()
         .map(this::printBpss)
@@ -59,5 +59,9 @@ public class TraceResultGVWriter extends TraceResultWriter {
     return MessageFormat.format(pattern, "  ".repeat(level), id);
 //    String pattern = bpss.equals(result.startNode) ? "{0}{1} [fontcolor=blue label=\"start {1}\n{2}\n{3}\"]" : "{0}{1} [label=\"{1}\n{2}\n{3}\"]";
 //    return MessageFormat.format(pattern, "  ".repeat(level), id, store, statements);
+  }
+
+  private static String sanitize( String in ) {
+    return in.replaceAll("[. -+]", "_");
   }
 }
