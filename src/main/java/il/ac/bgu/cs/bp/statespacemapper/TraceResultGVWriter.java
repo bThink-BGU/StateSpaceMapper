@@ -6,6 +6,7 @@ import il.ac.bgu.cs.bp.bpjs.model.SyncStatement;
 
 import java.io.PrintStream;
 import java.text.MessageFormat;
+import java.util.Map;
 
 import static java.util.stream.Collectors.joining;
 
@@ -21,7 +22,7 @@ public class TraceResultGVWriter extends TraceResultWriter {
     level = 0;
     out.println("digraph " + sanitize(name) + " {");
     level++;
-    out.println(result.states.stream()
+    out.println(result.states.entrySet().stream()
         .map(this::printBpss)
         .collect(joining("\n")));
     out.println(result.links.stream().map(this::printLink)
@@ -38,8 +39,9 @@ public class TraceResultGVWriter extends TraceResultWriter {
     return MessageFormat.format("{0}\"{1}\" -> \"{2}\" [label=\"{3}\"]", "  ".repeat(level), nodeName(link.src), nodeName(link.dst), linkName(link.event));
   }
 
-  protected String printBpss(BProgramSyncSnapshot bpss) {
-    String id = nodeName(bpss);
+  protected String printBpss(Map.Entry<BProgramSyncSnapshot, Integer> bpssEntry) {
+    var bpss = bpssEntry.getKey();
+    String id = bpssEntry.getValue().toString();
     String store = bpss.getDataStore().entrySet().stream()
         .map(entry -> "{" + getGuardedString(ScriptableUtils.stringify(entry.getKey())) + "," + getGuardedString(ScriptableUtils.stringify(entry.getValue())) + "}")
         .collect(joining(",", "Store: [", "]"));

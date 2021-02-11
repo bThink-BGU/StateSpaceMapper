@@ -15,27 +15,16 @@ bp.registerBThread('try', function() {
 })
 
 bp.registerBThread('correct code', function() {
-  if(code[0] != bp.sync({waitFor: bp.all }).name) {
-    bp.sync({request: INCORRECT, block: INCORRECT.negate()})
-    return
+  let correct = true
+  for(let i=0; i < code.length; i++) {
+    if (code[i] != bp.sync({waitFor: bp.all}).name) {
+      correct = false
+      break
+    }
   }
-  if(code[1] != bp.sync({waitFor: bp.all }).name){
+  if(correct)
+    bp.sync({request: CORRECT, block: CORRECT.negate()})
+  else
     bp.sync({request: INCORRECT, block: INCORRECT.negate()})
-    return
-  }
-  if(code[2] != bp.sync({waitFor: bp.all }).name) {
-    bp.sync({request: INCORRECT, block: INCORRECT.negate()})
-    return
-  }
-  if(code[3] != bp.sync({waitFor: bp.all }).name) {
-    bp.sync({request: INCORRECT, block: INCORRECT.negate()})
-    return
-  }
-  bp.sync({request: CORRECT, block: CORRECT.negate()})
-  bp.sync({block:bp.all})
-})
-
-bp.registerBThread('incorrect code', function() {
-  bp.sync({waitFor: INCORRECT})
   bp.sync({block:bp.all})
 })

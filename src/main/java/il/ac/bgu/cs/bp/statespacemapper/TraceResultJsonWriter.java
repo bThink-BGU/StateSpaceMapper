@@ -7,6 +7,7 @@ import il.ac.bgu.cs.bp.bpjs.model.SyncStatement;
 import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 
 import static java.util.stream.Collectors.joining;
 
@@ -29,7 +30,7 @@ public class TraceResultJsonWriter extends TraceResultWriter {
     out.println("  ".repeat(level) + "\"# traces\": " + result.traces.size() + ", ");
     out.println("  ".repeat(level) + "\"states\": [\n");
     level++;
-    out.println(result.states.stream()
+    out.println(result.states.entrySet().stream()
             .map(this::printBpss)
             .collect(joining(",\n")));
     level--;
@@ -50,7 +51,8 @@ public class TraceResultJsonWriter extends TraceResultWriter {
     return "  ".repeat(level) + "{\"source\":\"" + nodeName(link.src) + "\", \"target\":\"" + nodeName(link.dst) + "\", \"eventData\":\"" + getGuardedString(link.event) + "\"}";
   }
 
-  protected String printBpss(BProgramSyncSnapshot bpss) {
+  protected String printBpss(Map.Entry<BProgramSyncSnapshot, Integer> bpssEntry) {
+    var bpss = bpssEntry.getKey();
     StringBuilder out = new StringBuilder();
     out.append("  ".repeat(level) + "{\n");
     out.append("  ".repeat(level + 1) + "\"id\":\"" + nodeName(bpss) + "\",\n");

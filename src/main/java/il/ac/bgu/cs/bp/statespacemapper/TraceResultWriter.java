@@ -5,10 +5,7 @@ import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
 
 import java.io.PrintStream;
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 public abstract class TraceResultWriter {
   protected final PrintStream out;
@@ -23,7 +20,7 @@ public abstract class TraceResultWriter {
   public abstract void write();
 
   protected String nodeName(BProgramSyncSnapshot node) {
-    return Integer.toHexString(node.hashCode());
+    return result.states.get(node).toString();
   }
 
   protected String linkName(BEvent event) {
@@ -35,7 +32,7 @@ public abstract class TraceResultWriter {
 
   protected abstract String printLink(GenerateAllTracesInspection.Link link);
 
-  protected abstract String printBpss(BProgramSyncSnapshot bpss);
+  protected abstract String printBpss(Map.Entry<BProgramSyncSnapshot, Integer> bpssEntry);
 
 
 

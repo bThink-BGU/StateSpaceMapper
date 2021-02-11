@@ -1,5 +1,6 @@
 package il.ac.bgu.cs.bp.statespacemapper;
 
+import il.ac.bgu.cs.bp.bpjs.analysis.BProgramSnapshotVisitedStateStore;
 import il.ac.bgu.cs.bp.bpjs.analysis.DfsBProgramVerifier;
 import il.ac.bgu.cs.bp.bpjs.analysis.listeners.PrintDfsVerifierListener;
 import il.ac.bgu.cs.bp.bpjs.model.BProgram;
@@ -22,6 +23,7 @@ public class StateSpaceMapper {
     var bprog = createBProgram();
     var vfr = new DfsBProgramVerifier();
 
+    vfr.setVisitedStateStore(new BProgramSnapshotVisitedStateStore());
     var tracesInspection = new GenerateAllTracesInspection();
 
     vfr.addInspection(tracesInspection);

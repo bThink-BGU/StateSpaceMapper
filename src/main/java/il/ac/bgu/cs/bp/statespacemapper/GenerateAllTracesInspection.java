@@ -7,7 +7,10 @@ import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class GenerateAllTracesInspection implements ExecutionTraceInspection {
   /**
@@ -61,13 +64,15 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
   }
 
   public MapperResult getResult() {
-    var states = graph.keySet();
+    var states = Stream.concat(graph.keySet().stream(),graph.values().stream().flatMap(map->map.keySet().stream())).distinct().collect(Collectors.toList());
+    var indexedStates = IntStream.range(0, states.size()).boxed().collect(Collectors.toMap(states::get, Function.identity()));
+
     var links = graph.entrySet().stream()
         .flatMap(e -> e.getValue().keySet().stream().map(c -> new BProgramSyncSnapshot[]{e.getKey(), c}))
         .flatMap(idArr -> graph.get(idArr[0]).get(idArr[1]).stream().map(e-> new Link(idArr[0], idArr[1],e)))
         .collect(Collectors.toSet());
     var traces = dfsFrom(startNode, new ArrayDeque<>(), new ArrayDeque<>());
-    return new MapperResult(states, links, traces, startNode);
+    return new MapperResult(indexedStates, links, traces, startNode);
   }
 
   public static class Link {
@@ -97,11 +102,11 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
 
   public static class MapperResult {
     public final Set<Link> links;
-    public final Set<BProgramSyncSnapshot> states;
+    public final Map<BProgramSyncSnapshot, Integer> states;
     public final Collection<List<BEvent>> traces;
     public final BProgramSyncSnapshot startNode;
 
-    public MapperResult(Set<BProgramSyncSnapshot> states, Set<Link> links, Collection<List<BEvent>> traces, BProgramSyncSnapshot startNode) {
+    public MapperResult(Map<BProgramSyncSnapshot, Integer> states, Set<Link> links, Collection<List<BEvent>> traces, BProgramSyncSnapshot startNode) {
       this.links = links;
       this.states = states;
       this.traces = traces;
