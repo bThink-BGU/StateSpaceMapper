@@ -11,11 +11,21 @@ public abstract class TraceResultWriter {
   protected final PrintStream out;
   protected final GenerateAllTracesInspection.MapperResult result;
   protected final String name;
+  protected boolean printStatements = false;
+  protected boolean printStore = false;
 
   protected TraceResultWriter(PrintStream out, GenerateAllTracesInspection.MapperResult result, String name) {
     this.out = out;
     this.result = result;
     this.name = name;
+  }
+
+  public void setPrintStatements(boolean printStatements) {
+    this.printStatements = printStatements;
+  }
+
+  public void setPrintStore(boolean printStore) {
+    this.printStore = printStore;
   }
 
   protected abstract void innerWrite();
@@ -39,8 +49,4 @@ public abstract class TraceResultWriter {
   protected abstract String printLink(GenerateAllTracesInspection.Link link);
 
   protected abstract String printBpss(Map.Entry<BProgramSyncSnapshot, Integer> bpssEntry);
-
-
-
-
 }

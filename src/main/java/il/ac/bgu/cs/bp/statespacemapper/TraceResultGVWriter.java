@@ -31,39 +31,42 @@ public class TraceResultGVWriter extends TraceResultWriter {
     out.println("}");
   }
 
-  private static String getGuardedString(Object o) {
-    return o.toString().replace("\"", "\\\"").replace("\n", "").replace("JS_Obj ", "");
-  }
-
   protected String printLink(GenerateAllTracesInspection.Link link) {
-    return MessageFormat.format("{0}\"{1}\" -> \"{2}\" [label=\"{3}\"]", "  ".repeat(level), nodeName(link.src), nodeName(link.dst), linkName(link.event));
+    return MessageFormat.format("{0}{1} -> {2} [label=\"{3}\"]", "  ".repeat(level), nodeName(link.src), nodeName(link.dst), sanitize(linkName(link.event)));
   }
 
   protected String printBpss(Map.Entry<BProgramSyncSnapshot, Integer> bpssEntry) {
     var bpss = bpssEntry.getKey();
+
     String id = bpssEntry.getValue().toString();
-    String store = bpss.getDataStore().entrySet().stream()
-        .map(entry -> "{" + getGuardedString(ScriptableUtils.stringify(entry.getKey())) + "," + getGuardedString(ScriptableUtils.stringify(entry.getValue())) + "}")
-        .collect(joining(",", "Store: [", "]"));
-    String statements = bpss.getBThreadSnapshots().stream()
+
+    String color = bpss.equals(result.startNode) ? "fontcolor=blue " : "";
+
+    String store = !printStore ? "" : bpss.getDataStore().entrySet().stream()
+        .map(entry -> "{" + sanitize(ScriptableUtils.stringify(entry.getKey())) + "," + sanitize(ScriptableUtils.stringify(entry.getValue())) + "}")
+        .collect(joining(",", "\nStore: [", "]"));
+
+    String statements = !printStatements ? "" : bpss.getBThreadSnapshots().stream()
         .map(btss -> {
           SyncStatement syst = btss.getSyncStatement();
           return
-              "{name: " + getGuardedString(btss.getName()) + ",\n" +
+              "{name: " + sanitize(btss.getName()) + ",\n" +
                   "isHot: " + syst.isHot() + ",\n" +
-                  "request: " + syst.getRequest().stream().map(e -> getGuardedString(linkName(e))).collect(joining(",", "[", "]")) + ",\n" +
-                  "waitFor: " + getGuardedString(syst.getWaitFor()) + ",\n" +
-                  "block: " + getGuardedString(syst.getBlock()) + ",\n" +
-                  "interrupt: " + getGuardedString(syst.getInterrupt()) + "}";
+                  "request: " + syst.getRequest().stream().map(e -> sanitize(linkName(e))).collect(joining(",", "[", "]")) + ",\n" +
+                  "waitFor: " + sanitize(syst.getWaitFor()) + ",\n" +
+                  "block: " + sanitize(syst.getBlock()) + ",\n" +
+                  "interrupt: " + sanitize(syst.getInterrupt()) + "}";
         })
-        .collect(joining(",\n", "Statements: [", "]"));
-    String pattern = bpss.equals(result.startNode) ? "{0}\"{1}\" [fontcolor=blue label=\"start {1}\"]" : "{0}\"{1}\" [label=\"{1}\"]";
-    return MessageFormat.format(pattern, "  ".repeat(level), id);
-//    String pattern = bpss.equals(result.startNode) ? "{0}{1} [fontcolor=blue label=\"start {1}\n{2}\n{3}\"]" : "{0}{1} [label=\"{1}\n{2}\n{3}\"]";
-//    return MessageFormat.format(pattern, "  ".repeat(level), id, store, statements);
+        .collect(joining(",\n", "\nStatements: [", "]"));
+
+    return MessageFormat.format("{0}{1} [{2}label=\"{1}{3}{4}\"]", "  ".repeat(level), id, color, store, statements);
   }
 
-  private static String sanitize( String in ) {
-    return in.replaceAll("[. -+]", "_");
+  private static String sanitize(Object in) {
+    return in.toString()
+        .replace("\"", "\\\"")
+        .replace("\n", "\\n")
+        .replace("JS_Obj ", "")
+        .replaceAll("[. -+]", "_");
   }
 }

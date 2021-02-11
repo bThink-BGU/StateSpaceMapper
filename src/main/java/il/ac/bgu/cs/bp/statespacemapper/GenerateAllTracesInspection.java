@@ -51,27 +51,31 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
       Collection<List<BEvent>> res = outbounds.entrySet().stream()
           .filter(o -> !nodeStack.contains(o.getKey()))
           .map(o -> {
-            o.getValue().forEach(e->eventStack.push(e));
+            o.getValue().forEach(eventStack::push);
             Collection<List<BEvent>> innerDfs = dfsFrom(o.getKey(), nodeStack, eventStack);
             eventStack.pop();
             return innerDfs;
           })
           .flatMap(Collection::stream)
-          .collect(Collectors.toList());
+          .collect(Collectors.toUnmodifiableList());
       nodeStack.pop();
       return res;
     }
   }
 
   public MapperResult getResult() {
-    var states = Stream.concat(graph.keySet().stream(),graph.values().stream().flatMap(map->map.keySet().stream())).distinct().collect(Collectors.toList());
-    var indexedStates = IntStream.range(0, states.size()).boxed().collect(Collectors.toMap(states::get, Function.identity()));
+    var states = Stream.concat(graph.keySet().stream(), graph.values().stream().flatMap(map -> map.keySet().stream())).distinct().collect(Collectors.toList());
+
+    var indexedStates = IntStream.range(0, states.size()).boxed().collect(Collectors.toUnmodifiableMap(states::get, Function.identity()));
 
     var links = graph.entrySet().stream()
         .flatMap(e -> e.getValue().keySet().stream().map(c -> new BProgramSyncSnapshot[]{e.getKey(), c}))
-        .flatMap(idArr -> graph.get(idArr[0]).get(idArr[1]).stream().map(e-> new Link(idArr[0], idArr[1],e)))
-        .collect(Collectors.toSet());
+        .flatMap(idArr -> graph.get(idArr[0]).get(idArr[1]).stream().map(e -> new Link(idArr[0], idArr[1], e)))
+        .sorted(new LinkComparator(indexedStates))
+        .collect(Collectors.toUnmodifiableList());
+
     var traces = dfsFrom(startNode, new ArrayDeque<>(), new ArrayDeque<>());
+
     return new MapperResult(indexedStates, links, traces, startNode);
   }
 
@@ -100,13 +104,29 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
     }
   }
 
+  private static class LinkComparator implements Comparator<Link> {
+    private final Map<BProgramSyncSnapshot, Integer> states;
+    public LinkComparator(Map<BProgramSyncSnapshot, Integer> states) {
+      this.states = states;
+    }
+
+    @Override
+    public int compare(Link o1, Link o2) {
+      if(states.get(o1.src) < states.get(o2.src)) return -1;
+      if(states.get(o1.src) > states.get(o2.src)) return 1;
+      if(states.get(o1.dst) < states.get(o2.dst)) return -1;
+      if(states.get(o1.dst) > states.get(o2.dst)) return 1;
+      return o1.event.toString().compareTo(o2.event.toString());
+    }
+  }
+
   public static class MapperResult {
-    public final Set<Link> links;
+    public final List<Link> links;
     public final Map<BProgramSyncSnapshot, Integer> states;
     public final Collection<List<BEvent>> traces;
     public final BProgramSyncSnapshot startNode;
 
-    public MapperResult(Map<BProgramSyncSnapshot, Integer> states, Set<Link> links, Collection<List<BEvent>> traces, BProgramSyncSnapshot startNode) {
+    public MapperResult(Map<BProgramSyncSnapshot, Integer> states, List<Link> links, Collection<List<BEvent>> traces, BProgramSyncSnapshot startNode) {
       this.links = links;
       this.states = states;
       this.traces = traces;
@@ -115,14 +135,13 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
 
     @Override
     public String toString() {
-      return new StringBuilder()
-          .append("StateMapper stats\n")
-          .append("=================\n")
-          .append("# States: ").append(states.size()).append("\n")
-          .append("# Transition: ").append(links.size()).append("\n")
-//          .append("# Traces: ").append(numberOfTraces()).append("\n")
-          .append("=================")
-          .toString();
+      return
+          "StateMapper stats\n" +
+          "=================\n" +
+          "# States: " + states.size() + "\n" +
+          "# Transition: " + links.size() + "\n" +
+          "# Traces: " + traces.size() + "\n" +
+          "=================";
     }
   }
 }

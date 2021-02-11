@@ -13,13 +13,14 @@ import static java.util.stream.Collectors.joining;
 
 public class TraceResultJsonWriter extends TraceResultWriter {
   private int level;
+
   public TraceResultJsonWriter(PrintStream out, GenerateAllTracesInspection.MapperResult result, String name) {
     super(out, result, name);
   }
 
   @Override
   protected void innerWrite() {
-    int level = 0;
+    level = 0;
     out.println("{");
     level++;
     out.println("  ".repeat(level) + "\"name\": \"" + name + "\", ");
@@ -31,8 +32,8 @@ public class TraceResultJsonWriter extends TraceResultWriter {
     out.println("  ".repeat(level) + "\"states\": [\n");
     level++;
     out.println(result.states.entrySet().stream()
-            .map(this::printBpss)
-            .collect(joining(",\n")));
+        .map(this::printBpss)
+        .collect(joining(",\n")));
     level--;
     out.println("  ".repeat(level) + "],");
     out.println("  ".repeat(level) + "\"links\": [");
@@ -55,29 +56,35 @@ public class TraceResultJsonWriter extends TraceResultWriter {
     var bpss = bpssEntry.getKey();
     StringBuilder out = new StringBuilder();
     out.append("  ".repeat(level) + "{\n");
-    out.append("  ".repeat(level + 1) + "\"id\":\"" + nodeName(bpss) + "\",\n");
-    out.append("  ".repeat(level + 1) + "\"store\": [\n");
-    out.append(bpss.getDataStore().entrySet().stream()
-        .map(entry -> "  ".repeat(level + 2) + "\"" + getGuardedString(ScriptableUtils.stringify(entry.getValue())) + "\"")
-        .collect(joining(",\n")));
-    out.append("\n" + "  ".repeat(level + 1) + "],\n");
-    out.append("  ".repeat(level + 1) + "\"statements\": [\n");
-    out.append(bpss.getBThreadSnapshots().stream()
-        .map(btss -> {
-          SyncStatement syst = btss.getSyncStatement();
-          return
-              "  ".repeat(level + 2) + "{\n" +
-                  "  ".repeat(level + 3) + "\"name\":\"" + getGuardedString(btss.getName()) + "\",\n" +
-                  "  ".repeat(level + 3) + "\"isHot\":" + syst.isHot() + ",\n" +
-                  "  ".repeat(level + 3) + "\"request\":" + syst.getRequest().stream().map(e -> "\"" + getGuardedString(e) + "\"").collect(joining(",", "[", "]")) + ",\n" +
-                  "  ".repeat(level + 3) + "\"waitFor\":\"" + getGuardedString(syst.getWaitFor()) + "\",\n" +
-                  "  ".repeat(level + 3) + "\"block\":\"" + getGuardedString(syst.getBlock()) + "\",\n" +
-                  "  ".repeat(level + 3) + "\"interrupt\":\"" + getGuardedString(syst.getInterrupt()) + "\"\n" +
-                  "  ".repeat(level + 2) + "}";
-        })
-        .collect(joining(",\n")));
-    out.append("\n" + "  ".repeat(level + 1) + "]\n");
-    out.append("  ".repeat(level) + "}");
+    out.append("  ".repeat(level + 1) + "\"id\":\"" + nodeName(bpss) + "\"");
+    if (printStore) {
+      out.append(",\n");
+      out.append("  ".repeat(level + 1) + "\"store\": [\n");
+      out.append(bpss.getDataStore().entrySet().stream()
+          .map(entry -> "  ".repeat(level + 2) + "\"" + getGuardedString(ScriptableUtils.stringify(entry.getValue())) + "\"")
+          .collect(joining(",\n")));
+      out.append("\n" + "  ".repeat(level + 1) + "]");
+    }
+    if (printStatements) {
+      out.append(",\n");
+      out.append("  ".repeat(level + 1) + "\"statements\": [\n");
+      out.append(bpss.getBThreadSnapshots().stream()
+          .map(btss -> {
+            SyncStatement syst = btss.getSyncStatement();
+            return
+                "  ".repeat(level + 2) + "{\n" +
+                    "  ".repeat(level + 3) + "\"name\":\"" + getGuardedString(btss.getName()) + "\",\n" +
+                    "  ".repeat(level + 3) + "\"isHot\":" + syst.isHot() + ",\n" +
+                    "  ".repeat(level + 3) + "\"request\":" + syst.getRequest().stream().map(e -> "\"" + getGuardedString(e) + "\"").collect(joining(",", "[", "]")) + ",\n" +
+                    "  ".repeat(level + 3) + "\"waitFor\":\"" + getGuardedString(syst.getWaitFor()) + "\",\n" +
+                    "  ".repeat(level + 3) + "\"block\":\"" + getGuardedString(syst.getBlock()) + "\",\n" +
+                    "  ".repeat(level + 3) + "\"interrupt\":\"" + getGuardedString(syst.getInterrupt()) + "\"\n" +
+                    "  ".repeat(level + 2) + "}";
+          })
+          .collect(joining(",\n")));
+      out.append("\n" + "  ".repeat(level + 1) + "]");
+    }
+    out.append("\n" + "  ".repeat(level) + "}");
     return out.toString();
   }
 }

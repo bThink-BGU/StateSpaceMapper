@@ -1,6 +1,6 @@
 const MAX_NUMBER = 4
-const INCORRECT = bp.Event("INCORRECT CODE")
-const CORRECT = bp.Event("CORRECT CODE")
+const INCORRECT = bp.Event("INCORRECT\nCODE")
+const CORRECT = bp.Event("CORRECT\nCODE")
 let arr = []
 for(let i=0; i<=MAX_NUMBER; i++) {
   arr.push(i.toString())
