@@ -17,6 +17,11 @@
             <artifactId>BPjs</artifactId>
             <version>0.12.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.neo4j.driver</groupId>
+            <artifactId>neo4j-java-driver</artifactId>
+            <version>4.2.0</version>
+        </dependency>
     </dependencies>
     <description>Draws a b-program's state space using graphviz.</description>
     <build>

@@ -2,6 +2,7 @@ package il.ac.bgu.cs.bp.statespacemapper;
 
 import il.ac.bgu.cs.bp.bpjs.analysis.BProgramSnapshotVisitedStateStore;
 import il.ac.bgu.cs.bp.bpjs.analysis.DfsBProgramVerifier;
+import il.ac.bgu.cs.bp.bpjs.analysis.VerificationResult;
 import il.ac.bgu.cs.bp.bpjs.analysis.listeners.PrintDfsVerifierListener;
 import il.ac.bgu.cs.bp.bpjs.model.BProgram;
 import il.ac.bgu.cs.bp.bpjs.model.ResourceBProgram;
@@ -13,7 +14,7 @@ import java.io.PrintStream;
  * @author michael
  */
 public class StateSpaceMapper {
-
+  private boolean useNeo4j = false;
   private final String filename;
 
   public StateSpaceMapper(String filename) {
@@ -21,19 +22,32 @@ public class StateSpaceMapper {
   }
 
   public void mapSpace() throws Exception {
+    Neo4JInspection neo4j = null;
+
     var bprog = createBProgram();
     var ess = new PrioritizedBSyncEventSelectionStrategy();
     ess.setDefaultPriority(0);
     bprog.setEventSelectionStrategy(ess);
     var vfr = new DfsBProgramVerifier();
 
-    vfr.setVisitedStateStore(new BProgramSnapshotVisitedStateStore());
-    var tracesInspection = new GenerateAllTracesInspection();
 
+    var tracesInspection = new GenerateAllTracesInspection();
     vfr.addInspection(tracesInspection);
-    vfr.setProgressListener(new PrintDfsVerifierListener());
+
+    try {
+      if (useNeo4j) {
+        neo4j = new Neo4JInspection();
+        vfr.addInspection(neo4j);
+      }
+
+      vfr.setProgressListener(new PrintDfsVerifierListener());
 //    vfr.setDebugMode(true);
-    var res = vfr.verify(bprog);
+      vfr.verify(bprog);
+    } finally {
+      if (neo4j != null)
+        neo4j.close();
+    }
+
     var mapperRes = tracesInspection.getResult();
 
     System.out.println(mapperRes.toString());
