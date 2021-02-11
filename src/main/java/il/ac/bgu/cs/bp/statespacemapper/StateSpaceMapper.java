@@ -1,55 +1,47 @@
 package il.ac.bgu.cs.bp.statespacemapper;
 
 import il.ac.bgu.cs.bp.bpjs.analysis.DfsBProgramVerifier;
-import il.ac.bgu.cs.bp.bpjs.analysis.VerificationResult;
+import il.ac.bgu.cs.bp.bpjs.analysis.listeners.PrintDfsVerifierListener;
 import il.ac.bgu.cs.bp.bpjs.model.BProgram;
-import il.ac.bgu.cs.bp.bpjs.model.StringBProgram;
-import java.io.IOException;
+import il.ac.bgu.cs.bp.bpjs.model.ResourceBProgram;
+
 import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
- *
  * @author michael
  */
 public class StateSpaceMapper {
-    
-    private final List<Path> fileNames = new ArrayList<>();
-    
-    public void addFile( Path p ) {
-        fileNames.add(p);
-    }
-    
-    public void mapSpace() throws IOException, Exception {
-        BProgram bprog = createBProgram();
-        DfsBProgramVerifier vfr = new DfsBProgramVerifier();
-        
-        PrintStream out = System.out;
-        StateMappingListener stateMappingInspection = new StateMappingListener(bprog, out);
-        
-        vfr.addInspection(stateMappingInspection);
-        vfr.setProgressListener(stateMappingInspection);
-        
-        VerificationResult res = vfr.verify(bprog);
-        System.out.println("// states: " + res.getScannedStatesCount());
-        System.out.println("// edges: " + res.getScannedEdgesCount());
-        System.out.println("// count: " + stateMappingInspection.count);
-    }
 
-    private BProgram createBProgram() throws IOException {
-        BProgram retVal = new StringBProgram(fileNames.get(0).getFileName().toString(), "");
-        for ( Path fn:fileNames ) {
-            retVal.appendSource(
-                new String(Files.readAllBytes(fn), StandardCharsets.UTF_8)
-            );
-        }
-        return retVal;
+  private final String filename;
+
+  public StateSpaceMapper(String filename) {
+    this.filename = filename;
+  }
+
+  public void mapSpace() throws Exception {
+    var bprog = createBProgram();
+    var vfr = new DfsBProgramVerifier();
+
+    var tracesInspection = new GenerateAllTracesInspection();
+
+    vfr.addInspection(tracesInspection);
+    vfr.setProgressListener(new PrintDfsVerifierListener());
+    vfr.setDebugMode(true);
+    var res = vfr.verify(bprog);
+    var mapperRes = tracesInspection.getResult();
+
+    System.out.println(mapperRes.toString());
+
+    try (PrintStream jsonOut = new PrintStream("graphs/" + filename + ".json");
+         PrintStream graphVisOut = new PrintStream("graphs/" + filename + ".dot")) {
+      new TraceResultJsonWriter(jsonOut, mapperRes, filename).write();
+      new TraceResultGVWriter(graphVisOut, mapperRes, filename).write();
     }
-    
-    
-    
+  }
+
+  private BProgram createBProgram() {
+    return new ResourceBProgram(filename);
+  }
+
+
 }

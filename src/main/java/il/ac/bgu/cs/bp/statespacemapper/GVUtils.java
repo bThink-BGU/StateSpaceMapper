@@ -12,7 +12,7 @@ package il.ac.bgu.cs.bp.statespacemapper;
 public class GVUtils {
     
     public static String sanitize( String in ) {
-        return in.replaceAll("[. -]", "_");
+        return in.replaceAll("[. -+]", "_");
     }
 }
 

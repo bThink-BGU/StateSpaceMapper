@@ -1,0 +1,326 @@
+{
+  "name": "safe.js", 
+  "start": "74e761fb", 
+  "runDate": "2021-02-11T18:26:52.1356338",
+  "# states": 9, 
+  "# transitions": 25, 
+  "# traces": 5, 
+  "states": [
+
+{
+  "id":"74e98499",
+  "store": [
+
+  ],
+  "statements": [
+    {
+      "name":"correct code",
+      "isHot":false,
+      "request":[],
+      "waitFor":"{all}",
+      "block":"{none}",
+      "interrupt":"{none}"
+    },
+    {
+      "name":"incorrect code",
+      "isHot":false,
+      "request":[],
+      "waitFor":"[BEvent name:INCORRECT CODE]",
+      "block":"{none}",
+      "interrupt":"{none}"
+    },
+    {
+      "name":"try",
+      "isHot":false,
+      "request":["[BEvent name:0]","[BEvent name:1]","[BEvent name:2]","[BEvent name:3]","[BEvent name:4]"],
+      "waitFor":"{none}",
+      "block":"{none}",
+      "interrupt":"{none}"
+    }
+  ]
+},
+{
+  "id":"eb865a54",
+  "store": [
+
+  ],
+  "statements": [
+    {
+      "name":"correct code",
+      "isHot":false,
+      "request":["[BEvent name:INCORRECT CODE]"],
+      "waitFor":"{none}",
+      "block":"not([BEvent name:INCORRECT CODE])",
+      "interrupt":"{none}"
+    },
+    {
+      "name":"incorrect code",
+      "isHot":false,
+      "request":[],
+      "waitFor":"[BEvent name:INCORRECT CODE]",
+      "block":"{none}",
+      "interrupt":"{none}"
+    },
+    {
+      "name":"try",
+      "isHot":false,
+      "request":["[BEvent name:0]","[BEvent name:1]","[BEvent name:2]","[BEvent name:3]","[BEvent name:4]"],
+      "waitFor":"{none}",
+      "block":"{none}",
+      "interrupt":"{none}"
+    }
+  ]
+},
+{
+  "id":"74ea9ede",
+  "store": [
+
+  ],
+  "statements": [
+    {
+      "name":"correct code",
+      "isHot":false,
+      "request":[],
+      "waitFor":"{all}",
+      "block":"{none}",
+      "interrupt":"{none}"
+    },
+    {
+      "name":"incorrect code",
+      "isHot":false,
+      "request":[],
+      "waitFor":"[BEvent name:INCORRECT CODE]",
+      "block":"{none}",
+      "interrupt":"{none}"
+    },
+    {
+      "name":"try",
+      "isHot":false,
+      "request":["[BEvent name:0]","[BEvent name:1]","[BEvent name:2]","[BEvent name:3]","[BEvent name:4]"],
+      "waitFor":"{none}",
+      "block":"{none}",
+      "interrupt":"{none}"
+    }
+  ]
+},
+{
+  "id":"eb854d80",
+  "store": [
+
+  ],
+  "statements": [
+    {
+      "name":"incorrect code",
+      "isHot":false,
+      "request":[],
+      "waitFor":"[BEvent name:INCORRECT CODE]",
+      "block":"{none}",
+      "interrupt":"{none}"
+    },
+    {
+      "name":"try",
+      "isHot":false,
+      "request":["[BEvent name:0]","[BEvent name:1]","[BEvent name:2]","[BEvent name:3]","[BEvent name:4]"],
+      "waitFor":"{none}",
+      "block":"{none}",
+      "interrupt":"{none}"
+    },
+    {
+      "name":"correct code",
+      "isHot":false,
+      "request":["[BEvent name:INCORRECT CODE]"],
+      "waitFor":"{none}",
+      "block":"not([BEvent name:INCORRECT CODE])",
+      "interrupt":"{none}"
+    }
+  ]
+},
+{
+  "id":"eb888ede",
+  "store": [
+
+  ],
+  "statements": [
+    {
+      "name":"correct code",
+      "isHot":false,
+      "request":["[BEvent name:INCORRECT CODE]"],
+      "waitFor":"{none}",
+      "block":"not([BEvent name:INCORRECT CODE])",
+      "interrupt":"{none}"
+    },
+    {
+      "name":"incorrect code",
+      "isHot":false,
+      "request":[],
+      "waitFor":"[BEvent name:INCORRECT CODE]",
+      "block":"{none}",
+      "interrupt":"{none}"
+    },
+    {
+      "name":"try",
+      "isHot":false,
+      "request":["[BEvent name:0]","[BEvent name:1]","[BEvent name:2]","[BEvent name:3]","[BEvent name:4]"],
+      "waitFor":"{none}",
+      "block":"{none}",
+      "interrupt":"{none}"
+    }
+  ]
+},
+{
+  "id":"74e86ecf",
+  "store": [
+
+  ],
+  "statements": [
+    {
+      "name":"correct code",
+      "isHot":false,
+      "request":[],
+      "waitFor":"{all}",
+      "block":"{none}",
+      "interrupt":"{none}"
+    },
+    {
+      "name":"incorrect code",
+      "isHot":false,
+      "request":[],
+      "waitFor":"[BEvent name:INCORRECT CODE]",
+      "block":"{none}",
+      "interrupt":"{none}"
+    },
+    {
+      "name":"try",
+      "isHot":false,
+      "request":["[BEvent name:0]","[BEvent name:1]","[BEvent name:2]","[BEvent name:3]","[BEvent name:4]"],
+      "waitFor":"{none}",
+      "block":"{none}",
+      "interrupt":"{none}"
+    }
+  ]
+},
+{
+  "id":"eb87701e",
+  "store": [
+
+  ],
+  "statements": [
+    {
+      "name":"correct code",
+      "isHot":false,
+      "request":["[BEvent name:INCORRECT CODE]"],
+      "waitFor":"{none}",
+      "block":"not([BEvent name:INCORRECT CODE])",
+      "interrupt":"{none}"
+    },
+    {
+      "name":"incorrect code",
+      "isHot":false,
+      "request":[],
+      "waitFor":"[BEvent name:INCORRECT CODE]",
+      "block":"{none}",
+      "interrupt":"{none}"
+    },
+    {
+      "name":"try",
+      "isHot":false,
+      "request":["[BEvent name:0]","[BEvent name:1]","[BEvent name:2]","[BEvent name:3]","[BEvent name:4]"],
+      "waitFor":"{none}",
+      "block":"{none}",
+      "interrupt":"{none}"
+    }
+  ]
+},
+{
+  "id":"89f2e218",
+  "store": [
+
+  ],
+  "statements": [
+    {
+      "name":"incorrect code",
+      "isHot":false,
+      "request":[],
+      "waitFor":"[BEvent name:INCORRECT CODE]",
+      "block":"{none}",
+      "interrupt":"{none}"
+    },
+    {
+      "name":"try",
+      "isHot":false,
+      "request":["[BEvent name:0]","[BEvent name:1]","[BEvent name:2]","[BEvent name:3]","[BEvent name:4]"],
+      "waitFor":"{none}",
+      "block":"{none}",
+      "interrupt":"{none}"
+    },
+    {
+      "name":"correct code",
+      "isHot":false,
+      "request":["[BEvent name:CORRECT CODE]"],
+      "waitFor":"{none}",
+      "block":"not([BEvent name:CORRECT CODE])",
+      "interrupt":"{none}"
+    }
+  ]
+},
+{
+  "id":"74e761fb",
+  "store": [
+
+  ],
+  "statements": [
+    {
+      "name":"incorrect code",
+      "isHot":false,
+      "request":[],
+      "waitFor":"[BEvent name:INCORRECT CODE]",
+      "block":"{none}",
+      "interrupt":"{none}"
+    },
+    {
+      "name":"try",
+      "isHot":false,
+      "request":["[BEvent name:0]","[BEvent name:1]","[BEvent name:2]","[BEvent name:3]","[BEvent name:4]"],
+      "waitFor":"{none}",
+      "block":"{none}",
+      "interrupt":"{none}"
+    },
+    {
+      "name":"correct code",
+      "isHot":false,
+      "request":[],
+      "waitFor":"{all}",
+      "block":"{none}",
+      "interrupt":"{none}"
+    }
+  ]
+}
+  ],
+  "links": [
+{"source":"74e761fb", "target":"eb854d80", "eventData":"[BEvent name:1]"},
+{"source":"eb865a54", "target":"a62b9047", "eventData":"[BEvent name:INCORRECT CODE]"},
+{"source":"74ea9ede", "target":"eb888ede", "eventData":"[BEvent name:1]"},
+{"source":"74e761fb", "target":"eb854d80", "eventData":"[BEvent name:4]"},
+{"source":"74e761fb", "target":"eb854d80", "eventData":"[BEvent name:0]"},
+{"source":"74e98499", "target":"74ea9ede", "eventData":"[BEvent name:2]"},
+{"source":"74e761fb", "target":"eb854d80", "eventData":"[BEvent name:3]"},
+{"source":"eb888ede", "target":"a62b9047", "eventData":"[BEvent name:INCORRECT CODE]"},
+{"source":"74e86ecf", "target":"eb865a54", "eventData":"[BEvent name:2]"},
+{"source":"74e761fb", "target":"74e86ecf", "eventData":"[BEvent name:2]"},
+{"source":"74e86ecf", "target":"74e98499", "eventData":"[BEvent name:4]"},
+{"source":"74ea9ede", "target":"eb888ede", "eventData":"[BEvent name:3]"},
+{"source":"74e98499", "target":"eb87701e", "eventData":"[BEvent name:3]"},
+{"source":"74ea9ede", "target":"eb888ede", "eventData":"[BEvent name:0]"},
+{"source":"74e86ecf", "target":"eb865a54", "eventData":"[BEvent name:0]"},
+{"source":"74e98499", "target":"eb87701e", "eventData":"[BEvent name:0]"},
+{"source":"eb854d80", "target":"a62b9047", "eventData":"[BEvent name:INCORRECT CODE]"},
+{"source":"74e86ecf", "target":"eb865a54", "eventData":"[BEvent name:3]"},
+{"source":"eb87701e", "target":"a62b9047", "eventData":"[BEvent name:INCORRECT CODE]"},
+{"source":"89f2e218", "target":"d9a0652", "eventData":"[BEvent name:CORRECT CODE]"},
+{"source":"74e86ecf", "target":"eb865a54", "eventData":"[BEvent name:1]"},
+{"source":"74ea9ede", "target":"eb888ede", "eventData":"[BEvent name:4]"},
+{"source":"74ea9ede", "target":"89f2e218", "eventData":"[BEvent name:2]"},
+{"source":"74e98499", "target":"eb87701e", "eventData":"[BEvent name:4]"},
+{"source":"74e98499", "target":"eb87701e", "eventData":"[BEvent name:1]"}
+  ]
+}

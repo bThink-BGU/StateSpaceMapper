@@ -20,7 +20,7 @@ import java.util.TreeSet;
  *
  * @author michael
  */
-public class StateMappingListener implements ExecutionTraceInspection, DfsBProgramVerifier.ProgressListener {
+public class GraphVizListener implements ExecutionTraceInspection, DfsBProgramVerifier.ProgressListener {
     public int count=0;
     private final PrintStream out;
     private final BProgram bprog;
@@ -28,9 +28,10 @@ public class StateMappingListener implements ExecutionTraceInspection, DfsBProgr
     private Set<Integer> visitedHashes = new TreeSet<>();
     
     
-    public StateMappingListener(BProgram aBProgram, PrintStream out) {
+    public GraphVizListener(BProgram aBProgram, PrintStream out) {
         this.out = out;
         bprog = aBProgram;
+        started(null);
     }
     
     //////////////////////////////
@@ -69,13 +70,13 @@ public class StateMappingListener implements ExecutionTraceInspection, DfsBProgr
         if ( et.isCyclic() ) {
             out.println( bpssNodeId(et.getLastState()) + " -> " 
                 + bpssNodeId(et.getFinalCycle().get(0).getState())
-                + "[label=\"" + eventToStr(et.getLastEvent()) + "\"] // cycle");
+                + "[label=\"" + eventToStr(et.getLastEvent().orElse(null)) + "\"] // cycle");
         } else {
             out.println(newNode(et.getLastState(), !inspection.isPresent()));
             if ( et.getStateCount() > 1 ) {
                 out.println( bpssNodeId(et.getNodes().get(et.getStateCount()-2).getState()) + " -> " 
                     + bpssNodeId(et.getLastState())
-                    + "[label=\"" + eventToStr(et.getLastEvent()) + "\"] // new");
+                    + "[label=\"" + eventToStr(et.getLastEvent().orElse(null)) + "\"] // new");
             } else {
                 out.println( "start -> " + bpssNodeId(et.getLastState()) + " [color=blue]");
             }
@@ -97,7 +98,7 @@ public class StateMappingListener implements ExecutionTraceInspection, DfsBProgr
 
     @Override
     public void iterationCount(long iteration, long statesFound, DfsBProgramVerifier dbpv) {
-        System.err.println(" - " + iteration + "/" + statesFound);
+//        System.err.println(" - " + iteration + "/" + statesFound);
     }
 
     @Override
@@ -115,11 +116,11 @@ public class StateMappingListener implements ExecutionTraceInspection, DfsBProgr
 
     private String newNode( BProgramSyncSnapshot bpss, boolean isValid ) {
         String bpssNodeTitle = bpssNodeTitle(bpss);
-        System.err.println( bpssNodeTitle + ":" );
+        /*System.err.println( bpssNodeTitle + ":" );
         for ( BThreadSyncSnapshot btss : bpss.getBThreadSnapshots() ) {
-            System.err.println("  " + btss.getName() + "@" + btss.getContinuationProgramState().getProgramCounter());
+            System.err.println("  " + btss.getName());
             System.err.println("   : " + btss.getSyncStatement());
-        }
+        }*/
         return bpssNodeId(bpss) + "[label=\"" + bpssNodeTitle + "\""
             + (isValid? (bpss.isHot()?HOT_NODE_STYLE:"") :INVALID_NODE_STYLE) + "]";
     }
@@ -138,11 +139,11 @@ public class StateMappingListener implements ExecutionTraceInspection, DfsBProgr
     }
     
     public void printTrace( ExecutionTrace et ) {
-        System.err.println("Trace");
+        /*System.err.println("Trace");
         et.getNodes().forEach( nd->{
             System.err.println( nd.getEvent().map( e->e.getName()).orElse("-") );
         });
-        System.err.println("/Trace");
+        System.err.println("/Trace");*/
     }
 
     

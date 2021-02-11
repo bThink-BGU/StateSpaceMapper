@@ -7,15 +7,15 @@
     <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.11</maven.compiler.source>
+        <maven.compiler.target>1.11</maven.compiler.target>
         <exec.mainClass>il.ac.bgu.cs.bp.statespacemapper.SpaceMapperRunner</exec.mainClass>
     </properties>
     <dependencies>
         <dependency>
             <groupId>com.github.bthink-bgu</groupId>
             <artifactId>BPjs</artifactId>
-            <version>0.10.5</version>
+            <version>0.12.0</version>
         </dependency>
     </dependencies>
     <description>Draws a b-program's state space using graphviz.</description>
@@ -28,7 +28,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>il.ac.bgu.cs.bp.statespacemapper.SpaceMapperRunner</mainClass>
+                            <mainClass>${exec.mainClass}</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
