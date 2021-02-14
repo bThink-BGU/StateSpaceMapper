@@ -38,12 +38,17 @@ public class Neo4JInspection implements ExecutionTraceInspection, AutoCloseable 
   public Optional<Violation> inspectTrace(ExecutionTrace aTrace) {
     int stateCount = aTrace.getStateCount();
     var lastNode = aTrace.getNodes().get(stateCount - 1);
-    if (stateCount == 1) {
-      addBpss(aTrace.getNodes().get(0).getState(), true);
-    } else {
+    if (aTrace.isCyclic()) {
       addBpss(lastNode.getState(), false);
-      var src = aTrace.getNodes().get(stateCount - 2);
-      addEdge(src.getState(), lastNode.getState(), src.getEvent().get());
+      addEdge(aTrace.getLastState(), aTrace.getFinalCycle().get(0).getState(), aTrace.getLastEvent().get());
+    } else {
+      if (stateCount == 1) {
+        addBpss(aTrace.getNodes().get(0).getState(), true);
+      } else {
+        addBpss(lastNode.getState(), false);
+        var src = aTrace.getNodes().get(stateCount - 2);
+        addEdge(src.getState(), lastNode.getState(), src.getEvent().get());
+      }
     }
     return Optional.empty();
   }

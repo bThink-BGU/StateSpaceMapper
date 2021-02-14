@@ -28,15 +28,23 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
   public Optional<Violation> inspectTrace(ExecutionTrace aTrace) {
     int stateCount = aTrace.getStateCount();
     var lastNode = aTrace.getNodes().get(stateCount - 1);
-    if (stateCount == 1) {
-      startNode = aTrace.getNodes().get(0).getState();
+    if (aTrace.isCyclic()) {
+      addEdge(aTrace.getLastState(), aTrace.getFinalCycle().get(0).getState(), aTrace.getLastEvent().get());
     } else {
-      var src = aTrace.getNodes().get(stateCount - 2);
-      Map<BProgramSyncSnapshot, Set<BEvent>> srcNode = graph.computeIfAbsent(src.getState(), k -> new HashMap<>());
-      srcNode.putIfAbsent(lastNode.getState(), new HashSet<>());
-      srcNode.get(lastNode.getState()).add(src.getEvent().get());
+      if (stateCount == 1) {
+        startNode = aTrace.getNodes().get(0).getState();
+      } else {
+        var src = aTrace.getNodes().get(stateCount - 2);
+        addEdge(src.getState(), lastNode.getState(), src.getEvent().get());
+      }
     }
     return Optional.empty();
+  }
+
+  protected void addEdge(BProgramSyncSnapshot src, BProgramSyncSnapshot dst, BEvent edge) {
+    Map<BProgramSyncSnapshot, Set<BEvent>> srcNode = graph.computeIfAbsent(src, k -> new HashMap<>());
+    var events = srcNode.computeIfAbsent(dst, k -> new HashSet<>());
+    events.add(edge);
   }
 
   private Collection<List<BEvent>> dfsFrom(BProgramSyncSnapshot id, ArrayDeque<BProgramSyncSnapshot> nodeStack, ArrayDeque<BEvent> eventStack) {
@@ -106,16 +114,17 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
 
   private static class LinkComparator implements Comparator<Link> {
     private final Map<BProgramSyncSnapshot, Integer> states;
+
     public LinkComparator(Map<BProgramSyncSnapshot, Integer> states) {
       this.states = states;
     }
 
     @Override
     public int compare(Link o1, Link o2) {
-      if(states.get(o1.src) < states.get(o2.src)) return -1;
-      if(states.get(o1.src) > states.get(o2.src)) return 1;
-      if(states.get(o1.dst) < states.get(o2.dst)) return -1;
-      if(states.get(o1.dst) > states.get(o2.dst)) return 1;
+      if (states.get(o1.src) < states.get(o2.src)) return -1;
+      if (states.get(o1.src) > states.get(o2.src)) return 1;
+      if (states.get(o1.dst) < states.get(o2.dst)) return -1;
+      if (states.get(o1.dst) > states.get(o2.dst)) return 1;
       return o1.event.toString().compareTo(o2.event.toString());
     }
   }
@@ -137,11 +146,11 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
     public String toString() {
       return
           "StateMapper stats\n" +
-          "=================\n" +
-          "# States: " + states.size() + "\n" +
-          "# Transition: " + links.size() + "\n" +
-          "# Traces: " + traces.size() + "\n" +
-          "=================";
+              "=================\n" +
+              "# States: " + states.size() + "\n" +
+              "# Transition: " + links.size() + "\n" +
+              "# Traces: " + traces.size() + "\n" +
+              "=================";
     }
   }
 }

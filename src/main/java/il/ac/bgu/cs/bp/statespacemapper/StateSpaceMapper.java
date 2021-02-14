@@ -1,8 +1,6 @@
 package il.ac.bgu.cs.bp.statespacemapper;
 
-import il.ac.bgu.cs.bp.bpjs.analysis.BProgramSnapshotVisitedStateStore;
 import il.ac.bgu.cs.bp.bpjs.analysis.DfsBProgramVerifier;
-import il.ac.bgu.cs.bp.bpjs.analysis.VerificationResult;
 import il.ac.bgu.cs.bp.bpjs.analysis.listeners.PrintDfsVerifierListener;
 import il.ac.bgu.cs.bp.bpjs.model.BProgram;
 import il.ac.bgu.cs.bp.bpjs.model.ResourceBProgram;
@@ -14,7 +12,7 @@ import java.io.PrintStream;
  * @author michael
  */
 public class StateSpaceMapper {
-  private boolean useNeo4j = false;
+  private boolean useNeo4j = true;
   private final String filename;
 
   public StateSpaceMapper(String filename) {
