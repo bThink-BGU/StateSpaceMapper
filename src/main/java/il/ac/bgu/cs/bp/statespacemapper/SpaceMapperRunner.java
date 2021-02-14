@@ -1,4 +1,4 @@
-import il.ac.bgu.cs.bp.statespacemapper.StateSpaceMapper;
+package il.ac.bgu.cs.bp.statespacemapper;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
