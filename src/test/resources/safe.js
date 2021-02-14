@@ -1,12 +1,11 @@
 const MAX_NUMBER = 4
-const INCORRECT = bp.Event("INCORRECT\nCODE")
 const CORRECT = bp.Event("CORRECT\nCODE")
 let arr = []
 for(let i=0; i<=MAX_NUMBER; i++) {
   arr.push(i.toString())
 }
 const events = arr.map(n=>bp.Event(n))
-const code = [2].map(n=>n.toString())
+const code = [0,1,2,3,4].map(n=>n.toString())
 
 bp.registerBThread('try', function() {
   // for(let i=0; i < code.length; i++)

@@ -108,7 +108,7 @@ public class Neo4JInspection implements ExecutionTraceInspection, AutoCloseable 
     try (Session session = driver.session()) {
       session.writeTransaction(tx -> tx.run(
           "MATCH (src:Node {id:$srcId}) MATCH(dst:Node {id:$dstId}) " +
-              "CREATE (src)-[e:DIR {name:$eName, data:$eData}]->(dst)",
+              "CREATE (src)-[e:EVENT {name:$eName, data:$eData}]->(dst)",
           parameters(
               "srcId", srcId,
               "dstId", dstId,

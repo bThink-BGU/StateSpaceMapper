@@ -12,11 +12,3 @@ bp.registerBThread('try', function() {
     bp.sync({request: events}, 10)
   }
 })
-/*
-
-bp.registerBThread('try2', function() {
-  // for(let i=0; i < code.length; i++)
-  while(true)
-    bp.sync({request:events},10)
-  bp.sync({request:events},10)
-})*/

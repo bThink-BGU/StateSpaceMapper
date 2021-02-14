@@ -12,10 +12,15 @@ import java.io.PrintStream;
  * @author michael
  */
 public class StateSpaceMapper {
-  private boolean useNeo4j = false;
+  private boolean useNeo4j;
   private final String filename;
 
   public StateSpaceMapper(String filename) {
+    this(filename, false);
+  }
+
+  public StateSpaceMapper(String filename, boolean useNeo4j) {
+    this.useNeo4j = useNeo4j;
     this.filename = filename;
   }
 
