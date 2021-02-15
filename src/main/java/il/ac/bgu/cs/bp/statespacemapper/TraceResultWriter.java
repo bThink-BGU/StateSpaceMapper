@@ -51,18 +51,30 @@ public abstract class TraceResultWriter {
     writeEdgesPost();
     writePost();
 
-    if(out!=null)
+    if (out != null)
       out.flush();
   }
 
   protected abstract void writePre();
-  protected void writeNodesPre() {}
+
+  protected void writeNodesPre() {
+  }
+
   protected abstract String nodeToString(int id, BProgramSyncSnapshot bpss);
-  protected void writeNodesPost() {}
-  protected void writeEdgesPre() {}
+
+  protected void writeNodesPost() {
+  }
+
+  protected void writeEdgesPre() {
+  }
+
   protected abstract String edgeToString(GenerateAllTracesInspection.Edge edge);
-  protected void writeEdgesPost() {}
-  protected void writePost() {}
+
+  protected void writeEdgesPost() {
+  }
+
+  protected void writePost() {
+  }
 
   protected String eventToString(BEvent event) {
     String e = event.name;

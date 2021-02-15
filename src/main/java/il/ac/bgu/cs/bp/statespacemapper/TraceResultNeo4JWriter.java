@@ -4,45 +4,37 @@ import il.ac.bgu.cs.bp.bpjs.internal.ScriptableUtils;
 import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
 import il.ac.bgu.cs.bp.bpjs.model.SyncStatement;
-import org.neo4j.driver.AuthTokens;
 import org.neo4j.driver.Driver;
-import org.neo4j.driver.GraphDatabase;
 import org.neo4j.driver.Session;
 
+import java.io.OutputStream;
+import java.io.PrintStream;
+
 import static java.util.stream.Collectors.joining;
+import static org.neo4j.driver.Values.parameters;
 
 public class TraceResultNeo4JWriter extends TraceResultWriter {
   private final Driver driver;
 
-  public TraceResultNeo4JWriter(GenerateAllTracesInspection.MapperResult result, String runName) {
-    this(result, runName, "bolt://localhost:11002", "neo4j", "StateMapper");
-  }
-
-  public TraceResultNeo4JWriter(GenerateAllTracesInspection.MapperResult result, String runName, String uri, String user, String password) {
-    super(null, result, runName);
-    this.driver = GraphDatabase.driver(uri, AuthTokens.basic(user, password));
-  }
-
-  protected void innerWrite() {
-    deleteAll();
-    result.states.entrySet().forEach(this::nodeToString);
-    result.edges.forEach(this::edgeToString);
+  public TraceResultNeo4JWriter(GenerateAllTracesInspection.MapperResult result, String runName, Driver driver) {
+    super(new PrintStream(OutputStream.nullOutputStream()), result, runName);
+    this.driver = driver;
   }
 
   private static String getStore(BProgramSyncSnapshot bpss) {
     return bpss.getDataStore().entrySet().stream()
-        .map(entry -> "{" + ScriptableUtils.stringify(entry.getKey()) + "," + ScriptableUtils.stringify(entry.getValue()) + "}")
+        .map(entry -> "{" + ScriptableUtils.stringify(entry.getKey()) + ": " + ScriptableUtils.stringify(entry.getValue()) + "}")
         .collect(joining(",", "[", "]"));
   }
 
-  private static String getStatements(BProgramSyncSnapshot bpss) {
+  private String getStatements(BProgramSyncSnapshot bpss) {
     return bpss.getBThreadSnapshots().stream()
         .map(btss -> {
           SyncStatement syst = btss.getSyncStatement();
           return
               "{name: " + btss.getName() + ",\n" +
                   "isHot: " + syst.isHot() + ",\n" +
-//                  "request: " + syst.getRequest().stream().map(TraceResultNeo4JWriter::eventToString).collect(joining(",", "[", "]")) + ",\n" +
+                  "request: " + syst.getRequest().stream().map(this::eventToString).collect(joining(",", "[", "]")) + ",\n" +
                   "waitFor: " + syst.getWaitFor() + ",\n" +
                   "block: " + syst.getBlock() + ",\n" +
                   "interrupt: " + syst.getInterrupt() + "}";
@@ -67,43 +59,37 @@ public class TraceResultNeo4JWriter extends TraceResultWriter {
 
   @Override
   protected String edgeToString(GenerateAllTracesInspection.Edge edge) {
-    /*int srcId = states.get(src);
-    int dstId = states.get(dst);
     try (Session session = driver.session()) {
       session.writeTransaction(tx -> tx.run(
           "MATCH (src:Node {id:$srcId}) MATCH(dst:Node {id:$dstId}) " +
               "CREATE (src)-[e:EVENT {name:$eName, data:$eData}]->(dst)",
           parameters(
-              "srcId", srcId,
-              "dstId", dstId,
-              "eName", event.name,
-              "eData", ScriptableUtils.stringify(event.maybeData)
+              "srcId", edge.srcId,
+              "dstId", edge.dstId,
+              "eName", edge.event.name,
+              "eData", ScriptableUtils.stringify(edge.event.maybeData)
           )));
-    }*/
+    }
     return null;
   }
 
   @Override
   protected void writePre() {
-
+    deleteAll();
   }
 
   @Override
   protected String nodeToString(int id, BProgramSyncSnapshot bpss) {
-    /*var bpss = bpssEntry.getKey();
-
-    String id = bpssEntry.getValue().toString();
-
     try (Session session = driver.session()) {
       session.writeTransaction(tx -> tx.run("CREATE (a:Node {id: $id, hash: $hash, store:$store, statements:$stmt, start: $start})",
           parameters(
               "id", id,
               "hash", bpss.hashCode(),
               "store", getStore(bpss),
-              "start", isStart,
+              "start", bpss.equals(result.startNode),
               "stmt", getStatements(bpss)
           )));
-    }*/
+    }
     return null;
   }
 

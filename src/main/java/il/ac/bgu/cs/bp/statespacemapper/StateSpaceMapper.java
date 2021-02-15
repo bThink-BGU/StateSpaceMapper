@@ -3,68 +3,47 @@ package il.ac.bgu.cs.bp.statespacemapper;
 import il.ac.bgu.cs.bp.bpjs.analysis.DfsBProgramVerifier;
 import il.ac.bgu.cs.bp.bpjs.analysis.listeners.PrintDfsVerifierListener;
 import il.ac.bgu.cs.bp.bpjs.model.BProgram;
-import il.ac.bgu.cs.bp.bpjs.model.ResourceBProgram;
-import il.ac.bgu.cs.bp.bpjs.model.eventselection.PrioritizedBSyncEventSelectionStrategy;
+import org.neo4j.driver.Driver;
 
 import java.io.PrintStream;
 
-/**
- * @author michael
- */
 public class StateSpaceMapper {
-  private boolean useNeo4j;
-  private final String filename;
+  private Driver neo4jDriver;
+  private final String name;
 
-  public StateSpaceMapper(String filename) {
-    this(filename, false);
+  public StateSpaceMapper(String name) {
+    this(name, null);
   }
 
-  public StateSpaceMapper(String filename, boolean useNeo4j) {
-    this.useNeo4j = useNeo4j;
-    this.filename = filename;
+  public StateSpaceMapper(String name, Driver neo4jDriver) {
+    this.neo4jDriver = neo4jDriver;
+    this.name = name;
   }
 
-  public void mapSpace() throws Exception {
-    Neo4JInspection neo4j = null;
+  public void setNeo4jDriver(Driver driver) {
+    this.neo4jDriver = driver;
+  }
 
-    var bprog = createBProgram();
-    var ess = new PrioritizedBSyncEventSelectionStrategy();
-    ess.setDefaultPriority(0);
-    bprog.setEventSelectionStrategy(ess);
+  public void mapSpace(BProgram bprog) throws Exception {
     var vfr = new DfsBProgramVerifier();
-
-
     var tracesInspection = new GenerateAllTracesInspection();
     vfr.addInspection(tracesInspection);
 
-    try {
-      if (useNeo4j) {
-        neo4j = new Neo4JInspection();
-        vfr.addInspection(neo4j);
-      }
-
-      vfr.setProgressListener(new PrintDfsVerifierListener());
+    vfr.setProgressListener(new PrintDfsVerifierListener());
 //    vfr.setDebugMode(true);
-      vfr.verify(bprog);
-    } finally {
-      if (neo4j != null)
-        neo4j.close();
-    }
+    vfr.verify(bprog);
 
     var mapperRes = tracesInspection.getResult();
 
     System.out.println(mapperRes.toString());
 
-    try (PrintStream jsonOut = new PrintStream("graphs/" + filename + ".json");
-         PrintStream graphVisOut = new PrintStream("graphs/" + filename + ".dot")) {
-      new TraceResultJsonWriter(jsonOut, mapperRes, filename).write();
-      new TraceResultGVWriter(graphVisOut, mapperRes, filename).write();
+    try (PrintStream jsonOut = new PrintStream("graphs/" + name + ".json");
+         PrintStream graphVisOut = new PrintStream("graphs/" + name + ".dot")) {
+      new TraceResultJsonWriter(jsonOut, mapperRes, name).write();
+      new TraceResultGVWriter(graphVisOut, mapperRes, name).write();
+    }
+    if (neo4jDriver != null) {
+      new TraceResultNeo4JWriter(mapperRes, name, neo4jDriver).write();
     }
   }
-
-  private BProgram createBProgram() {
-    return new ResourceBProgram(filename);
-  }
-
-
 }

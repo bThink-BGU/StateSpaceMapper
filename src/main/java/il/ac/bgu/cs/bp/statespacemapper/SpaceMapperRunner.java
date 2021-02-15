@@ -1,19 +1,39 @@
 package il.ac.bgu.cs.bp.statespacemapper;
 
+import il.ac.bgu.cs.bp.bpjs.model.ResourceBProgram;
+import il.ac.bgu.cs.bp.bpjs.model.eventselection.PrioritizedBSyncEventSelectionStrategy;
+import org.neo4j.driver.AuthTokens;
+import org.neo4j.driver.GraphDatabase;
+
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class SpaceMapperRunner {
-    public static void main(String[] args) throws Exception {
-        System.out.println("// start");
-        if ( args.length == 0 ) {
-            System.err.println("Missing input files");
-            System.exit(1);
-        }
 
-        Files.createDirectories(Paths.get("graphs"));
-        StateSpaceMapper mpr = new StateSpaceMapper(args[0], false);
-        mpr.mapSpace();
-        System.out.println("// done");
+  private static final boolean useNeo4j = true;
+
+  public static void main(String[] args) throws Exception {
+    System.out.println("// start");
+    if (args.length == 0) {
+      System.err.println("Missing input files");
+      System.exit(1);
     }
+
+    var runName = args[0].substring(0, args[0].lastIndexOf('.'));
+    Files.createDirectories(Paths.get("graphs"));
+    var bprog = new ResourceBProgram(args[0]);
+    var ess = new PrioritizedBSyncEventSelectionStrategy();
+    ess.setDefaultPriority(0);
+    bprog.setEventSelectionStrategy(ess);
+    StateSpaceMapper mpr = new StateSpaceMapper(runName);
+    if(useNeo4j) {
+        try (var driver = GraphDatabase.driver("bolt://localhost:11002", AuthTokens.basic("neo4j", "StateMapper"))) {
+          mpr.setNeo4jDriver(driver);
+          mpr.mapSpace(bprog);
+        }
+    } else
+      mpr.mapSpace(bprog);
+
+    System.out.println("// done");
+  }
 }
