@@ -7,7 +7,6 @@ import il.ac.bgu.cs.bp.bpjs.model.SyncStatement;
 import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Map;
 
 import static java.util.stream.Collectors.joining;
 
@@ -19,44 +18,29 @@ public class TraceResultJsonWriter extends TraceResultWriter {
   }
 
   @Override
-  protected void innerWrite() {
+  protected void writePre() {
     level = 0;
     out.println("{");
     level++;
     out.println("  ".repeat(level) + "\"name\": \"" + name + "\", ");
-    out.println("  ".repeat(level) + "\"start\": \"" + nodeName(result.startNode) + "\", ");
+    out.println("  ".repeat(level) + "\"start\": \"" + result.states.get(result.startNode) + "\", ");
     out.println("  ".repeat(level) + "\"runDate\": \"" + (DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now())) + "\",");
     out.println("  ".repeat(level) + "\"# states\": " + result.states.size() + ", ");
-    out.println("  ".repeat(level) + "\"# transitions\": " + result.links.size() + ", ");
+    out.println("  ".repeat(level) + "\"# transitions\": " + result.edges.size() + ", ");
     out.println("  ".repeat(level) + "\"# traces\": " + result.traces.size() + ", ");
+  }
+
+  @Override
+  protected void writeNodesPre() {
     out.println("  ".repeat(level) + "\"states\": [\n");
     level++;
-    out.println(result.states.entrySet().stream()
-        .map(this::printBpss)
-        .collect(joining(",\n")));
-    level--;
-    out.println("  ".repeat(level) + "],");
-    out.println("  ".repeat(level) + "\"links\": [");
-    level++;
-    out.println(result.links.stream().map(this::printLink).collect(joining(",\n")));
-    level--;
-    out.println("  ".repeat(level) + "]");
-    out.println("}");
   }
 
-  private static String getGuardedString(Object o) {
-    return o.toString().replace("\"", "\\\"").replace("\n", "").replace("JS_Obj ", "");
-  }
-
-  protected String printLink(GenerateAllTracesInspection.Link link) {
-    return "  ".repeat(level) + "{\"source\":\"" + nodeName(link.src) + "\", \"target\":\"" + nodeName(link.dst) + "\", \"eventData\":\"" + getGuardedString(link.event) + "\"}";
-  }
-
-  protected String printBpss(Map.Entry<BProgramSyncSnapshot, Integer> bpssEntry) {
-    var bpss = bpssEntry.getKey();
+  @Override
+  protected String nodeToString(int id, BProgramSyncSnapshot bpss) {
     StringBuilder out = new StringBuilder();
     out.append("  ".repeat(level) + "{\n");
-    out.append("  ".repeat(level + 1) + "\"id\":\"" + nodeName(bpss) + "\"");
+    out.append("  ".repeat(level + 1) + "\"id\":\"" + id + "\"");
     if (printStore) {
       out.append(",\n");
       out.append("  ".repeat(level + 1) + "\"store\": [\n");
@@ -87,4 +71,38 @@ public class TraceResultJsonWriter extends TraceResultWriter {
     out.append("\n" + "  ".repeat(level) + "}");
     return out.toString();
   }
+
+  @Override
+  protected void writeNodesPost() {
+    level--;
+    out.println("  ".repeat(level) + "],");
+  }
+
+  @Override
+  protected void writeEdgesPre() {
+    out.println("  ".repeat(level) + "\"links\": [");
+    level++;
+  }
+
+  @Override
+  protected void writeEdgesPost() {
+    level--;
+    out.println("  ".repeat(level) + "]");
+  }
+
+  @Override
+  protected void writePost() {
+    out.println("}");
+  }
+
+  private static String getGuardedString(Object o) {
+    return o.toString().replace("\"", "\\\"").replace("\n", "").replace("JS_Obj ", "");
+  }
+
+  @Override
+  protected String edgeToString(GenerateAllTracesInspection.Edge edge) {
+    return "  ".repeat(level) + "{\"source\":\"" + edge.srcId + "\", \"target\":\"" + edge.dstId + "\", \"eventData\":\"" + getGuardedString(edge.event) + "\"}";
+  }
+
+
 }

@@ -78,7 +78,7 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
 
     var links = graph.entrySet().stream()
         .flatMap(e -> e.getValue().keySet().stream().map(c -> new BProgramSyncSnapshot[]{e.getKey(), c}))
-        .flatMap(idArr -> graph.get(idArr[0]).get(idArr[1]).stream().map(e -> new Link(idArr[0], idArr[1], e)))
+        .flatMap(idArr -> graph.get(idArr[0]).get(idArr[1]).stream().map(e -> new Edge(indexedStates.get(idArr[0]), idArr[0], indexedStates.get(idArr[1]), idArr[1], e)))
         .sorted(new LinkComparator(indexedStates))
         .collect(Collectors.toUnmodifiableList());
 
@@ -87,13 +87,17 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
     return new MapperResult(indexedStates, links, traces, startNode);
   }
 
-  public static class Link {
+  public static class Edge {
+    public final int srcId;
     public final BProgramSyncSnapshot src;
+    public final int dstId;
     public final BProgramSyncSnapshot dst;
     public final BEvent event;
 
-    public Link(BProgramSyncSnapshot src, BProgramSyncSnapshot dst, BEvent event) {
+    public Edge(int srcId, BProgramSyncSnapshot src, int dstId, BProgramSyncSnapshot dst, BEvent event) {
+      this.srcId = srcId;
       this.src = src;
+      this.dstId = dstId;
       this.dst = dst;
       this.event = event;
     }
@@ -102,8 +106,8 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
     public boolean equals(Object o) {
       if (this == o) return true;
       if (o == null || getClass() != o.getClass()) return false;
-      Link link = (Link) o;
-      return Objects.equals(src, link.src) && Objects.equals(dst, link.dst) && Objects.equals(event, link.event);
+      Edge edge = (Edge) o;
+      return Objects.equals(src, edge.src) && Objects.equals(dst, edge.dst) && Objects.equals(event, edge.event);
     }
 
     @Override
@@ -112,7 +116,7 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
     }
   }
 
-  private static class LinkComparator implements Comparator<Link> {
+  private static class LinkComparator implements Comparator<Edge> {
     private final Map<BProgramSyncSnapshot, Integer> states;
 
     public LinkComparator(Map<BProgramSyncSnapshot, Integer> states) {
@@ -120,7 +124,7 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
     }
 
     @Override
-    public int compare(Link o1, Link o2) {
+    public int compare(Edge o1, Edge o2) {
       if (states.get(o1.src) < states.get(o2.src)) return -1;
       if (states.get(o1.src) > states.get(o2.src)) return 1;
       if (states.get(o1.dst) < states.get(o2.dst)) return -1;
@@ -130,13 +134,13 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
   }
 
   public static class MapperResult {
-    public final List<Link> links;
+    public final List<Edge> edges;
     public final Map<BProgramSyncSnapshot, Integer> states;
     public final Collection<List<BEvent>> traces;
     public final BProgramSyncSnapshot startNode;
 
-    public MapperResult(Map<BProgramSyncSnapshot, Integer> states, List<Link> links, Collection<List<BEvent>> traces, BProgramSyncSnapshot startNode) {
-      this.links = links;
+    public MapperResult(Map<BProgramSyncSnapshot, Integer> states, List<Edge> edges, Collection<List<BEvent>> traces, BProgramSyncSnapshot startNode) {
+      this.edges = edges;
       this.states = states;
       this.traces = traces;
       this.startNode = startNode;
@@ -148,7 +152,7 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
           "StateMapper stats\n" +
               "=================\n" +
               "# States: " + states.size() + "\n" +
-              "# Transition: " + links.size() + "\n" +
+              "# Transition: " + edges.size() + "\n" +
               "# Traces: " + traces.size() + "\n" +
               "=================";
     }

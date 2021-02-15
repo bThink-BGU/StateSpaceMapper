@@ -6,7 +6,6 @@ import il.ac.bgu.cs.bp.bpjs.model.SyncStatement;
 
 import java.io.PrintStream;
 import java.text.MessageFormat;
-import java.util.Map;
 
 import static java.util.stream.Collectors.joining;
 
@@ -18,28 +17,14 @@ public class TraceResultGVWriter extends TraceResultWriter {
   }
 
   @Override
-  protected void innerWrite() {
+  protected void writePre() {
     level = 0;
     out.println("digraph " + sanitize(name) + " {");
     level++;
-    out.println(result.states.entrySet().stream()
-        .map(this::printBpss)
-        .collect(joining("\n")));
-    out.println(result.links.stream().map(this::printLink)
-        .collect(joining("\n")));
-    level--;
-    out.println("}");
   }
 
-  protected String printLink(GenerateAllTracesInspection.Link link) {
-    return MessageFormat.format("{0}{1} -> {2} [label=\"{3}\"]", "  ".repeat(level), nodeName(link.src), nodeName(link.dst), sanitize(linkName(link.event)));
-  }
-
-  protected String printBpss(Map.Entry<BProgramSyncSnapshot, Integer> bpssEntry) {
-    var bpss = bpssEntry.getKey();
-
-    String id = bpssEntry.getValue().toString();
-
+  @Override
+  protected String nodeToString(int id, BProgramSyncSnapshot bpss) {
     String color = bpss.equals(result.startNode) ? "fontcolor=blue " : "";
 
     String store = !printStore ? "" : bpss.getDataStore().entrySet().stream()
@@ -52,7 +37,7 @@ public class TraceResultGVWriter extends TraceResultWriter {
           return
               "{name: " + sanitize(btss.getName()) + ",\n" +
                   "isHot: " + syst.isHot() + ",\n" +
-                  "request: " + syst.getRequest().stream().map(e -> sanitize(linkName(e))).collect(joining(",", "[", "]")) + ",\n" +
+                  "request: " + syst.getRequest().stream().map(e -> sanitize(eventToString(e))).collect(joining(",", "[", "]")) + ",\n" +
                   "waitFor: " + sanitize(syst.getWaitFor()) + ",\n" +
                   "block: " + sanitize(syst.getBlock()) + ",\n" +
                   "interrupt: " + sanitize(syst.getInterrupt()) + "}";
@@ -60,6 +45,17 @@ public class TraceResultGVWriter extends TraceResultWriter {
         .collect(joining(",\n", "\nStatements: [", "]"));
 
     return MessageFormat.format("{0}{1} [{2}label=\"{1}{3}{4}\"]", "  ".repeat(level), id, color, store, statements);
+  }
+
+  @Override
+  protected String edgeToString(GenerateAllTracesInspection.Edge edge) {
+    return MessageFormat.format("{0}{1} -> {2} [label=\"{3}\"]", "  ".repeat(level), edge.srcId, edge.dstId, sanitize(eventToString(edge.event)));
+  }
+
+  @Override
+  protected void writePost() {
+    level--;
+    out.println("}");
   }
 
   private static String sanitize(Object in) {

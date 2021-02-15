@@ -12,7 +12,7 @@ public class SpaceMapperRunner {
         }
 
         Files.createDirectories(Paths.get("graphs"));
-        StateSpaceMapper mpr = new StateSpaceMapper(args[0], true);
+        StateSpaceMapper mpr = new StateSpaceMapper(args[0], false);
         mpr.mapSpace();
         System.out.println("// done");
     }
