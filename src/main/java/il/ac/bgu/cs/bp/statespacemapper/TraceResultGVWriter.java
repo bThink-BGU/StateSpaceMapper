@@ -82,6 +82,6 @@ public class TraceResultGVWriter extends TraceResultWriter {
         .replace("\"", "\\\"")
         .replace("\n", "\\n")
         .replace("JS_Obj ", "")
-        .replaceAll("[. -+]", "_");
+        .replaceAll("[\\. \\-+]", "_");
   }
 }

@@ -47,7 +47,7 @@ public abstract class TraceResultWriter {
     writeNodesPost();
     writeEdgesPre();
     out.println(result.edges.stream().map(this::edgeToString)
-        .collect(joining("\n")));
+        .collect(joining(edgesDelimiter)));
     writeEdgesPost();
     writePost();
 
