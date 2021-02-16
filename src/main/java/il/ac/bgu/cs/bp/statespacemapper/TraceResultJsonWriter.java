@@ -14,7 +14,9 @@ public class TraceResultJsonWriter extends TraceResultWriter {
   private int level;
 
   public TraceResultJsonWriter(PrintStream out, GenerateAllTracesInspection.MapperResult result, String name) {
-    super(out, result, name);
+    super(out, result, name, ",\n", ",\n");
+    this.printStatements = true;
+    this.printStore = true;
   }
 
   @Override
