@@ -25,13 +25,34 @@ public class TraceResultGVWriter extends TraceResultWriter {
 
   @Override
   protected String nodeToString(int id, BProgramSyncSnapshot bpss) {
-    String color = bpss.equals(result.startNode) ? "fontcolor=blue " : "";
+    boolean startNode = bpss.equals(result.startNode);
+    String color = startNode ? "fontcolor=blue " : "";
 
-    String store = !printStore ? "" : bpss.getDataStore().entrySet().stream()
+    String store = !printStore ? "" : getStore(bpss);
+
+    String statements = !printStatements ? "" : getStatments(bpss);
+
+    String shape = "shape="+ (!startNode ? "circle " : "doublecircle ");
+
+    String label = printNodeLabel() ? MessageFormat.format("label=\"{0}{1}{2}\" ",id,store,statements) : "label=\"\" ";
+
+    String fillcolor = printNodeLabel() ? "" : "fillcolor=black style=filled ";
+
+    return MessageFormat.format("{0}{1} [{2}{3}{4}{5}]", "  ".repeat(level), id, color, shape, label, fillcolor);
+  }
+
+  protected boolean printNodeLabel() {
+    return printStatements || printStore;
+  }
+
+  protected String getStore(BProgramSyncSnapshot bpss) {
+    return bpss.getDataStore().entrySet().stream()
         .map(entry -> "{" + sanitize(ScriptableUtils.stringify(entry.getKey())) + "," + sanitize(ScriptableUtils.stringify(entry.getValue())) + "}")
         .collect(joining(",", "\nStore: [", "]"));
+  }
 
-    String statements = !printStatements ? "" : bpss.getBThreadSnapshots().stream()
+  protected String getStatments(BProgramSyncSnapshot bpss) {
+    return bpss.getBThreadSnapshots().stream()
         .map(btss -> {
           SyncStatement syst = btss.getSyncStatement();
           return
@@ -43,8 +64,6 @@ public class TraceResultGVWriter extends TraceResultWriter {
                   "interrupt: " + sanitize(syst.getInterrupt()) + "}";
         })
         .collect(joining(",\n", "\nStatements: [", "]"));
-
-    return MessageFormat.format("{0}{1} [{2}label=\"{1}{3}{4}\"]", "  ".repeat(level), id, color, store, statements);
   }
 
   @Override

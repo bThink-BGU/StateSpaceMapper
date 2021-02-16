@@ -10,7 +10,7 @@ import java.nio.file.Paths;
 
 public class SpaceMapperRunner {
 
-  private static final boolean useNeo4j = true;
+  private static final boolean useNeo4j = false;
 
   public static void main(String[] args) throws Exception {
     System.out.println("// start");
