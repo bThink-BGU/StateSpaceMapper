@@ -3,6 +3,7 @@ package il.ac.bgu.cs.bp.statespacemapper;
 import il.ac.bgu.cs.bp.bpjs.analysis.ExecutionTrace;
 import il.ac.bgu.cs.bp.bpjs.analysis.ExecutionTraceInspection;
 import il.ac.bgu.cs.bp.bpjs.analysis.violations.Violation;
+import il.ac.bgu.cs.bp.bpjs.internal.Pair;
 import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
 
@@ -47,11 +48,12 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
     events.add(edge);
   }
 
-  private Collection<List<BEvent>> dfsFrom(BProgramSyncSnapshot id, ArrayDeque<BProgramSyncSnapshot> nodeStack, ArrayDeque<BEvent> eventStack) {
+  private Collection<List<BEvent>> dfsFrom(BProgramSyncSnapshot id, ArrayDeque<BProgramSyncSnapshot> nodeStack, ArrayDeque<BEvent> eventStack, Set<BProgramSyncSnapshot> endStates) {
     var outbounds = graph.get(id);
     nodeStack.push(id);
     if (outbounds == null || outbounds.isEmpty()) {
       nodeStack.pop();
+      endStates.add(id);
       return new ArrayList<>() {{
         add(new ArrayList<>(eventStack));
       }};
@@ -60,7 +62,7 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
           .filter(o -> !nodeStack.contains(o.getKey()))
           .map(o -> {
             o.getValue().forEach(eventStack::push);
-            Collection<List<BEvent>> innerDfs = dfsFrom(o.getKey(), nodeStack, eventStack);
+            Collection<List<BEvent>> innerDfs = dfsFrom(o.getKey(), nodeStack, eventStack, endStates);
             eventStack.pop();
             return innerDfs;
           })
@@ -82,9 +84,13 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
         .sorted(new LinkComparator(indexedStates))
         .collect(Collectors.toUnmodifiableList());
 
-    var traces = dfsFrom(startNode, new ArrayDeque<>(), new ArrayDeque<>());
+    var tmpEndStates = new HashSet<BProgramSyncSnapshot>();
 
-    return new MapperResult(indexedStates, links, traces, startNode);
+    var traces = dfsFrom(startNode, new ArrayDeque<>(), new ArrayDeque<>(), tmpEndStates);
+
+    var endStates = tmpEndStates.stream().map(bpss-> new Pair(indexedStates.get(bpss), bpss)).collect(Collectors.toList());
+
+    return new MapperResult(indexedStates, links, traces, startNode, endStates);
   }
 
   public static class Edge {
@@ -138,12 +144,16 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
     public final Map<BProgramSyncSnapshot, Integer> states;
     public final Collection<List<BEvent>> traces;
     public final BProgramSyncSnapshot startNode;
+    public final int startNodeId;
+    public final List<Pair> endStates;
 
-    public MapperResult(Map<BProgramSyncSnapshot, Integer> states, List<Edge> edges, Collection<List<BEvent>> traces, BProgramSyncSnapshot startNode) {
+    public MapperResult(Map<BProgramSyncSnapshot, Integer> states, List<Edge> edges, Collection<List<BEvent>> traces, BProgramSyncSnapshot startNode, List<Pair> endStates) {
       this.edges = edges;
       this.states = states;
       this.traces = traces;
       this.startNode = startNode;
+      this.startNodeId = states.get(startNode);
+      this.endStates = endStates;
     }
 
     @Override

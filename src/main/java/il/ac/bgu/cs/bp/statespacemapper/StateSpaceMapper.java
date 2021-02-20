@@ -38,9 +38,11 @@ public class StateSpaceMapper {
     System.out.println(mapperRes.toString());
 
     try (PrintStream jsonOut = new PrintStream("graphs/" + name + ".json");
-         PrintStream graphVisOut = new PrintStream("graphs/" + name + ".dot")) {
+         PrintStream graphVisOut = new PrintStream("graphs/" + name + ".dot");
+         PrintStream goalOut = new PrintStream("graphs/" + name + ".gff")) {
       new TraceResultJsonWriter(jsonOut, mapperRes, name).write();
       new TraceResultGVWriter(graphVisOut, mapperRes, name).write();
+      new TraceResultGoalWriter(goalOut, mapperRes, name).write();
     }
     if (neo4jDriver != null) {
       new TraceResultNeo4JWriter(mapperRes, name, neo4jDriver).write();
