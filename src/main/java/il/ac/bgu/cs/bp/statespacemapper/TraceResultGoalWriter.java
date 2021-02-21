@@ -13,7 +13,7 @@ import static java.util.stream.Collectors.joining;
 
 public class TraceResultGoalWriter extends TraceResultWriter {
   private int level;
-  private AtomicInteger edgeCounter = new AtomicInteger();
+  private final AtomicInteger edgeCounter = new AtomicInteger();
 
   public TraceResultGoalWriter(PrintStream out, GenerateAllTracesInspection.MapperResult result, String name) {
     super(out, result, name);
@@ -70,18 +70,18 @@ public class TraceResultGoalWriter extends TraceResultWriter {
     String store = !printStore ? "" : getStore(bpss);
     String statements = !printStatements ? "" : getStatments(bpss);
     out.append(MessageFormat.format("{0}<State sid=\"{1}\">\n", "    ".repeat(level), id));
-//    out.append("    ".repeat(level+1) + "<Properties>\n");
-//    out.append(MessageFormat.format("{0}<Description>Hash={1}{2}{3}</Description>\n", "    ".repeat(level+2), hash, store, statements));
-//    out.append("    ".repeat(level+1) + "</Properties>\n");
-    out.append("    ".repeat(level+1) + "<Properties/>\n");
-    out.append("    ".repeat(level) + "</State>");
+    out.append("    ".repeat(level + 1)).append("<Properties>\n");
+    out.append(MessageFormat.format("{0}<Description>Hash={1}{2}{3}</Description>\n", "    ".repeat(level+2), hash, store, statements));
+    out.append("    ".repeat(level + 1)).append("</Properties>\n");
+//    out.append("    ".repeat(level + 1)).append("<Properties/>\n");
+    out.append("    ".repeat(level)).append("</State>");
     return out.toString();
   }
 
   protected String getStore(BProgramSyncSnapshot bpss) {
     return bpss.getDataStore().entrySet().stream()
         .map(entry -> "{" + sanitize(ScriptableUtils.stringify(entry.getKey())) + "," + sanitize(ScriptableUtils.stringify(entry.getValue())) + "}")
-        .collect(joining(",", "\nStore: [", "]"));
+        .collect(joining(",", "; Store: [", "]"));
   }
 
   protected String getStatments(BProgramSyncSnapshot bpss) {
@@ -89,14 +89,14 @@ public class TraceResultGoalWriter extends TraceResultWriter {
         .map(btss -> {
           SyncStatement syst = btss.getSyncStatement();
           return
-              "{name: " + sanitize(btss.getName()) + ",\n" +
-                  "isHot: " + syst.isHot() + ",\n" +
-                  "request: " + syst.getRequest().stream().map(e -> sanitize(eventToString(e))).collect(joining(",", "[", "]")) + ",\n" +
-                  "waitFor: " + sanitize(syst.getWaitFor()) + ",\n" +
-                  "block: " + sanitize(syst.getBlock()) + ",\n" +
+              "{name: " + sanitize(btss.getName()) + ", " +
+                  "isHot: " + syst.isHot() + ", " +
+                  "request: " + syst.getRequest().stream().map(e -> sanitize(eventToString(e))).collect(joining(",", "[", "]")) + ", " +
+                  "waitFor: " + sanitize(syst.getWaitFor()) + ", " +
+                  "block: " + sanitize(syst.getBlock()) + ", " +
                   "interrupt: " + sanitize(syst.getInterrupt()) + "}";
         })
-        .collect(joining(",\n", "\nStatements: [", "]"));
+        .collect(joining(", ", "; Statements: [", "]"));
   }
 
   @Override
@@ -106,8 +106,8 @@ public class TraceResultGoalWriter extends TraceResultWriter {
     out.append(MessageFormat.format("{0}<From>{1}</From>\n", "    ".repeat(level+1), edge.srcId));
     out.append(MessageFormat.format("{0}<To>{1}</To>\n", "    ".repeat(level+1), edge.dstId));
     out.append(MessageFormat.format("{0}<Label>{1}</Label>\n", "    ".repeat(level+1), sanitize(eventToString(edge.event))));
-    out.append("    ".repeat(level+1) + "<Properties/>\n");
-    out.append("    ".repeat(level) + "</Transition>");
+    out.append("    ".repeat(level + 1)).append("<Properties/>\n");
+    out.append("    ".repeat(level)).append("</Transition>");
     return out.toString();
   }
 

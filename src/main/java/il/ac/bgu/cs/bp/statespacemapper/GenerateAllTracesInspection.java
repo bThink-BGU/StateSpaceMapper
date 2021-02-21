@@ -88,7 +88,7 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
 
     var traces = dfsFrom(startNode, new ArrayDeque<>(), new ArrayDeque<>(), tmpEndStates);
 
-    var endStates = tmpEndStates.stream().map(bpss-> new Pair(indexedStates.get(bpss), bpss)).collect(Collectors.toList());
+    var endStates = tmpEndStates.stream().map(bpss-> new Pair<>(indexedStates.get(bpss), bpss)).collect(Collectors.toList());
 
     return new MapperResult(indexedStates, links, traces, startNode, endStates);
   }
@@ -145,9 +145,9 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
     public final Collection<List<BEvent>> traces;
     public final BProgramSyncSnapshot startNode;
     public final int startNodeId;
-    public final List<Pair> endStates;
+    public final List<Pair<Integer, BProgramSyncSnapshot>> endStates;
 
-    public MapperResult(Map<BProgramSyncSnapshot, Integer> states, List<Edge> edges, Collection<List<BEvent>> traces, BProgramSyncSnapshot startNode, List<Pair> endStates) {
+    public MapperResult(Map<BProgramSyncSnapshot, Integer> states, List<Edge> edges, Collection<List<BEvent>> traces, BProgramSyncSnapshot startNode, List<Pair<Integer, BProgramSyncSnapshot>> endStates) {
       this.edges = edges;
       this.states = states;
       this.traces = traces;
