@@ -8,7 +8,6 @@ const events = arr.map(n=>bp.Event(n))
 const code = [0,1,2,3,4].map(n=>n.toString())
 
 bp.registerBThread('try', function() {
-  // for(let i=0; i < code.length; i++)
   while(true)
     bp.sync({request:events},10)
 })

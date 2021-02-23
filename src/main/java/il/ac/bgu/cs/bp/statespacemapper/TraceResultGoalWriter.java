@@ -70,10 +70,8 @@ public class TraceResultGoalWriter extends TraceResultWriter {
     String store = !printStore ? "" : getStore(bpss);
     String statements = !printStatements ? "" : getStatments(bpss);
     out.append(MessageFormat.format("{0}<State sid=\"{1}\">\n", "    ".repeat(level), id));
-    out.append("    ".repeat(level + 1)).append("<Properties>\n");
-    out.append(MessageFormat.format("{0}<Description>Hash={1}{2}{3}</Description>\n", "    ".repeat(level+2), hash, store, statements));
-    out.append("    ".repeat(level + 1)).append("</Properties>\n");
-//    out.append("    ".repeat(level + 1)).append("<Properties/>\n");
+    out.append(MessageFormat.format("{0}<Description>Hash={1}{2}{3}</Description>\n", "    ".repeat(level+1), hash, store, statements));
+    out.append("    ".repeat(level + 1)).append("<Properties/>\n");
     out.append("    ".repeat(level)).append("</State>");
     return out.toString();
   }
