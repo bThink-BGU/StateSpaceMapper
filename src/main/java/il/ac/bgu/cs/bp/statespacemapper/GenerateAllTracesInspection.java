@@ -2,6 +2,7 @@ package il.ac.bgu.cs.bp.statespacemapper;
 
 import il.ac.bgu.cs.bp.bpjs.analysis.ExecutionTrace;
 import il.ac.bgu.cs.bp.bpjs.analysis.ExecutionTraceInspection;
+import il.ac.bgu.cs.bp.bpjs.analysis.ExecutionTraceInspections;
 import il.ac.bgu.cs.bp.bpjs.analysis.violations.Violation;
 import il.ac.bgu.cs.bp.bpjs.internal.Pair;
 import il.ac.bgu.cs.bp.bpjs.model.BEvent;
@@ -18,6 +19,7 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
    * Maps <sourceNode, <targetNode, eventFromSourceToTarget>>
    */
   private final Map<BProgramSyncSnapshot, Map<BProgramSyncSnapshot, Set<BEvent>>> graph = new HashMap<>();
+  private final Set<BProgramSyncSnapshot> failedAssertionsSnapshots = new HashSet<>();
   private BProgramSyncSnapshot startNode;
 
   @Override
@@ -27,8 +29,12 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
 
   @Override
   public Optional<Violation> inspectTrace(ExecutionTrace aTrace) {
+    Optional<Violation> inspection = ExecutionTraceInspections.FAILED_ASSERTIONS.inspectTrace(aTrace);
     int stateCount = aTrace.getStateCount();
     var lastNode = aTrace.getNodes().get(stateCount - 1);
+    if(inspection.isPresent()) {
+      failedAssertionsSnapshots.add(lastNode.getState());
+    }
     if (aTrace.isCyclic()) {
       addEdge(aTrace.getLastState(), aTrace.getFinalCycle().get(0).getState(), aTrace.getLastEvent().get());
     } else {
@@ -39,7 +45,7 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
         addEdge(src.getState(), lastNode.getState(), src.getEvent().get());
       }
     }
-    return Optional.empty();
+    return inspection;
   }
 
   protected void addEdge(BProgramSyncSnapshot src, BProgramSyncSnapshot dst, BEvent edge) {
@@ -74,7 +80,7 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
   }
 
   public MapperResult getResult() {
-    var states = Stream.concat(graph.keySet().stream(), graph.values().stream().flatMap(map -> map.keySet().stream())).distinct().collect(Collectors.toList());
+    var states = Stream.concat(graph.keySet().stream(), graph.values().stream().flatMap(map -> map.keySet().stream())).distinct().collect(Collectors.toUnmodifiableList());
 
     var indexedStates = IntStream.range(0, states.size()).boxed().collect(Collectors.toUnmodifiableMap(states::get, Function.identity()));
 
@@ -86,11 +92,16 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
 
     var tmpEndStates = new HashSet<BProgramSyncSnapshot>();
 
-    var traces = dfsFrom(startNode, new ArrayDeque<>(), new ArrayDeque<>(), tmpEndStates);
+    var traces = dfsFrom(startNode, new ArrayDeque<>(), new ArrayDeque<>(), tmpEndStates)
+        .stream()
+        .map(l -> l.stream().collect(Collectors.toUnmodifiableList()))
+        .collect(Collectors.toUnmodifiableList());
 
-    var endStates = tmpEndStates.stream().map(bpss-> new Pair<>(indexedStates.get(bpss), bpss)).collect(Collectors.toList());
+    var endStates = tmpEndStates.stream().collect(Collectors.toUnmodifiableMap(indexedStates::get, Function.identity()));
 
-    return new MapperResult(indexedStates, links, traces, startNode, endStates);
+    var failedAssertions = failedAssertionsSnapshots.stream().collect(Collectors.toUnmodifiableMap(indexedStates::get, Function.identity()));
+
+    return new MapperResult(indexedStates, links, traces, startNode, endStates, failedAssertions);
   }
 
   public static class Edge {
@@ -145,15 +156,17 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
     public final Collection<List<BEvent>> traces;
     public final BProgramSyncSnapshot startNode;
     public final int startNodeId;
-    public final List<Pair<Integer, BProgramSyncSnapshot>> endStates;
+    public final Map<Integer, BProgramSyncSnapshot> endStates;
+    public final Map<Integer, BProgramSyncSnapshot> failedAssertions;
 
-    public MapperResult(Map<BProgramSyncSnapshot, Integer> states, List<Edge> edges, Collection<List<BEvent>> traces, BProgramSyncSnapshot startNode, List<Pair<Integer, BProgramSyncSnapshot>> endStates) {
+    public MapperResult(Map<BProgramSyncSnapshot, Integer> states, List<Edge> edges, Collection<List<BEvent>> traces, BProgramSyncSnapshot startNode, Map<Integer, BProgramSyncSnapshot> endStates, Map<Integer, BProgramSyncSnapshot> failedAssertions) {
       this.edges = edges;
       this.states = states;
       this.traces = traces;
       this.startNode = startNode;
       this.startNodeId = states.get(startNode);
       this.endStates = endStates;
+      this.failedAssertions = failedAssertions;
     }
 
     @Override

@@ -15,7 +15,7 @@ bp.registerBThread('try', function() {
 bp.registerBThread('correct code', function() {
   for(let i=0; i < code.length; i++) {
     if (code[i] != bp.sync({waitFor: bp.all}).name) {
-      return
+      bp.ASSERT(false, "wrong code")
     }
   }
   bp.sync({request: CORRECT, block: CORRECT.negate()})

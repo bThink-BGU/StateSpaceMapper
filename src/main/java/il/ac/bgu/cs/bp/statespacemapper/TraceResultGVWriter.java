@@ -1,6 +1,7 @@
 package il.ac.bgu.cs.bp.statespacemapper;
 
 import il.ac.bgu.cs.bp.bpjs.internal.ScriptableUtils;
+import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
 import il.ac.bgu.cs.bp.bpjs.model.SyncStatement;
 
@@ -24,21 +25,32 @@ public class TraceResultGVWriter extends TraceResultWriter {
   }
 
   @Override
+  protected void writeNodesPost() {
+    out.println(nodeToString(-1, null));
+  }
+
+  @Override
+  protected void writeEdgesPost() {
+    out.println(edgeToString(new GenerateAllTracesInspection.Edge(-1, null, result.startNodeId, null, new BEvent(""))));
+  }
+
+  @Override
   protected String nodeToString(int id, BProgramSyncSnapshot bpss) {
-    boolean startNode = bpss.equals(result.startNode);
-    String color = startNode ? "fontcolor=blue " : "";
+    boolean startNode = id == -1;
+    boolean acceptingNode = result.endStates.containsKey(id);
+    boolean failedAssertionNode = result.failedAssertions.containsKey(id);
 
-    String store = !printStore ? "" : getStore(bpss);
+    String store = startNode || !printStore ? "" : getStore(bpss);
 
-    String statements = !printStatements ? "" : getStatments(bpss);
+    String statements = startNode || !printStatements ? "" : getStatments(bpss);
 
-    String shape = "shape="+ (!startNode ? "circle " : "doublecircle ");
+    String shape = "shape="+ (startNode ? "none " : acceptingNode? "doublecircle " : "circle ");
 
-    String label = printNodeLabel() ? MessageFormat.format("label=\"{0}{1}{2}\" ",id,store,statements) : "label=\"\" ";
+    String label = startNode ? "label=\"start\" " : failedAssertionNode ? "label=\"err\" " : printNodeLabel() ? MessageFormat.format("label=\"{0}{1}{2}\" ",id,store,statements) : "label=\"\" ";
 
-    String fillcolor = printNodeLabel() ? "" : "fillcolor=black style=filled ";
+    String fillcolor = "";//printNodeLabel() ? "" : "fillcolor=black style=filled ";
 
-    return MessageFormat.format("{0}{1} [{2}{3}{4}{5}]", "  ".repeat(level), id, color, shape, label, fillcolor);
+    return MessageFormat.format("{0}{1} [{2}{3}{4}]", "  ".repeat(level), id, shape, label, fillcolor);
   }
 
   protected boolean printNodeLabel() {

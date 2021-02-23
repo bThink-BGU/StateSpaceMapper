@@ -65,12 +65,15 @@ public class TraceResultGoalWriter extends TraceResultWriter {
 
   @Override
   protected String nodeToString(int id, BProgramSyncSnapshot bpss) {
+    boolean failedAssertionNode = result.failedAssertions.containsKey(id);
     StringBuilder out = new StringBuilder();
     int hash = bpss.hashCode();
     String store = !printStore ? "" : getStore(bpss);
     String statements = !printStatements ? "" : getStatments(bpss);
     out.append(MessageFormat.format("{0}<State sid=\"{1}\">\n", "    ".repeat(level), id));
-    out.append(MessageFormat.format("{0}<Description>Hash={1}{2}{3}</Description>\n", "    ".repeat(level+1), hash, store, statements));
+    out.append(MessageFormat.format("{0}<Description>Hash={1}{2}{3}</Description>\n", "    ".repeat(level + 1), hash, store, statements));
+    if (failedAssertionNode)
+      out.append("    ".repeat(level + 1)).append("<Name>err</Name>\n");
     out.append("    ".repeat(level + 1)).append("<Properties/>\n");
     out.append("    ".repeat(level)).append("</State>");
     return out.toString();
@@ -101,9 +104,9 @@ public class TraceResultGoalWriter extends TraceResultWriter {
   protected String edgeToString(GenerateAllTracesInspection.Edge edge) {
     StringBuilder out = new StringBuilder();
     out.append(MessageFormat.format("{0}<Transition tid=\"{1}\">\n", "    ".repeat(level), edgeCounter.getAndIncrement()));
-    out.append(MessageFormat.format("{0}<From>{1}</From>\n", "    ".repeat(level+1), edge.srcId));
-    out.append(MessageFormat.format("{0}<To>{1}</To>\n", "    ".repeat(level+1), edge.dstId));
-    out.append(MessageFormat.format("{0}<Label>{1}</Label>\n", "    ".repeat(level+1), sanitize(eventToString(edge.event))));
+    out.append(MessageFormat.format("{0}<From>{1}</From>\n", "    ".repeat(level + 1), edge.srcId));
+    out.append(MessageFormat.format("{0}<To>{1}</To>\n", "    ".repeat(level + 1), edge.dstId));
+    out.append(MessageFormat.format("{0}<Label>{1}</Label>\n", "    ".repeat(level + 1), sanitize(eventToString(edge.event))));
     out.append("    ".repeat(level + 1)).append("<Properties/>\n");
     out.append("    ".repeat(level)).append("</Transition>");
     return out.toString();
@@ -112,8 +115,8 @@ public class TraceResultGoalWriter extends TraceResultWriter {
   @Override
   protected void writePost() {
     out.println("    ".repeat(level) + "<Acc type=\"Classic\">");
-    result.endStates.forEach(s->out.println(
-        MessageFormat.format("{0}<StateID>{1}</StateID>", "    ".repeat(level+1), s.getLeft())));
+    result.endStates.forEach((key, bpss) -> out.println(
+        MessageFormat.format("{0}<StateID>{1}</StateID>", "    ".repeat(level + 1), key)));
     out.println("    ".repeat(level) + "</Acc>");
     level--;
     out.println("</Structure>");

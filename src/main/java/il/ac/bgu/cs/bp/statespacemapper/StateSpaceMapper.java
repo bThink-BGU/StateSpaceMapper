@@ -1,6 +1,8 @@
 package il.ac.bgu.cs.bp.statespacemapper;
 
 import il.ac.bgu.cs.bp.bpjs.analysis.DfsBProgramVerifier;
+import il.ac.bgu.cs.bp.bpjs.analysis.DfsForStateMapper;
+import il.ac.bgu.cs.bp.bpjs.analysis.ExecutionTraceInspections;
 import il.ac.bgu.cs.bp.bpjs.analysis.listeners.PrintDfsVerifierListener;
 import il.ac.bgu.cs.bp.bpjs.model.BProgram;
 import org.neo4j.driver.Driver;
@@ -25,7 +27,7 @@ public class StateSpaceMapper {
   }
 
   public void mapSpace(BProgram bprog) throws Exception {
-    var vfr = new DfsBProgramVerifier();
+    var vfr = new DfsForStateMapper();
     var tracesInspection = new GenerateAllTracesInspection();
     vfr.addInspection(tracesInspection);
 
