@@ -1,10 +1,12 @@
 package il.ac.bgu.cs.bp.statespacemapper;
 
-import il.ac.bgu.cs.bp.bpjs.analysis.DfsBProgramVerifier;
 import il.ac.bgu.cs.bp.bpjs.analysis.DfsForStateMapper;
-import il.ac.bgu.cs.bp.bpjs.analysis.ExecutionTraceInspections;
 import il.ac.bgu.cs.bp.bpjs.analysis.listeners.PrintDfsVerifierListener;
 import il.ac.bgu.cs.bp.bpjs.model.BProgram;
+import il.ac.bgu.cs.bp.statespacemapper.writers.TraceResultGVWriter;
+import il.ac.bgu.cs.bp.statespacemapper.writers.TraceResultGoalWriter;
+import il.ac.bgu.cs.bp.statespacemapper.writers.TraceResultJsonWriter;
+import il.ac.bgu.cs.bp.statespacemapper.writers.TraceResultNeo4JWriter;
 import org.neo4j.driver.Driver;
 
 import java.io.PrintStream;
@@ -27,6 +29,8 @@ public class StateSpaceMapper {
   }
 
   public void mapSpace(BProgram bprog) throws Exception {
+    bprog.putInGlobalScope("use_accepting_states", true);
+    bprog.putInGlobalScope("AcceptingState", new AcceptingStateProxy());
     var vfr = new DfsForStateMapper();
     var tracesInspection = new GenerateAllTracesInspection();
     vfr.addInspection(tracesInspection);

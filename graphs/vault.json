@@ -1,0 +1,223 @@
+{
+  "name": "vault", 
+  "start": "4", 
+  "runDate": "2021-02-24T17:37:02.219103",
+  "# states": 8, 
+  "# transitions": 26, 
+  "# traces": 6, 
+  "states": [
+
+    {
+      "id":"0",
+      "store": [
+
+      ],
+      "statements": [
+        {
+          "name":"correct code",
+          "isHot":false,
+          "request":[],
+          "waitFor":"{all}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"try",
+          "isHot":false,
+          "request":["[BEvent name:0]","[BEvent name:1]","[BEvent name:2]","[BEvent name:3]","[BEvent name:4]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        }
+      ]
+    },
+    {
+      "id":"1",
+      "store": [
+
+      ],
+      "statements": [
+        {
+          "name":"correct code",
+          "isHot":false,
+          "request":[],
+          "waitFor":"{all}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"try",
+          "isHot":false,
+          "request":["[BEvent name:0]","[BEvent name:1]","[BEvent name:2]","[BEvent name:3]","[BEvent name:4]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        }
+      ]
+    },
+    {
+      "id":"2",
+      "store": [
+
+      ],
+      "statements": [
+        {
+          "name":"correct code",
+          "isHot":false,
+          "request":[],
+          "waitFor":"{all}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"try",
+          "isHot":false,
+          "request":["[BEvent name:0]","[BEvent name:1]","[BEvent name:2]","[BEvent name:3]","[BEvent name:4]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        }
+      ]
+    },
+    {
+      "id":"3",
+      "store": [
+
+      ],
+      "statements": [
+        {
+          "name":"correct code",
+          "isHot":false,
+          "request":[],
+          "waitFor":"{all}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"try",
+          "isHot":false,
+          "request":["[BEvent name:0]","[BEvent name:1]","[BEvent name:2]","[BEvent name:3]","[BEvent name:4]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        }
+      ]
+    },
+    {
+      "id":"4",
+      "store": [
+
+      ],
+      "statements": [
+        {
+          "name":"correct code",
+          "isHot":false,
+          "request":[],
+          "waitFor":"{all}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"try",
+          "isHot":false,
+          "request":["[BEvent name:0]","[BEvent name:1]","[BEvent name:2]","[BEvent name:3]","[BEvent name:4]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        }
+      ]
+    },
+    {
+      "id":"5",
+      "store": [
+
+      ],
+      "statements": [
+        {
+          "name":"correct code",
+          "isHot":false,
+          "request":["[BEvent name:CORRECTCODE]"],
+          "waitFor":"{none}",
+          "block":"not([BEvent name:CORRECTCODE])",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"try",
+          "isHot":false,
+          "request":["[BEvent name:0]","[BEvent name:1]","[BEvent name:2]","[BEvent name:3]","[BEvent name:4]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        }
+      ]
+    },
+    {
+      "id":"6",
+      "store": [
+
+      ],
+      "statements": [
+        {
+          "name":"try",
+          "isHot":false,
+          "request":["[BEvent name:0]","[BEvent name:1]","[BEvent name:2]","[BEvent name:3]","[BEvent name:4]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        }
+      ]
+    },
+    {
+      "id":"7",
+      "store": [
+
+      ],
+      "statements": [
+        {
+          "name":"correct code",
+          "isHot":false,
+          "request":[],
+          "waitFor":"{none}",
+          "block":"{all}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"try",
+          "isHot":false,
+          "request":["[BEvent name:0]","[BEvent name:1]","[BEvent name:2]","[BEvent name:3]","[BEvent name:4]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        }
+      ]
+    }
+  ],
+  "links": [
+    {"source":"0", "target":"5", "eventData":"[BEvent name:4]"},
+    {"source":"0", "target":"6", "eventData":"[BEvent name:0]"},
+    {"source":"0", "target":"6", "eventData":"[BEvent name:1]"},
+    {"source":"0", "target":"6", "eventData":"[BEvent name:2]"},
+    {"source":"0", "target":"6", "eventData":"[BEvent name:3]"},
+    {"source":"1", "target":"0", "eventData":"[BEvent name:3]"},
+    {"source":"1", "target":"6", "eventData":"[BEvent name:0]"},
+    {"source":"1", "target":"6", "eventData":"[BEvent name:1]"},
+    {"source":"1", "target":"6", "eventData":"[BEvent name:2]"},
+    {"source":"1", "target":"6", "eventData":"[BEvent name:4]"},
+    {"source":"2", "target":"1", "eventData":"[BEvent name:2]"},
+    {"source":"2", "target":"6", "eventData":"[BEvent name:0]"},
+    {"source":"2", "target":"6", "eventData":"[BEvent name:1]"},
+    {"source":"2", "target":"6", "eventData":"[BEvent name:3]"},
+    {"source":"2", "target":"6", "eventData":"[BEvent name:4]"},
+    {"source":"3", "target":"2", "eventData":"[BEvent name:1]"},
+    {"source":"3", "target":"6", "eventData":"[BEvent name:0]"},
+    {"source":"3", "target":"6", "eventData":"[BEvent name:2]"},
+    {"source":"3", "target":"6", "eventData":"[BEvent name:3]"},
+    {"source":"3", "target":"6", "eventData":"[BEvent name:4]"},
+    {"source":"4", "target":"3", "eventData":"[BEvent name:0]"},
+    {"source":"4", "target":"6", "eventData":"[BEvent name:1]"},
+    {"source":"4", "target":"6", "eventData":"[BEvent name:2]"},
+    {"source":"4", "target":"6", "eventData":"[BEvent name:3]"},
+    {"source":"4", "target":"6", "eventData":"[BEvent name:4]"},
+    {"source":"5", "target":"7", "eventData":"[BEvent name:CORRECTCODE]"}
+  ]
+}

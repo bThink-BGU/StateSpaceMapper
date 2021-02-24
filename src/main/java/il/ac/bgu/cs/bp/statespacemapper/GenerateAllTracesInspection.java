@@ -4,7 +4,6 @@ import il.ac.bgu.cs.bp.bpjs.analysis.ExecutionTrace;
 import il.ac.bgu.cs.bp.bpjs.analysis.ExecutionTraceInspection;
 import il.ac.bgu.cs.bp.bpjs.analysis.ExecutionTraceInspections;
 import il.ac.bgu.cs.bp.bpjs.analysis.violations.Violation;
-import il.ac.bgu.cs.bp.bpjs.internal.Pair;
 import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
 
@@ -19,7 +18,7 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
    * Maps <sourceNode, <targetNode, eventFromSourceToTarget>>
    */
   private final Map<BProgramSyncSnapshot, Map<BProgramSyncSnapshot, Set<BEvent>>> graph = new HashMap<>();
-  private final Set<BProgramSyncSnapshot> failedAssertionsSnapshots = new HashSet<>();
+  private final Set<BProgramSyncSnapshot> acceptingStates = new HashSet<>();
   private BProgramSyncSnapshot startNode;
 
   @Override
@@ -33,7 +32,7 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
     int stateCount = aTrace.getStateCount();
     var lastNode = aTrace.getNodes().get(stateCount - 1);
     if(inspection.isPresent()) {
-      failedAssertionsSnapshots.add(lastNode.getState());
+      acceptingStates.add(lastNode.getState());
     }
     if (aTrace.isCyclic()) {
       addEdge(aTrace.getLastState(), aTrace.getFinalCycle().get(0).getState(), aTrace.getLastEvent().get());
@@ -43,6 +42,11 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
       } else {
         var src = aTrace.getNodes().get(stateCount - 2);
         addEdge(src.getState(), lastNode.getState(), src.getEvent().get());
+      }
+    }
+    if(inspection.isPresent()) {
+      if(inspection.get().decsribe().contains("ContinuingAcceptingState")) {
+        return Optional.empty();
       }
     }
     return inspection;
@@ -97,11 +101,9 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
         .map(l -> l.stream().collect(Collectors.toUnmodifiableList()))
         .collect(Collectors.toUnmodifiableList());
 
-    var endStates = tmpEndStates.stream().collect(Collectors.toUnmodifiableMap(indexedStates::get, Function.identity()));
+    var acceptingStates = Stream.concat(this.acceptingStates.stream(),tmpEndStates.stream()).distinct().collect(Collectors.toUnmodifiableMap(indexedStates::get, Function.identity()));
 
-    var failedAssertions = failedAssertionsSnapshots.stream().collect(Collectors.toUnmodifiableMap(indexedStates::get, Function.identity()));
-
-    return new MapperResult(indexedStates, links, traces, startNode, endStates, failedAssertions);
+    return new MapperResult(indexedStates, links, traces, startNode, acceptingStates);
   }
 
   public static class Edge {
@@ -156,17 +158,15 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
     public final Collection<List<BEvent>> traces;
     public final BProgramSyncSnapshot startNode;
     public final int startNodeId;
-    public final Map<Integer, BProgramSyncSnapshot> endStates;
-    public final Map<Integer, BProgramSyncSnapshot> failedAssertions;
+    public final Map<Integer, BProgramSyncSnapshot> acceptingStates;
 
-    public MapperResult(Map<BProgramSyncSnapshot, Integer> states, List<Edge> edges, Collection<List<BEvent>> traces, BProgramSyncSnapshot startNode, Map<Integer, BProgramSyncSnapshot> endStates, Map<Integer, BProgramSyncSnapshot> failedAssertions) {
+    public MapperResult(Map<BProgramSyncSnapshot, Integer> states, List<Edge> edges, Collection<List<BEvent>> traces, BProgramSyncSnapshot startNode, Map<Integer, BProgramSyncSnapshot> acceptingStates) {
       this.edges = edges;
       this.states = states;
       this.traces = traces;
       this.startNode = startNode;
       this.startNodeId = states.get(startNode);
-      this.endStates = endStates;
-      this.failedAssertions = failedAssertions;
+      this.acceptingStates = acceptingStates;
     }
 
     @Override

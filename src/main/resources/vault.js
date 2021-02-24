@@ -9,13 +9,16 @@ const code = [0,1,2,3,4].map(n=>n.toString())
 
 bp.registerBThread('try', function() {
   while(true)
-    bp.sync({request:events},10)
+    bp.sync({request:events})
 })
 
 bp.registerBThread('correct code', function() {
   for(let i=0; i < code.length; i++) {
     if (code[i] != bp.sync({waitFor: bp.all}).name) {
-      bp.ASSERT(false, "wrong code")
+      if(use_accepting_states) {
+        // AcceptingState.Continuing()
+        AcceptingState.Stopping()
+      }
     }
   }
   bp.sync({request: CORRECT, block: CORRECT.negate()})

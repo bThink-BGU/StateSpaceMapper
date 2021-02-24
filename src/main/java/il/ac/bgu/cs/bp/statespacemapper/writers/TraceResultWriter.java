@@ -1,10 +1,12 @@
-package il.ac.bgu.cs.bp.statespacemapper;
+package il.ac.bgu.cs.bp.statespacemapper.writers;
 
 import il.ac.bgu.cs.bp.bpjs.internal.ScriptableUtils;
 import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
+import il.ac.bgu.cs.bp.statespacemapper.GenerateAllTracesInspection;
 
 import java.io.PrintStream;
+import java.util.Comparator;
 import java.util.Map;
 
 import static java.util.stream.Collectors.joining;
@@ -42,6 +44,7 @@ public abstract class TraceResultWriter {
     writePre();
     writeNodesPre();
     out.println(result.states.entrySet().stream()
+        .sorted(Map.Entry.comparingByValue())
         .map(this::nodeToString)
         .collect(joining(nodesDelimiter)));
     writeNodesPost();
@@ -51,8 +54,7 @@ public abstract class TraceResultWriter {
     writeEdgesPost();
     writePost();
 
-    if (out != null)
-      out.flush();
+    out.flush();
   }
 
   protected abstract void writePre();

@@ -1,9 +1,10 @@
-package il.ac.bgu.cs.bp.statespacemapper;
+package il.ac.bgu.cs.bp.statespacemapper.writers;
 
 import il.ac.bgu.cs.bp.bpjs.internal.ScriptableUtils;
 import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
 import il.ac.bgu.cs.bp.bpjs.model.SyncStatement;
+import il.ac.bgu.cs.bp.statespacemapper.GenerateAllTracesInspection;
 
 import java.io.PrintStream;
 import java.text.MessageFormat;
@@ -37,8 +38,7 @@ public class TraceResultGVWriter extends TraceResultWriter {
   @Override
   protected String nodeToString(int id, BProgramSyncSnapshot bpss) {
     boolean startNode = id == -1;
-    boolean acceptingNode = result.endStates.containsKey(id);
-    boolean failedAssertionNode = result.failedAssertions.containsKey(id);
+    boolean acceptingNode = result.acceptingStates.containsKey(id);
 
     String store = startNode || !printStore ? "" : getStore(bpss);
 
@@ -46,7 +46,7 @@ public class TraceResultGVWriter extends TraceResultWriter {
 
     String shape = "shape="+ (startNode ? "none " : acceptingNode? "doublecircle " : "circle ");
 
-    String label = startNode ? "label=\"start\" " : failedAssertionNode ? "label=\"err\" " : printNodeLabel() ? MessageFormat.format("label=\"{0}{1}{2}\" ",id,store,statements) : "label=\"\" ";
+    String label = startNode ? "label=\"start\" " : printNodeLabel() ? MessageFormat.format("label=\"{0}{1}{2}\" ",id,store,statements) : "label=\"\" ";
 
     String fillcolor = "";//printNodeLabel() ? "" : "fillcolor=black style=filled ";
 

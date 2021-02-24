@@ -1,0 +1,179 @@
+{
+  "name": "elevator", 
+  "start": "3", 
+  "runDate": "2021-02-23T21:12:12.9146812",
+  "# states": 4, 
+  "# transitions": 6, 
+  "# traces": 0, 
+  "states": [
+
+    {
+      "id":"0",
+      "store": [
+
+      ],
+      "statements": [
+        {
+          "name":"Move_to_floor",
+          "isHot":false,
+          "request":["[BEvent name:floor_reached]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"Open_door-1",
+          "isHot":false,
+          "request":[],
+          "waitFor":"anyOf([BEvent name:elevator_call_same_floor],[BEvent name:floor_reached])",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"Idle",
+          "isHot":false,
+          "request":[],
+          "waitFor":"[BEvent name:timeout]",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"Close_door",
+          "isHot":false,
+          "request":[],
+          "waitFor":"[BEvent name:destinatination_select]",
+          "block":"{none}",
+          "interrupt":"{none}"
+        }
+      ]
+    },
+    {
+      "id":"2",
+      "store": [
+
+      ],
+      "statements": [
+        {
+          "name":"Open_door-1",
+          "isHot":false,
+          "request":[],
+          "waitFor":"anyOf([BEvent name:elevator_call_same_floor],[BEvent name:floor_reached])",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"Idle",
+          "isHot":false,
+          "request":[],
+          "waitFor":"[BEvent name:timeout]",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"Close_door",
+          "isHot":false,
+          "request":["[BEvent name:floor_reached]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"Move_to_floor",
+          "isHot":false,
+          "request":[],
+          "waitFor":"[BEvent name:elevator_call_different_floor]",
+          "block":"{none}",
+          "interrupt":"{none}"
+        }
+      ]
+    },
+    {
+      "id":"3",
+      "store": [
+
+      ],
+      "statements": [
+        {
+          "name":"Open_door-1",
+          "isHot":false,
+          "request":[],
+          "waitFor":"anyOf([BEvent name:elevator_call_same_floor],[BEvent name:floor_reached])",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"Close_door",
+          "isHot":false,
+          "request":[],
+          "waitFor":"[BEvent name:destinatination_select]",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"Idle",
+          "isHot":false,
+          "request":["[BEvent name:elevator_call_different_floor]","[BEvent name:elevator_call_same_floor]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"Move_to_floor",
+          "isHot":false,
+          "request":[],
+          "waitFor":"[BEvent name:elevator_call_different_floor]",
+          "block":"{none}",
+          "interrupt":"{none}"
+        }
+      ]
+    },
+    {
+      "id":"1",
+      "store": [
+
+      ],
+      "statements": [
+        {
+          "name":"Open_door-1",
+          "isHot":false,
+          "request":["[BEvent name:destinatination_select]","[BEvent name:timeout]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"Idle",
+          "isHot":false,
+          "request":[],
+          "waitFor":"[BEvent name:timeout]",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"Close_door",
+          "isHot":false,
+          "request":[],
+          "waitFor":"[BEvent name:destinatination_select]",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"Move_to_floor",
+          "isHot":false,
+          "request":[],
+          "waitFor":"[BEvent name:elevator_call_different_floor]",
+          "block":"{none}",
+          "interrupt":"{none}"
+        }
+      ]
+    }
+  ],
+  "links": [
+    {"source":"0", "target":"1", "eventData":"[BEvent name:floor_reached]"},
+    {"source":"1", "target":"2", "eventData":"[BEvent name:destinatination_select]"},
+    {"source":"1", "target":"3", "eventData":"[BEvent name:timeout]"},
+    {"source":"2", "target":"1", "eventData":"[BEvent name:floor_reached]"},
+    {"source":"3", "target":"0", "eventData":"[BEvent name:elevator_call_different_floor]"},
+    {"source":"3", "target":"1", "eventData":"[BEvent name:elevator_call_same_floor]"}
+  ]
+}

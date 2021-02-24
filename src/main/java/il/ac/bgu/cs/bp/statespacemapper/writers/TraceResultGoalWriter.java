@@ -1,8 +1,9 @@
-package il.ac.bgu.cs.bp.statespacemapper;
+package il.ac.bgu.cs.bp.statespacemapper.writers;
 
 import il.ac.bgu.cs.bp.bpjs.internal.ScriptableUtils;
 import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
 import il.ac.bgu.cs.bp.bpjs.model.SyncStatement;
+import il.ac.bgu.cs.bp.statespacemapper.GenerateAllTracesInspection;
 
 import java.io.PrintStream;
 import java.text.MessageFormat;
@@ -65,15 +66,12 @@ public class TraceResultGoalWriter extends TraceResultWriter {
 
   @Override
   protected String nodeToString(int id, BProgramSyncSnapshot bpss) {
-    boolean failedAssertionNode = result.failedAssertions.containsKey(id);
     StringBuilder out = new StringBuilder();
     int hash = bpss.hashCode();
     String store = !printStore ? "" : getStore(bpss);
     String statements = !printStatements ? "" : getStatments(bpss);
     out.append(MessageFormat.format("{0}<State sid=\"{1}\">\n", "    ".repeat(level), id));
     out.append(MessageFormat.format("{0}<Description>Hash={1}{2}{3}</Description>\n", "    ".repeat(level + 1), hash, store, statements));
-    if (failedAssertionNode)
-      out.append("    ".repeat(level + 1)).append("<Name>err</Name>\n");
     out.append("    ".repeat(level + 1)).append("<Properties/>\n");
     out.append("    ".repeat(level)).append("</State>");
     return out.toString();
@@ -115,7 +113,7 @@ public class TraceResultGoalWriter extends TraceResultWriter {
   @Override
   protected void writePost() {
     out.println("    ".repeat(level) + "<Acc type=\"Classic\">");
-    result.endStates.forEach((key, bpss) -> out.println(
+    result.acceptingStates.forEach((key, bpss) -> out.println(
         MessageFormat.format("{0}<StateID>{1}</StateID>", "    ".repeat(level + 1), key)));
     out.println("    ".repeat(level) + "</Acc>");
     level--;

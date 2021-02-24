@@ -1,9 +1,10 @@
-package il.ac.bgu.cs.bp.statespacemapper;
+package il.ac.bgu.cs.bp.statespacemapper.writers;
 
 import il.ac.bgu.cs.bp.bpjs.internal.ScriptableUtils;
 import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
 import il.ac.bgu.cs.bp.bpjs.model.SyncStatement;
+import il.ac.bgu.cs.bp.statespacemapper.GenerateAllTracesInspection;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.Session;
 
