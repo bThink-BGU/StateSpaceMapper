@@ -5,7 +5,6 @@ import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
 import il.ac.bgu.cs.bp.bpjs.model.SyncStatement;
 import il.ac.bgu.cs.bp.statespacemapper.GenerateAllTracesInspection;
 
-import java.io.PrintStream;
 import java.text.MessageFormat;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -16,8 +15,8 @@ public class TraceResultGoalWriter extends TraceResultWriter {
   private int level;
   private final AtomicInteger edgeCounter = new AtomicInteger();
 
-  public TraceResultGoalWriter(PrintStream out, GenerateAllTracesInspection.MapperResult result, String name) {
-    super(out, result, name);
+  public TraceResultGoalWriter(String name) {
+    super(name, "gff");
   }
 
   @Override
@@ -118,14 +117,5 @@ public class TraceResultGoalWriter extends TraceResultWriter {
     out.println("    ".repeat(level) + "</Acc>");
     level--;
     out.println("</Structure>");
-  }
-
-  private static String sanitize(Object in) {
-    return in.toString()
-        .replace(" ", "_")
-        .replace("\n", "_")
-        .replace("\"", "\\\"")
-        .replace("JS_Obj ", "")
-        .replaceAll("[\\. \\-+]", "_");
   }
 }

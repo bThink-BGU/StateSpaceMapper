@@ -17,8 +17,8 @@ import static org.neo4j.driver.Values.parameters;
 public class TraceResultNeo4JWriter extends TraceResultWriter {
   private final Driver driver;
 
-  public TraceResultNeo4JWriter(GenerateAllTracesInspection.MapperResult result, String runName, Driver driver) {
-    super(new PrintStream(OutputStream.nullOutputStream()), result, runName);
+  public TraceResultNeo4JWriter(String runName, Driver driver) {
+    super(runName, "");
     this.driver = driver;
   }
 
@@ -94,11 +94,18 @@ public class TraceResultNeo4JWriter extends TraceResultWriter {
     return null;
   }
 
-  private static String sanitize(Object in) {
+  @Override
+  protected String sanitize(String in) {
     return in.toString()
         .replace("\"", "\\\"")
         .replace("\n", "\\n")
         .replace("JS_Obj ", "")
         .replaceAll("[. -+]", "_");
+  }
+
+  public final void write(GenerateAllTracesInspection.MapperResult result) {
+    try (var out = new PrintStream(OutputStream.nullOutputStream())) {
+      write(out, result);
+    }
   }
 }

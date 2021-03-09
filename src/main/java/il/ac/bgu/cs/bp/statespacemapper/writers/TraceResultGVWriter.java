@@ -6,7 +6,6 @@ import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
 import il.ac.bgu.cs.bp.bpjs.model.SyncStatement;
 import il.ac.bgu.cs.bp.statespacemapper.GenerateAllTracesInspection;
 
-import java.io.PrintStream;
 import java.text.MessageFormat;
 
 import static java.util.stream.Collectors.joining;
@@ -14,8 +13,8 @@ import static java.util.stream.Collectors.joining;
 public class TraceResultGVWriter extends TraceResultWriter {
   private int level;
 
-  public TraceResultGVWriter(PrintStream out, GenerateAllTracesInspection.MapperResult result, String name) {
-    super(out, result, name);
+  public TraceResultGVWriter(String name) {
+    super(name, "dot");
   }
 
   @Override
@@ -89,8 +88,9 @@ public class TraceResultGVWriter extends TraceResultWriter {
     out.println("}");
   }
 
-  private static String sanitize(Object in) {
-    return in.toString()
+  @Override
+  protected String sanitize(String in) {
+    return in
         .replace("\"", "\\\"")
         .replace("\n", "\\n")
         .replace("JS_Obj ", "")

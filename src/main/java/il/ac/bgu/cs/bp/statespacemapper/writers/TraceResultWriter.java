@@ -6,30 +6,29 @@ import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
 import il.ac.bgu.cs.bp.statespacemapper.GenerateAllTracesInspection;
 
 import java.io.PrintStream;
-import java.util.Comparator;
 import java.util.Map;
 
 import static java.util.stream.Collectors.joining;
 
 public abstract class TraceResultWriter {
-  protected final PrintStream out;
-  protected final GenerateAllTracesInspection.MapperResult result;
+  protected PrintStream out;
+  protected GenerateAllTracesInspection.MapperResult result;
   protected final String name;
+  public final String filetype;
   protected boolean printStatements = false;
   protected boolean printStore = false;
   private final String nodesDelimiter;
   private final String edgesDelimiter;
 
-  protected TraceResultWriter(PrintStream out, GenerateAllTracesInspection.MapperResult result, String name, String nodesDelimiter, String edgesDelimiter) {
-    this.out = out;
-    this.result = result;
+  protected TraceResultWriter(String name, String filetype, String nodesDelimiter, String edgesDelimiter) {
     this.name = name;
+    this.filetype = filetype;
     this.nodesDelimiter = nodesDelimiter;
     this.edgesDelimiter = edgesDelimiter;
   }
 
-  protected TraceResultWriter(PrintStream out, GenerateAllTracesInspection.MapperResult result, String name) {
-    this(out, result, name, "\n", "\n");
+  protected TraceResultWriter(String name, String filetype) {
+    this(name, filetype, "\n", "\n");
   }
 
   public void setPrintStatements(boolean printStatements) {
@@ -40,7 +39,11 @@ public abstract class TraceResultWriter {
     this.printStore = printStore;
   }
 
-  public final void write() {
+  public final void write(PrintStream out, GenerateAllTracesInspection.MapperResult result) {
+    if (out == null || result == null)
+      throw new IllegalArgumentException("Result argument cannot be null");
+    this.out = out;
+    this.result = result;
     writePre();
     writeNodesPre();
     out.println(result.states.entrySet().stream()
@@ -82,10 +85,23 @@ public abstract class TraceResultWriter {
     String e = event.name;
     if (event.maybeData != null)
       e += ": " + ScriptableUtils.stringify(event.maybeData);
-    return e;
+    return sanitize(e);
   }
 
   protected final String nodeToString(Map.Entry<BProgramSyncSnapshot, Integer> bpssEntry) {
     return nodeToString(bpssEntry.getValue(), bpssEntry.getKey());
+  }
+
+  protected final String sanitize(Object in) {
+    return sanitize(in.toString());
+  }
+
+  protected String sanitize(String in) {
+    return in
+        .replace(" ", "_")
+        .replace("\n", "_")
+        .replace("\"", "\\\"")
+        .replace("JS_Obj ", "")
+        .replaceAll("[\\. \\-+]", "_");
   }
 }

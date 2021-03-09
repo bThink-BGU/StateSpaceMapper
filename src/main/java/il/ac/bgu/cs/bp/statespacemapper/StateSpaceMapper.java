@@ -7,10 +7,15 @@ import il.ac.bgu.cs.bp.statespacemapper.writers.*;
 import org.neo4j.driver.Driver;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class StateSpaceMapper {
   private Driver neo4jDriver;
   private final String name;
+  private final DfsForStateMapper vfr = new DfsForStateMapper();
+  private String basePath = ".";
+  private List<TraceResultWriter> writers = new ArrayList<>();
 
   public StateSpaceMapper(String name) {
     this(name, null);
@@ -21,14 +26,27 @@ public class StateSpaceMapper {
     this.name = name;
   }
 
+  public void setBasePath(String basePath) {
+    this.basePath = basePath;
+  }
+
+  public void addWriter(TraceResultWriter writer) {
+    writers.add(writer);
+  }
+
+  protected void addDefaultWriters() {
+    writers.add(new TraceResultJsonWriter(name));
+    writers.add(new TraceResultGVWriter(name));
+    writers.add(new TraceResultNoamWriter(name));
+    writers.add(new TraceResultGoalWriter(name));
+  }
+
   public void setNeo4jDriver(Driver driver) {
     this.neo4jDriver = driver;
   }
 
   public void mapSpace(BProgram bprog) throws Exception {
-    bprog.putInGlobalScope("use_accepting_states", true);
-    bprog.putInGlobalScope("AcceptingState", new AcceptingStateProxy());
-    var vfr = new DfsForStateMapper();
+    initGlobalScope(bprog);
     var tracesInspection = new GenerateAllTracesInspection();
     vfr.addInspection(tracesInspection);
 
@@ -37,20 +55,22 @@ public class StateSpaceMapper {
     vfr.verify(bprog);
 
     var mapperRes = tracesInspection.getResult();
-
     System.out.println(mapperRes.toString());
 
-    try (PrintStream jsonOut = new PrintStream("graphs/" + name + ".json");
-         PrintStream graphVisOut = new PrintStream("graphs/" + name + ".dot");
-         PrintStream noamOut = new PrintStream("graphs/" + name + ".noam");
-         PrintStream goalOut = new PrintStream("graphs/" + name + ".gff")) {
-      new TraceResultJsonWriter(jsonOut, mapperRes, name).write();
-      new TraceResultGVWriter(graphVisOut, mapperRes, name).write();
-      new TraceResultNoamWriter(noamOut, mapperRes, name).write();
-      new TraceResultGoalWriter(goalOut, mapperRes, name).write();
+    if (writers.isEmpty())
+      addDefaultWriters();
+    for (var w : writers) {
+      try (var out = new PrintStream(basePath + "/graphs/" + name + "." + w.filetype)) {
+        w.write(out, mapperRes);
+      }
     }
     if (neo4jDriver != null) {
-      new TraceResultNeo4JWriter(mapperRes, name, neo4jDriver).write();
+      new TraceResultNeo4JWriter(name, neo4jDriver).write(mapperRes);
     }
+  }
+
+  public void initGlobalScope(BProgram bprog) {
+    bprog.putInGlobalScope("use_accepting_states", true);
+    bprog.putInGlobalScope("AcceptingState", new AcceptingStateProxy());
   }
 }

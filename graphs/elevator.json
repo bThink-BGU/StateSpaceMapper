@@ -1,7 +1,7 @@
 {
   "name": "elevator", 
   "start": "3", 
-  "runDate": "2021-03-09T16:34:34.3578941",
+  "runDate": "2021-03-09T17:26:24.5016354",
   "# states": 4, 
   "# transitions": 6, 
   "# traces": 0, 

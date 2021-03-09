@@ -5,7 +5,6 @@ import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
 import il.ac.bgu.cs.bp.bpjs.model.SyncStatement;
 import il.ac.bgu.cs.bp.statespacemapper.GenerateAllTracesInspection;
 
-import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -14,8 +13,8 @@ import static java.util.stream.Collectors.joining;
 public class TraceResultJsonWriter extends TraceResultWriter {
   private int level;
 
-  public TraceResultJsonWriter(PrintStream out, GenerateAllTracesInspection.MapperResult result, String name) {
-    super(out, result, name, ",\n", ",\n");
+  public TraceResultJsonWriter(String name) {
+    super(name, "json", ",\n", ",\n");
     this.printStatements = true;
     this.printStore = true;
   }
@@ -106,6 +105,4 @@ public class TraceResultJsonWriter extends TraceResultWriter {
   protected String edgeToString(GenerateAllTracesInspection.Edge edge) {
     return "  ".repeat(level) + "{\"source\":\"" + edge.srcId + "\", \"target\":\"" + edge.dstId + "\", \"eventData\":\"" + getGuardedString(edge.event) + "\"}";
   }
-
-
 }
