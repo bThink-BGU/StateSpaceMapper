@@ -3,10 +3,7 @@ package il.ac.bgu.cs.bp.statespacemapper;
 import il.ac.bgu.cs.bp.bpjs.analysis.DfsForStateMapper;
 import il.ac.bgu.cs.bp.bpjs.analysis.listeners.PrintDfsVerifierListener;
 import il.ac.bgu.cs.bp.bpjs.model.BProgram;
-import il.ac.bgu.cs.bp.statespacemapper.writers.TraceResultGVWriter;
-import il.ac.bgu.cs.bp.statespacemapper.writers.TraceResultGoalWriter;
-import il.ac.bgu.cs.bp.statespacemapper.writers.TraceResultJsonWriter;
-import il.ac.bgu.cs.bp.statespacemapper.writers.TraceResultNeo4JWriter;
+import il.ac.bgu.cs.bp.statespacemapper.writers.*;
 import org.neo4j.driver.Driver;
 
 import java.io.PrintStream;
@@ -45,9 +42,11 @@ public class StateSpaceMapper {
 
     try (PrintStream jsonOut = new PrintStream("graphs/" + name + ".json");
          PrintStream graphVisOut = new PrintStream("graphs/" + name + ".dot");
+         PrintStream noamOut = new PrintStream("graphs/" + name + ".noam");
          PrintStream goalOut = new PrintStream("graphs/" + name + ".gff")) {
       new TraceResultJsonWriter(jsonOut, mapperRes, name).write();
       new TraceResultGVWriter(graphVisOut, mapperRes, name).write();
+      new TraceResultNoamWriter(noamOut, mapperRes, name).write();
       new TraceResultGoalWriter(goalOut, mapperRes, name).write();
     }
     if (neo4jDriver != null) {

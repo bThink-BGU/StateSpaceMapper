@@ -1,7 +1,7 @@
 {
   "name": "elevator", 
   "start": "3", 
-  "runDate": "2021-02-23T21:12:12.9146812",
+  "runDate": "2021-03-09T16:34:34.3578941",
   "# states": 4, 
   "# transitions": 6, 
   "# traces": 0, 
@@ -42,6 +42,46 @@
           "isHot":false,
           "request":[],
           "waitFor":"[BEvent name:destinatination_select]",
+          "block":"{none}",
+          "interrupt":"{none}"
+        }
+      ]
+    },
+    {
+      "id":"1",
+      "store": [
+
+      ],
+      "statements": [
+        {
+          "name":"Open_door-1",
+          "isHot":false,
+          "request":["[BEvent name:destinatination_select]","[BEvent name:timeout]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"Idle",
+          "isHot":false,
+          "request":[],
+          "waitFor":"[BEvent name:timeout]",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"Close_door",
+          "isHot":false,
+          "request":[],
+          "waitFor":"[BEvent name:destinatination_select]",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"Move_to_floor",
+          "isHot":false,
+          "request":[],
+          "waitFor":"[BEvent name:elevator_call_different_floor]",
           "block":"{none}",
           "interrupt":"{none}"
         }
@@ -114,46 +154,6 @@
           "isHot":false,
           "request":["[BEvent name:elevator_call_different_floor]","[BEvent name:elevator_call_same_floor]"],
           "waitFor":"{none}",
-          "block":"{none}",
-          "interrupt":"{none}"
-        },
-        {
-          "name":"Move_to_floor",
-          "isHot":false,
-          "request":[],
-          "waitFor":"[BEvent name:elevator_call_different_floor]",
-          "block":"{none}",
-          "interrupt":"{none}"
-        }
-      ]
-    },
-    {
-      "id":"1",
-      "store": [
-
-      ],
-      "statements": [
-        {
-          "name":"Open_door-1",
-          "isHot":false,
-          "request":["[BEvent name:destinatination_select]","[BEvent name:timeout]"],
-          "waitFor":"{none}",
-          "block":"{none}",
-          "interrupt":"{none}"
-        },
-        {
-          "name":"Idle",
-          "isHot":false,
-          "request":[],
-          "waitFor":"[BEvent name:timeout]",
-          "block":"{none}",
-          "interrupt":"{none}"
-        },
-        {
-          "name":"Close_door",
-          "isHot":false,
-          "request":[],
-          "waitFor":"[BEvent name:destinatination_select]",
           "block":"{none}",
           "interrupt":"{none}"
         },

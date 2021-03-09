@@ -16,16 +16,16 @@
             <Description>Hash=-336,020,227</Description>
             <Properties/>
         </State>
+        <State sid="1">
+            <Description>Hash=-262,902,484</Description>
+            <Properties/>
+        </State>
         <State sid="2">
             <Description>Hash=1,349,882,766</Description>
             <Properties/>
         </State>
         <State sid="3">
             <Description>Hash=-533,851,758</Description>
-            <Properties/>
-        </State>
-        <State sid="1">
-            <Description>Hash=-262,902,484</Description>
             <Properties/>
         </State>
     </StateSet>
