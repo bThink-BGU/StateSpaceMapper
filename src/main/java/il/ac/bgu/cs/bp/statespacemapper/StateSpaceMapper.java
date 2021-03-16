@@ -7,6 +7,8 @@ import il.ac.bgu.cs.bp.statespacemapper.writers.*;
 import org.neo4j.driver.Driver;
 
 import java.io.PrintStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,7 +16,7 @@ public class StateSpaceMapper {
   private Driver neo4jDriver;
   private final String name;
   private final DfsForStateMapper vfr = new DfsForStateMapper();
-  private String basePath = ".";
+  private String outputPath = "graphs";
   private List<TraceResultWriter> writers = new ArrayList<>();
 
   public StateSpaceMapper(String name) {
@@ -26,8 +28,8 @@ public class StateSpaceMapper {
     this.name = name;
   }
 
-  public void setBasePath(String basePath) {
-    this.basePath = basePath;
+  public void setOutputPath(String path) {
+    this.outputPath = path;
   }
 
   public void addWriter(TraceResultWriter writer) {
@@ -46,6 +48,7 @@ public class StateSpaceMapper {
   }
 
   public void mapSpace(BProgram bprog) throws Exception {
+    Files.createDirectories(Paths.get(outputPath));
     initGlobalScope(bprog);
     var tracesInspection = new GenerateAllTracesInspection();
     vfr.addInspection(tracesInspection);
@@ -60,7 +63,8 @@ public class StateSpaceMapper {
     if (writers.isEmpty())
       addDefaultWriters();
     for (var w : writers) {
-      try (var out = new PrintStream(basePath + "/graphs/" + name + "." + w.filetype)) {
+      var path = Paths.get(outputPath, name + "." + w.filetype);
+      try (var out = new PrintStream(path.toString())) {
         w.write(out, mapperRes);
       }
     }

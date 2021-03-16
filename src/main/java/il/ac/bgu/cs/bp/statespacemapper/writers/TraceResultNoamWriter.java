@@ -1,6 +1,5 @@
 package il.ac.bgu.cs.bp.statespacemapper.writers;
 
-import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
 import il.ac.bgu.cs.bp.statespacemapper.GenerateAllTracesInspection;
 

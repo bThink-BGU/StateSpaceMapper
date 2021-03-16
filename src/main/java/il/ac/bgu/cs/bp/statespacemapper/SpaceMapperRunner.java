@@ -20,12 +20,12 @@ public class SpaceMapperRunner {
     }
 
     var runName = args[0].substring(0, args[0].lastIndexOf('.'));
-    Files.createDirectories(Paths.get("graphs"));
     var bprog = new ResourceBProgram(args[0]);
     var ess = new PrioritizedBSyncEventSelectionStrategy();
     ess.setDefaultPriority(0);
     bprog.setEventSelectionStrategy(ess);
     StateSpaceMapper mpr = new StateSpaceMapper(runName);
+    mpr.setOutputPath("graphs");
     if(useNeo4j) {
         try (var driver = GraphDatabase.driver("bolt://localhost:11002", AuthTokens.basic("neo4j", "StateMapper"))) {
           mpr.setNeo4jDriver(driver);

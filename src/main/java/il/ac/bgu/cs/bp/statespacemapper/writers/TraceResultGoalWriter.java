@@ -11,6 +11,9 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.joining;
 
+/**
+ * A Writer for the <a href="http://goal.im.ntu.edu.tw/wiki/doku.php?id=start">GOAL</a> - a graphical interactive tool for defining and manipulating Büchi automata and temporal logic formulae.<br/>
+ */
 public class TraceResultGoalWriter extends TraceResultWriter {
   private int level;
   private final AtomicInteger edgeCounter = new AtomicInteger();
