@@ -9,7 +9,7 @@ To use, add the following to your pom.xml:
 	<url>https://jitpack.io</url>
 </repository>
 
-<dependency>Cancel Changes
+<dependency>
   <groupId>com.github.bThink-BGU</groupId>
   <artifactId>StateSpaceMapper</artifactId>
   <version>0.1.9</version>
