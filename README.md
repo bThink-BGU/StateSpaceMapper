@@ -1,5 +1,6 @@
 # StateSpaceMapper
 A utility for mapping state spaces of b-programs written in BPjs.
+
 To use, add the following to your pom.xml:
 
 ```xml
