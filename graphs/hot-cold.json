@@ -1,0 +1,358 @@
+{
+  "name": "hot-cold", 
+  "start": "12", 
+  "runDate": "2021-03-29T17:35:48.5265776",
+  "# states": 16, 
+  "# transitions": 24, 
+  "# traces": 20, 
+  "states": [
+
+    {
+      "id":"0",
+      "store": [
+
+      ],
+      "statements": [
+        {
+          "name":"Do-B",
+          "isHot":false,
+          "request":["[BEvent name:b]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"Do-A",
+          "isHot":false,
+          "request":["[BEvent name:a]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        }
+      ]
+    },
+    {
+      "id":"1",
+      "store": [
+
+      ],
+      "statements": [
+        {
+          "name":"Do-B",
+          "isHot":false,
+          "request":["[BEvent name:b]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"Do-A",
+          "isHot":false,
+          "request":["[BEvent name:a]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        }
+      ]
+    },
+    {
+      "id":"2",
+      "store": [
+
+      ],
+      "statements": [
+        {
+          "name":"Do-B",
+          "isHot":false,
+          "request":["[BEvent name:b]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"Do-A",
+          "isHot":false,
+          "request":["[BEvent name:a]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        }
+      ]
+    },
+    {
+      "id":"3",
+      "store": [
+
+      ],
+      "statements": [
+        {
+          "name":"Do-B",
+          "isHot":false,
+          "request":["[BEvent name:b]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        }
+      ]
+    },
+    {
+      "id":"4",
+      "store": [
+
+      ],
+      "statements": [
+        {
+          "name":"Do-A",
+          "isHot":false,
+          "request":["[BEvent name:a]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        }
+      ]
+    },
+    {
+      "id":"5",
+      "store": [
+
+      ],
+      "statements": [
+        {
+          "name":"Do-B",
+          "isHot":false,
+          "request":["[BEvent name:b]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        }
+      ]
+    },
+    {
+      "id":"6",
+      "store": [
+
+      ],
+      "statements": [
+        {
+          "name":"Do-A",
+          "isHot":false,
+          "request":["[BEvent name:a]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        }
+      ]
+    },
+    {
+      "id":"7",
+      "store": [
+
+      ],
+      "statements": [
+        {
+          "name":"Do-B",
+          "isHot":false,
+          "request":["[BEvent name:b]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"Do-A",
+          "isHot":false,
+          "request":["[BEvent name:a]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        }
+      ]
+    },
+    {
+      "id":"8",
+      "store": [
+
+      ],
+      "statements": [
+        {
+          "name":"Do-B",
+          "isHot":false,
+          "request":["[BEvent name:b]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"Do-A",
+          "isHot":false,
+          "request":["[BEvent name:a]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        }
+      ]
+    },
+    {
+      "id":"9",
+      "store": [
+
+      ],
+      "statements": [
+        {
+          "name":"Do-B",
+          "isHot":false,
+          "request":["[BEvent name:b]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"Do-A",
+          "isHot":false,
+          "request":["[BEvent name:a]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        }
+      ]
+    },
+    {
+      "id":"10",
+      "store": [
+
+      ],
+      "statements": [
+        {
+          "name":"Do-B",
+          "isHot":false,
+          "request":["[BEvent name:b]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"Do-A",
+          "isHot":false,
+          "request":["[BEvent name:a]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        }
+      ]
+    },
+    {
+      "id":"11",
+      "store": [
+
+      ],
+      "statements": [
+        {
+          "name":"Do-B",
+          "isHot":false,
+          "request":["[BEvent name:b]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"Do-A",
+          "isHot":false,
+          "request":["[BEvent name:a]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        }
+      ]
+    },
+    {
+      "id":"12",
+      "store": [
+
+      ],
+      "statements": [
+        {
+          "name":"Do-B",
+          "isHot":false,
+          "request":["[BEvent name:b]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"Do-A",
+          "isHot":false,
+          "request":["[BEvent name:a]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        }
+      ]
+    },
+    {
+      "id":"13",
+      "store": [
+
+      ],
+      "statements": [
+        {
+          "name":"Do-A",
+          "isHot":false,
+          "request":["[BEvent name:a]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        }
+      ]
+    },
+    {
+      "id":"14",
+      "store": [
+
+      ],
+      "statements": [
+        {
+          "name":"Do-B",
+          "isHot":false,
+          "request":["[BEvent name:b]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        }
+      ]
+    },
+    {
+      "id":"15",
+      "store": [
+
+      ],
+      "statements": [
+
+      ]
+    }
+  ],
+  "links": [
+    {"source":"0", "target":"10", "eventData":"[BEvent name:b]"},
+    {"source":"0", "target":"14", "eventData":"[BEvent name:a]"},
+    {"source":"1", "target":"10", "eventData":"[BEvent name:a]"},
+    {"source":"1", "target":"11", "eventData":"[BEvent name:b]"},
+    {"source":"2", "target":"4", "eventData":"[BEvent name:b]"},
+    {"source":"2", "target":"11", "eventData":"[BEvent name:a]"},
+    {"source":"3", "target":"5", "eventData":"[BEvent name:b]"},
+    {"source":"4", "target":"6", "eventData":"[BEvent name:a]"},
+    {"source":"5", "target":"15", "eventData":"[BEvent name:b]"},
+    {"source":"6", "target":"13", "eventData":"[BEvent name:a]"},
+    {"source":"7", "target":"5", "eventData":"[BEvent name:a]"},
+    {"source":"7", "target":"13", "eventData":"[BEvent name:b]"},
+    {"source":"8", "target":"0", "eventData":"[BEvent name:a]"},
+    {"source":"8", "target":"1", "eventData":"[BEvent name:b]"},
+    {"source":"9", "target":"1", "eventData":"[BEvent name:a]"},
+    {"source":"9", "target":"2", "eventData":"[BEvent name:b]"},
+    {"source":"10", "target":"3", "eventData":"[BEvent name:a]"},
+    {"source":"10", "target":"7", "eventData":"[BEvent name:b]"},
+    {"source":"11", "target":"6", "eventData":"[BEvent name:b]"},
+    {"source":"11", "target":"7", "eventData":"[BEvent name:a]"},
+    {"source":"12", "target":"8", "eventData":"[BEvent name:a]"},
+    {"source":"12", "target":"9", "eventData":"[BEvent name:b]"},
+    {"source":"13", "target":"15", "eventData":"[BEvent name:a]"},
+    {"source":"14", "target":"3", "eventData":"[BEvent name:b]"}
+  ]
+}

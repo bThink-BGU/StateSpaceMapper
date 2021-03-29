@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Structure label-on="Transition" type="FiniteStateAutomaton">
+    <Name>hot_cold</Name>
+    <Description/>
+    <Properties/>
+    <Formula/>
+    <Alphabet type="Classical">
+        <Symbol>a</Symbol>
+        <Symbol>b</Symbol>
+    </Alphabet>
+    <StateSet>
+        <State sid="0">
+            <Description>Hash=-287,651,080</Description>
+            <Properties/>
+        </State>
+        <State sid="1">
+            <Description>Hash=-287,651,080</Description>
+            <Properties/>
+        </State>
+        <State sid="2">
+            <Description>Hash=-287,651,080</Description>
+            <Properties/>
+        </State>
+        <State sid="3">
+            <Description>Hash=-44,581,549</Description>
+            <Properties/>
+        </State>
+        <State sid="4">
+            <Description>Hash=-243,088,956</Description>
+            <Properties/>
+        </State>
+        <State sid="5">
+            <Description>Hash=-44,562,050</Description>
+            <Properties/>
+        </State>
+        <State sid="6">
+            <Description>Hash=-243,069,457</Description>
+            <Properties/>
+        </State>
+        <State sid="7">
+            <Description>Hash=-287,612,082</Description>
+            <Properties/>
+        </State>
+        <State sid="8">
+            <Description>Hash=-287,670,579</Description>
+            <Properties/>
+        </State>
+        <State sid="9">
+            <Description>Hash=-287,670,579</Description>
+            <Properties/>
+        </State>
+        <State sid="10">
+            <Description>Hash=-287,631,581</Description>
+            <Properties/>
+        </State>
+        <State sid="11">
+            <Description>Hash=-287,631,581</Description>
+            <Properties/>
+        </State>
+        <State sid="12">
+            <Description>Hash=-287,690,078</Description>
+            <Properties/>
+        </State>
+        <State sid="13">
+            <Description>Hash=-243,049,958</Description>
+            <Properties/>
+        </State>
+        <State sid="14">
+            <Description>Hash=-44,601,048</Description>
+            <Properties/>
+        </State>
+        <State sid="15">
+            <Description>Hash=74</Description>
+            <Properties/>
+        </State>
+    </StateSet>
+    <InitialStateSet>
+        <StateID>12</StateID>
+    </InitialStateSet>
+    <TransitionSet complete="false">
+        <Transition tid="0">
+            <From>0</From>
+            <To>10</To>
+            <Label>b</Label>
+            <Properties/>
+        </Transition>
+        <Transition tid="1">
+            <From>0</From>
+            <To>14</To>
+            <Label>a</Label>
+            <Properties/>
+        </Transition>
+        <Transition tid="2">
+            <From>1</From>
+            <To>10</To>
+            <Label>a</Label>
+            <Properties/>
+        </Transition>
+        <Transition tid="3">
+            <From>1</From>
+            <To>11</To>
+            <Label>b</Label>
+            <Properties/>
+        </Transition>
+        <Transition tid="4">
+            <From>2</From>
+            <To>4</To>
+            <Label>b</Label>
+            <Properties/>
+        </Transition>
+        <Transition tid="5">
+            <From>2</From>
+            <To>11</To>
+            <Label>a</Label>
+            <Properties/>
+        </Transition>
+        <Transition tid="6">
+            <From>3</From>
+            <To>5</To>
+            <Label>b</Label>
+            <Properties/>
+        </Transition>
+        <Transition tid="7">
+            <From>4</From>
+            <To>6</To>
+            <Label>a</Label>
+            <Properties/>
+        </Transition>
+        <Transition tid="8">
+            <From>5</From>
+            <To>15</To>
+            <Label>b</Label>
+            <Properties/>
+        </Transition>
+        <Transition tid="9">
+            <From>6</From>
+            <To>13</To>
+            <Label>a</Label>
+            <Properties/>
+        </Transition>
+        <Transition tid="10">
+            <From>7</From>
+            <To>5</To>
+            <Label>a</Label>
+            <Properties/>
+        </Transition>
+        <Transition tid="11">
+            <From>7</From>
+            <To>13</To>
+            <Label>b</Label>
+            <Properties/>
+        </Transition>
+        <Transition tid="12">
+            <From>8</From>
+            <To>0</To>
+            <Label>a</Label>
+            <Properties/>
+        </Transition>
+        <Transition tid="13">
+            <From>8</From>
+            <To>1</To>
+            <Label>b</Label>
+            <Properties/>
+        </Transition>
+        <Transition tid="14">
+            <From>9</From>
+            <To>1</To>
+            <Label>a</Label>
+            <Properties/>
+        </Transition>
+        <Transition tid="15">
+            <From>9</From>
+            <To>2</To>
+            <Label>b</Label>
+            <Properties/>
+        </Transition>
+        <Transition tid="16">
+            <From>10</From>
+            <To>3</To>
+            <Label>a</Label>
+            <Properties/>
+        </Transition>
+        <Transition tid="17">
+            <From>10</From>
+            <To>7</To>
+            <Label>b</Label>
+            <Properties/>
+        </Transition>
+        <Transition tid="18">
+            <From>11</From>
+            <To>6</To>
+            <Label>b</Label>
+            <Properties/>
+        </Transition>
+        <Transition tid="19">
+            <From>11</From>
+            <To>7</To>
+            <Label>a</Label>
+            <Properties/>
+        </Transition>
+        <Transition tid="20">
+            <From>12</From>
+            <To>8</To>
+            <Label>a</Label>
+            <Properties/>
+        </Transition>
+        <Transition tid="21">
+            <From>12</From>
+            <To>9</To>
+            <Label>b</Label>
+            <Properties/>
+        </Transition>
+        <Transition tid="22">
+            <From>13</From>
+            <To>15</To>
+            <Label>a</Label>
+            <Properties/>
+        </Transition>
+        <Transition tid="23">
+            <From>14</From>
+            <To>3</To>
+            <Label>b</Label>
+            <Properties/>
+        </Transition>
+    </TransitionSet>
+    <Acc type="Classic">
+        <StateID>15</StateID>
+    </Acc>
+</Structure>
