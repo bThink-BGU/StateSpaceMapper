@@ -208,7 +208,7 @@
         </Transition>
     </TransitionSet>
     <Acc type="Classic">
-        <StateID>7</StateID>
         <StateID>6</StateID>
+        <StateID>7</StateID>
     </Acc>
 </Structure>

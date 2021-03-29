@@ -29,7 +29,8 @@ public class TraceResultJsonWriter extends TraceResultWriter {
     out.println("  ".repeat(level) + "\"runDate\": \"" + (DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now())) + "\",");
     out.println("  ".repeat(level) + "\"# states\": " + result.states.size() + ", ");
     out.println("  ".repeat(level) + "\"# transitions\": " + result.edges.size() + ", ");
-    out.println("  ".repeat(level) + "\"# traces\": " + result.traces.size() + ", ");
+    if(result.traces != null)
+      out.println("  ".repeat(level) + "\"# traces\": " + result.traces.size() + ", ");
   }
 
   @Override

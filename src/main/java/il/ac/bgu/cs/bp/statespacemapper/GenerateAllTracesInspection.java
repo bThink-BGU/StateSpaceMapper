@@ -21,6 +21,8 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
   private final Set<BProgramSyncSnapshot> acceptingStates = new HashSet<>();
   private BProgramSyncSnapshot startNode;
 
+  private boolean generateTraces = true;
+
   @Override
   public String title() {
     return "GenerateAllTracesInspector";
@@ -56,6 +58,14 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
     Map<BProgramSyncSnapshot, Set<BEvent>> srcNode = graph.computeIfAbsent(src, k -> new HashMap<>());
     var events = srcNode.computeIfAbsent(dst, k -> new HashSet<>());
     events.add(edge);
+  }
+
+  public boolean isGenerateTraces() {
+    return generateTraces;
+  }
+
+  public void setGenerateTraces(boolean generateTraces) {
+    this.generateTraces = generateTraces;
   }
 
   private Collection<List<BEvent>> dfsFrom(BProgramSyncSnapshot id, ArrayDeque<BProgramSyncSnapshot> nodeStack, ArrayDeque<BEvent> eventStack, Set<BProgramSyncSnapshot> endStates) {
@@ -96,10 +106,10 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
 
     var tmpEndStates = new HashSet<BProgramSyncSnapshot>();
 
-    var traces = dfsFrom(startNode, new ArrayDeque<>(), new ArrayDeque<>(), tmpEndStates)
+    var traces = generateTraces ? dfsFrom(startNode, new ArrayDeque<>(), new ArrayDeque<>(), tmpEndStates)
         .stream()
         .map(l -> l.stream().collect(Collectors.toUnmodifiableList()))
-        .collect(Collectors.toUnmodifiableList());
+        .collect(Collectors.toUnmodifiableList()) : null;
 
     var acceptingStates = Stream.concat(this.acceptingStates.stream(),tmpEndStates.stream()).distinct().collect(Collectors.toUnmodifiableMap(indexedStates::get, Function.identity()));
 
@@ -176,7 +186,7 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
               "=================\n" +
               "# States: " + states.size() + "\n" +
               "# Transition: " + edges.size() + "\n" +
-              "# Traces: " + traces.size() + "\n" +
+              (traces == null ? "" : "# Traces: " + traces.size() + "\n") +
               "=================";
     }
   }

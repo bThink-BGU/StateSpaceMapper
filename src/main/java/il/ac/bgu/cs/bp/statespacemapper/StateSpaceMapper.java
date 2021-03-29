@@ -18,6 +18,7 @@ public class StateSpaceMapper {
   private final DfsForStateMapper vfr = new DfsForStateMapper();
   private String outputPath = "graphs";
   private List<TraceResultWriter> writers = new ArrayList<>();
+  private boolean generateTraces = true;
 
   public StateSpaceMapper(String name) {
     this(name, null);
@@ -43,6 +44,14 @@ public class StateSpaceMapper {
     writers.add(new TraceResultGoalWriter(name));
   }
 
+  public boolean isGenerateTraces() {
+    return generateTraces;
+  }
+
+  public void setGenerateTraces(boolean generateTraces) {
+    this.generateTraces = generateTraces;
+  }
+
   public void setNeo4jDriver(Driver driver) {
     this.neo4jDriver = driver;
   }
@@ -51,6 +60,7 @@ public class StateSpaceMapper {
     Files.createDirectories(Paths.get(outputPath));
     initGlobalScope(bprog);
     var tracesInspection = new GenerateAllTracesInspection();
+    tracesInspection.setGenerateTraces(isGenerateTraces());
     vfr.addInspection(tracesInspection);
 
     vfr.setProgressListener(new PrintDfsVerifierListener());

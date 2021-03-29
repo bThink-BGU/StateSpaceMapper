@@ -10,15 +10,15 @@ s7
 #initial
 s4
 #accepting
-s7
 s6
+s7
 #alphabet
 0
 1
 2
 3
 4
-c1
+CORRECTCODE
 #transitions
 s0:4>s5
 s0:0>s6
@@ -45,4 +45,4 @@ s4:1>s6
 s4:2>s6
 s4:3>s6
 s4:4>s6
-s5:c1>s7
+s5:CORRECTCODE>s7

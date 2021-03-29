@@ -25,6 +25,7 @@ public class SpaceMapperRunner {
     ess.setDefaultPriority(0);
     bprog.setEventSelectionStrategy(ess);
     StateSpaceMapper mpr = new StateSpaceMapper(runName);
+    mpr.setGenerateTraces(true); // Generates a set of all possible traces.
     mpr.setOutputPath("graphs");
     if(useNeo4j) {
         try (var driver = GraphDatabase.driver("bolt://localhost:11002", AuthTokens.basic("neo4j", "StateMapper"))) {

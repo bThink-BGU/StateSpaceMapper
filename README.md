@@ -31,7 +31,9 @@ mpr.mapSpace(bprog);
 Once the run is completed, a new directory, called "graphs", will be created, with the output files inside.
 
 ## Configuration
-You can change the default output directory by calling: ```mpr.setOutputPath("graphs");```  
+You can change the default output directory by calling: ```mpr.setOutputPath("graphs");```
+
+You can generate a set of all possible traces, by calling ```mpr.setGenerateTraces(true);``` (default=true)
 
 ## Accepting states
 In your js code, you may mark certain states as accepting by using the following code:
