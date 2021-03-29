@@ -35,6 +35,8 @@ You can change the default output directory by calling: ```mpr.setOutputPath("gr
 
 You can generate a set of all possible traces, by calling ```mpr.setGenerateTraces(true);``` (default=true)
 
+Generate a regular expression by calling ```mpr.setGenerateRegularExpression(true);```
+
 ## Accepting states
 In your js code, you may mark certain states as accepting by using the following code:
 ```javascript
@@ -53,7 +55,8 @@ This type of accepting state is useful for Buchi automatons, that accepts an inp
 ## Output formats
 Currently, the supported formats are:
 * Json
-* [Noam tool](https://github.com/izuzak/noam) (allows for translating the automaton into a regular expression)
+* [Noam](https://github.com/izuzak/noam) (allows for translating the automaton into a regular expression)
+* [Regular Expression](https://github.com/izuzak/noam) - translates the Noam automata into a regular expression)
 * [GraphViz](https://graphviz.org/)
 * [GOAL](http://goal.im.ntu.edu.tw) - a graphical interactive tool for defining and manipulating Büchi automata and temporal logic formulae.
 * [Neo4J](https://neo4j.com/) (requires an installation of Neo4J and configuring the driver ```mpr.setNeo4jDriver(driver);```)
