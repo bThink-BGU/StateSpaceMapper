@@ -8,6 +8,7 @@ import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -169,6 +170,7 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
     public final BProgramSyncSnapshot startNode;
     public final int startNodeId;
     public final Map<Integer, BProgramSyncSnapshot> acceptingStates;
+    public final Map<BEvent, Integer> events;
 
     public MapperResult(Map<BProgramSyncSnapshot, Integer> states, List<Edge> edges, Collection<List<BEvent>> traces, BProgramSyncSnapshot startNode, Map<Integer, BProgramSyncSnapshot> acceptingStates) {
       this.edges = edges;
@@ -177,6 +179,8 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
       this.startNode = startNode;
       this.startNodeId = states.get(startNode);
       this.acceptingStates = acceptingStates;
+      AtomicInteger counter = new AtomicInteger();
+      events = edges.stream().map(edge -> edge.event).distinct().collect(Collectors.toMap(Function.identity(),e->counter.getAndIncrement()));
     }
 
     @Override
@@ -185,6 +189,7 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
           "StateMapper stats\n" +
               "=================\n" +
               "# States: " + states.size() + "\n" +
+              "# Events: " + events.size() + "\n" +
               "# Transition: " + edges.size() + "\n" +
               (traces == null ? "" : "# Traces: " + traces.size() + "\n") +
               "=================";

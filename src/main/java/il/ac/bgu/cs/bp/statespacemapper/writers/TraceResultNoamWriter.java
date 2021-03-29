@@ -1,5 +1,6 @@
 package il.ac.bgu.cs.bp.statespacemapper.writers;
 
+import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
 import il.ac.bgu.cs.bp.statespacemapper.GenerateAllTracesInspection;
 
@@ -10,7 +11,6 @@ import java.text.MessageFormat;
  * The resulted automaton can be translated to a regular expression using <a href="http://ivanzuzak.info/noam/webapps/fsm2regex/">fsm2regex</a>
  */
 public class TraceResultNoamWriter extends TraceResultWriter {
-
   public TraceResultNoamWriter(String name) {
     super(name, "noam");
   }
@@ -35,7 +35,7 @@ public class TraceResultNoamWriter extends TraceResultWriter {
   @Override
   protected void writeEdgesPre() {
     out.println("#alphabet");
-    result.edges.stream().map(e -> eventToString(e.event)).distinct().sorted().forEachOrdered(out::println);
+    result.events.values().stream().map(i -> "" + (char) ('a' + i)).sorted().forEachOrdered(out::println);
     out.println("#transitions");
   }
 
@@ -51,6 +51,11 @@ public class TraceResultNoamWriter extends TraceResultWriter {
   @Override
   protected String edgeToString(GenerateAllTracesInspection.Edge edge) {
     return MessageFormat.format("{0}:{1}>{2}", nodeToString(edge.srcId), eventToString(edge.event), nodeToString(edge.dstId));
+  }
+
+  @Override
+  protected String eventToString(BEvent event) {
+    return "" + (char) ('a' + result.events.get(event));
   }
 
   @Override

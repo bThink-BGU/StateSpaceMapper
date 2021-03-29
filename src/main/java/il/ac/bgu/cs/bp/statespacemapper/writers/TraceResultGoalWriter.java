@@ -1,6 +1,7 @@
 package il.ac.bgu.cs.bp.statespacemapper.writers;
 
 import il.ac.bgu.cs.bp.bpjs.internal.ScriptableUtils;
+import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
 import il.ac.bgu.cs.bp.bpjs.model.SyncStatement;
 import il.ac.bgu.cs.bp.statespacemapper.GenerateAllTracesInspection;
@@ -33,8 +34,7 @@ public class TraceResultGoalWriter extends TraceResultWriter {
     out.println("    ".repeat(level) + "<Formula/>");
     out.println("    ".repeat(level) + "<Alphabet type=\"Classical\">");
     level++;
-    result.edges.stream().map(e -> sanitize(eventToString(e.event))).collect(Collectors.toSet())
-        .forEach(e -> out.println(MessageFormat.format("{0}<Symbol>{1}</Symbol>", "    ".repeat(level), e)));
+    result.events.values().forEach(e -> out.println(MessageFormat.format("{0}<Symbol>{1}</Symbol>", "    ".repeat(level), e)));
     level--;
     out.println("    ".repeat(level) + "</Alphabet>");
   }
@@ -110,6 +110,11 @@ public class TraceResultGoalWriter extends TraceResultWriter {
     out.append("    ".repeat(level + 1)).append("<Properties/>\n");
     out.append("    ".repeat(level)).append("</Transition>");
     return out.toString();
+  }
+
+  @Override
+  protected String eventToString(BEvent event) {
+    return "" + (char) ('a' + result.events.get(event));
   }
 
   @Override

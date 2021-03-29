@@ -82,6 +82,13 @@ public class TraceResultGVWriter extends TraceResultWriter {
     return MessageFormat.format("{0}{1} -> {2} [label=\"{3}\"]", "  ".repeat(level), edge.srcId, edge.dstId, sanitize(eventToString(edge.event)));
   }
 
+  /*@Override
+  protected String eventToString(BEvent event) {
+    if(event.name.equals(""))
+      return "" + (char) ('a' + result.events.size()+1);
+    return "" + (char) ('a' + result.events.get(event));
+  }*/
+
   @Override
   protected void writePost() {
     level--;
@@ -91,9 +98,9 @@ public class TraceResultGVWriter extends TraceResultWriter {
   @Override
   protected String sanitize(String in) {
     return in
-        .replace("\"", "\\\"")
+        .replace("\"", "'")
         .replace("\n", "\\n")
-        .replace("JS_Obj ", "")
+        .replace("JS_Obj_", "")
         .replaceAll("[\\. \\-+]", "_");
   }
 }

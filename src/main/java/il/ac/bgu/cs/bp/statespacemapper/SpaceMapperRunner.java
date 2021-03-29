@@ -26,7 +26,7 @@ public class SpaceMapperRunner {
     bprog.setEventSelectionStrategy(ess);
     StateSpaceMapper mpr = new StateSpaceMapper(runName);
     mpr.setGenerateTraces(true); // Generates a set of all possible traces.
-    mpr.setGenerateRegularExpression(false); // Set to true to generate a regular expression from Noam's automata (requires the Noam writer).
+    mpr.setGenerateRegularExpression(true); // Set to true to generate a regular expression from Noam's automata (requires the Noam writer).
     mpr.setOutputPath("graphs");
     if(useNeo4j) {
         try (var driver = GraphDatabase.driver("bolt://localhost:11002", AuthTokens.basic("neo4j", "StateMapper"))) {
