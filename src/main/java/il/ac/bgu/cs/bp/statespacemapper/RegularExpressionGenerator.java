@@ -46,6 +46,34 @@ public class RegularExpressionGenerator implements Closeable {
   }
 
   public String simplifyRegex() {
+    String patterns[][]= {
+//        {"\\({2}([^\\[\\]\\(\\)]*)\\){2}", "$1"},               //((.*)) => (a)
+        {"\\(([^\\[\\]\\(\\)]*)\\)([^\\*\\+])", "$1$2"},                       //(a) => a
+        {"\\((.)\\)", "$1"},               //(a) => a
+//        {"(.*\\*){2}", "($1)"},                       //a*a* => a*
+//        {"(\\w*)\\((\\w*)\\)([\\(\\[])", "$1$2$3"},   //ab(cd) => abcd
+    };
+    int iter;
+    for (iter = 0; iter < 1000; iter++) {
+      boolean found = false;
+      for (int i = 0; i < patterns.length; i++) {
+        String regex2 = regex.replaceAll(patterns[i][0], patterns[i][1]);
+        if(!regex2.equals(regex)) {
+          regex = regex2;
+          found = true;
+          break;
+        }
+      }
+      if(!found) break;
+      /*
+          *//*.replaceAll("\\)\\(\\.\\{0(,0)?\\}\\)", ")")
+          .replaceAll("\\)\\.\\{0(,0)?\\}", ")")
+          .replaceAll("\\(\\.\\{0(,0)?\\}\\)\\(", "(")
+          .replaceAll("\\.\\{0(,0)?\\}\\(", "(")
+          .replaceAll("\\*\\(\\.\\{0(,0)?\\}\\)", "*")*//*
+          .replaceAll("\\({2}+(.*)\\){2}+", "($1)")
+          ;*/
+    }
     var simplify = (Function) scope.get("simplify", scope);
     regex = (String)simplify.call(cx, scope, scope, new Object[]{ regex });
     return regex;

@@ -36,16 +36,16 @@ bp.registerBThread('Teacher adds a quiz with questions', function () {
 
   bp.sync({ request: bp.Event('AddQuiz.Start',
       {s: 'teacher', course: c.course, name: 'quiz 1'}) })
-  bp.sync({ request: bp.Event('AddQuestion.Start',
-      {s: 'teacher', quiz: 'quiz 1', name: 'Question 1'}) })
-  bp.sync({ request: bp.Event('AddQuestion.Submit',
-      {s: 'teacher', quiz: 'quiz 1', name: 'Question 1'}) })
-  bp.sync({ request: bp.Event('AddQuestion.Start',
-      {s: 'teacher', quiz: 'quiz 1', name: 'Question 2'}) })
-  bp.sync({ request: bp.Event('AddQuestion.Submit',
-      {s: 'teacher', quiz: 'quiz 1', name: 'Question 2'}) })
   bp.sync({ request: bp.Event('AddQuiz.Submit',
       {s: 'teacher', course: c.course, name: 'quiz 1'}) })
+  bp.sync({ request: bp.Event('AddQuestion.Start',
+      {s: 'teacher', quiz: 'quiz 1', name: 'Question 1'}) })
+  bp.sync({ request: bp.Event('AddQuestion.Submit',
+      {s: 'teacher', quiz: 'quiz 1', name: 'Question 1'}) })
+  bp.sync({ request: bp.Event('AddQuestion.Start',
+      {s: 'teacher', quiz: 'quiz 1', name: 'Question 2'}) })
+  bp.sync({ request: bp.Event('AddQuestion.Submit',
+      {s: 'teacher', quiz: 'quiz 1', name: 'Question 2'}) })
 
   bp.sync({ request: bp.Event('Session.End', {s: 'teacher'}) })
 })
