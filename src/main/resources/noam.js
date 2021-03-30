@@ -3116,7 +3116,7 @@ let noam = function () {
         var fsmCache = new noam.util.HashTable();
 
         while (appliedPattern !== null && (opts.numIterations === null || iterCount < opts.numIterations)) {
-          println('iteration='+iterCount+' of '+opts.numIterations);
+          //println('iteration='+iterCount+' of '+opts.numIterations);
           appliedPattern = _simplify_iteration(treeClone, fsmCache, opts.useFsmPatterns);
 
           if (appliedPattern !== null && opts.appliedPatterns !== null) {
@@ -3839,7 +3839,7 @@ let noam = function () {
 
       function simplify(str, numIterations, appliedPatterns) {
         var tree = noam.re.string.toTree(str);
-        var treeSimplified = noam.re.tree.simplify(tree, numIterations, appliedPatterns);
+        var treeSimplified = noam.re.tree.simplify(tree, {numIterations:numIterations, appliedPatterns:appliedPatterns});
         return noam.re.tree.toString(treeSimplified);
       }
 
@@ -3873,12 +3873,12 @@ function getRE(fsm) {
   return regex;
 }
 
-function simplify(regex) {
-  let res = noam.re.string.simplify(regex);
+function simplify(regex) {  
+  let res = noam.re.string.simplify(regex,100);
   return res;
 }
 
 function println(str) {
-  /*out.println(str);
-  out.flush();*/
+  out.println(str);
+  out.flush();
 }
