@@ -3088,6 +3088,7 @@ let noam = function () {
       _regex_simplification_patterns.push({ 'pattern' : "(a+(b+c)) => a+b+c", 'type' : 'structure', 'function' : _regex_simplify_9});
 
       function simplify(tree, config) {
+
         var treeClone = noam.util.clone(tree);
 
         if (typeof config === "undefined") {
@@ -3115,6 +3116,7 @@ let noam = function () {
         var fsmCache = new noam.util.HashTable();
 
         while (appliedPattern !== null && (opts.numIterations === null || iterCount < opts.numIterations)) {
+          println('iteration='+iterCount+' of '+opts.numIterations);
           appliedPattern = _simplify_iteration(treeClone, fsmCache, opts.useFsmPatterns);
 
           if (appliedPattern !== null && opts.appliedPatterns !== null) {
@@ -3138,6 +3140,7 @@ let noam = function () {
             continue;
           }
 
+          println('pattern= '+pattern.pattern);
           result = _simplify_recursion(tree, pattern['function'], fsmCache);
 
           if (result) {
@@ -3873,4 +3876,9 @@ function getRE(fsm) {
 function simplify(regex) {
   let res = noam.re.string.simplify(regex);
   return res;
+}
+
+function println(str) {
+  /*out.println(str);
+  out.flush();*/
 }

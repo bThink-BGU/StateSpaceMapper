@@ -107,9 +107,13 @@ public class StateSpaceMapper {
       try(var reGenerator = new RegularExpressionGenerator(noam)) {
         System.out.println("// Generating regular expression from automata");
         var re = reGenerator.generateRegex();
+        var rePath = Paths.get(outputPath, name + ".re");
+        try (var out = new PrintStream(rePath.toString())) {
+          out.println(re);
+        }
         System.out.println("// Simplifying regular expression");
         re = reGenerator.simplifyRegex();
-        var rePath = Paths.get(outputPath, name + ".re");
+        rePath = Paths.get(outputPath, name + "-simplified.re");
         try (var out = new PrintStream(rePath.toString())) {
           out.println(re);
         }

@@ -3,6 +3,7 @@ package il.ac.bgu.cs.bp.statespacemapper;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.ScriptableObject;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -18,6 +19,8 @@ public class RegularExpressionGenerator implements Closeable {
     cx = Context.enter();
     String noamjs = getNoamJs();
     scope = cx.initStandardObjects();
+    Object jsOut = Context.javaToJS(System.out, scope);
+    ScriptableObject.putProperty(scope, "out", jsOut);
     cx.evaluateString(scope, noamjs, "noam.js", 1, null);
   }
 
