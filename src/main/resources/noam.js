@@ -3880,5 +3880,5 @@ function simplify(regex) {
 
 function println(str) {
   out.println(str);
-  out.flush();
+  // out.flush();
 }

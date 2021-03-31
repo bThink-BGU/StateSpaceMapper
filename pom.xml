@@ -23,6 +23,13 @@
             <artifactId>neo4j-java-driver</artifactId>
             <version>4.2.0</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/com.github.florianingerl.util/regex -->
+        <dependency>
+            <groupId>com.github.florianingerl.util</groupId>
+            <artifactId>regex</artifactId>
+            <version>1.1.9</version>
+        </dependency>
+
     </dependencies>
 
     <build>
