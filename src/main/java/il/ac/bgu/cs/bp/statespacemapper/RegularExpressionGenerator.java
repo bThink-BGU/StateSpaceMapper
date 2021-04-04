@@ -14,13 +14,14 @@ import java.nio.charset.StandardCharsets;
 public class RegularExpressionGenerator implements Closeable {
   private final static String definitions = "(?(DEFINE)" +
       "(?<brace>\\((?<body>(?>[^()]|(?'brace'))*)\\))" +
-      "(?<element>(?'brace')|\\w)" +
+      "(?<![^(+])(?<element>(?'brace')|\\w+)" +
       "(?<element_star>(?'element')\\*)" +
-      "(?<start_element>(?<=\\()(?'element'))" +
-      "(?<start_element_or>(?<=[(+])(?'element'))" +
+      "(?<any_element>(?'element')|(?'element_star'))" +
+      "(?<start_element>(?<![^(])(?'element'))" +
+      "(?<start_element_or>(?<![^(+])(?'element'))" +
       "(?<end_element>(?'element')(?=$|\\)))" +
-      "(?<or_sequence>(?>(?'element')\\+)+(?'element'))" +
-      "(?<star_sequence>(?>(?'element')\\*){2,})" +
+      "(?<or_sequence>(?>(?'any_element')\\+)+(?'any_element'))" +
+      "(?<star_sequence>(?'element_star'){2,})" +
       ")";
   private final Context cx;
   private final Scriptable scope;
@@ -53,16 +54,18 @@ public class RegularExpressionGenerator implements Closeable {
   }
 
   public static void main(String[] args) {
-    Object[] p = {"(?'start_element_or')", "--${start_element_or}"/*new DefaultCaptureReplacer() {
+//    Object[] p = {"(?<before>(?>(?'any_element')\\+)*)(?<first>(?'any_element'))\\+(?<after>(?>(?'any_element')\\+){0,}?)(?=\\k<first>[)+])", "b: ${before}--- a: ${after} --- f: ${first} 000: "/*new DefaultCaptureReplacer() {
+    Object[] p = {"(?<![^(+])(?<before>(?>(?'any_element')\\+)*)(?<first>(?'any_element'))\\+(?<after>(?>(?'any_element')\\+){0,}?)\\k<first>(?![^)+])", "${before}${after}${first}"/*new DefaultCaptureReplacer() {
+//    Object[] p = {"(?'start_element_or')", "--${start_element_or}"/*new DefaultCaptureReplacer() {
       @Override
       public String replace(CaptureTreeNode node) {
-        if ("eps".equals(node.getGroupName()))
-          return "";
+        if ("element_star".equals(node.getGroupName()))
+          return super.replace(node)+"+";
         return super.replace(node);
       }
     }*/};
 //    String s = "a$b$t(a$g)a";
-    String s = "(a*b*(c*)+d)";
+    String s = "aa+z+c+s+a+(b+a)";
     Matcher m = Pattern.compile(definitions + p[0]).matcher(s);
     System.out.println("original: " + s);
     while (m.find()) {
@@ -105,11 +108,26 @@ public class RegularExpressionGenerator implements Closeable {
         {"\\((?'element')\\)", "${element}"},                 // (a) => a
         {"\\$\\*", "\\$"},                                    // $* => $
         {"\\((?'element')\\*\\)\\*", "${element}*"},          // (a*)* => a*
-        {"\\((?'element')\\+)\\1", "$1"},                     // (a+b*)* => (a+b)*
+        {"\\((?=(?>(?'any_element')\\+)*(?'element_star'))(?'or_sequence')\\)\\*", new DefaultCaptureReplacer() {
+          @Override
+          public String replace(CaptureTreeNode node) {
+            if ("element_star".equals(node.getGroupName()))
+              return replace(node.getChildren().get(0));
+            return super.replace(node);
+          }
+        }},                                                   // (a+b*)* => (a+b)*
         {"\\$\\+(?'element_star')", "${element_star}"},       // $+a* => a*
-        {"", ""},       // (a*b*)* => (a*+b*)*
-        {"", ""},       // $a => a
-        {"", ""},       // a+a => a
+        {"(?<=\\()(?'star_sequence')(?=(?'element_star')\\)\\*)", new DefaultCaptureReplacer() {
+          @Override
+          public String replace(CaptureTreeNode node) {
+            if ("element_star".equals(node.getGroupName()))
+              return super.replace(node) + "+";
+            return super.replace(node);
+          }
+        }},                                                   // (a*b*)* => (a*+b*)*
+        {"\\$(?'element')", "${element}"},                    // $a => a
+        {"(?<before>(?>(?'any_element')\\+)*)(?<first>(?'any_element'))\\+(?<after>(?>(?'any_element')\\+){0,}?)\\k<first>(?![^)+])",
+            "${before}${after}${first}"},                     // a+a => a
         {"", ""},       // a+a* => a*
         {"", ""},       // a*a* => a*
         {"", ""},       // (aa+a)* => (a)*
