@@ -10,11 +10,12 @@ import java.io.*;
 import com.florianingerl.util.regex.*;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 public class RegularExpressionGenerator implements Closeable {
   private final static String definitions = "(?(DEFINE)" +
       "(?<brace>\\((?<body>(?>[^()]|(?'brace'))*)\\))" +
-      "(?<![^(+])(?<element>(?'brace')|\\w+)" +
+      "(?<element>(?'brace')|\\w)" +
       "(?<element_star>(?'element')\\*)" +
       "(?<any_element>(?'element')|(?'element_star'))" +
       "(?<start_element>(?<![^(])(?'element'))" +
@@ -23,6 +24,48 @@ public class RegularExpressionGenerator implements Closeable {
       "(?<or_sequence>(?>(?'any_element')\\+)+(?'any_element'))" +
       "(?<star_sequence>(?'element_star'){2,})" +
       ")";
+  private final static REPattern[] patterns = {
+      new REPattern("({20})=>()", "(?<braces>\\({20}(?<braces_body>(?>[^()]|(?'braces')|(?'brace'))*)\\){20})", "(${braces_body})"),
+      new REPattern("({10})=>()", "(?<braces>\\({10}(?<braces_body>(?>[^()]|(?'braces')|(?'brace'))*)\\){10})", "(${braces_body})"),
+      new REPattern("({5})=>()", "(?<braces>\\({5}(?<braces_body>(?>[^()]|(?'braces')|(?'brace'))*)\\){5})", "(${braces_body})"),
+      new REPattern("({2})=>()", "(?<braces>\\({5}(?<braces_body>(?>[^()]|(?'braces')|(?'brace'))*)\\){2})", "(${braces_body})"),
+      new REPattern("(a()) => ()", "\\(( ? 'element')\\(\\)\\)", " () "),
+      new REPattern("()* => ()", "\\(\\)\\*", "()"),
+      new REPattern("(a) => a", "\\((?'element')\\)", "${element}"),
+      new REPattern("$* => $", "\\$\\*", "\\$"),
+      new REPattern("(a*)* => a*", "\\((?'element')\\*\\)\\*", "${element}*"),
+      new REPattern("(a+b*)* => (a+b)*", "\\((?=(?>(?'any_element')\\+)*(?'element_star'))(?'or_sequence')\\)\\*", new DefaultCaptureReplacer() {
+        @Override
+        public String replace(CaptureTreeNode node) {
+          if ("element_star".equals(node.getGroupName()))
+            return replace(node.getChildren().get(0));
+          return super.replace(node);
+        }
+      }),
+      new REPattern("$+a* => a*", "\\$\\+(?'element_star')", "${element_star}"),
+      new REPattern("(a*b*)* => (a*+b*)*", "(?<=\\()(?'star_sequence')(?=(?'element_star')\\)\\*)", new DefaultCaptureReplacer() {
+        @Override
+        public String replace(CaptureTreeNode node) {
+          if ("element_star".equals(node.getGroupName()))
+            return super.replace(node) + "+";
+          return super.replace(node);
+        }
+      }),
+      new REPattern("$a => a", "\\$(?'element')", "${element}"),
+      new REPattern("a+a => a", "(?<before>(?>(?'any_element')\\+)*)(?<first>(?'any_element'))\\+(?<after>(?>(?'any_element')\\+){0,}?)\\k<first>(?![^)+])",
+          "${before}${after}${first}"),                     //
+      new REPattern("", "", ""),       // a+a* => a*
+      new REPattern("", "", ""),       // a*a* => a*
+      new REPattern("", "", ""),       // (aa+a)* => (a)*
+      new REPattern("", "", ""),       // (a + $)* => (a)*
+      new REPattern("", "", ""),       // (ab+ac) => a(b+c)
+      new REPattern("", "", ""),       // a*aa* => aa*
+      new REPattern("", "", ""),       // (ab+cb) => (a+c)b
+      new REPattern("", "", ""),       // a*($+b(a+b)*) => (a+b)*
+      new REPattern("", "", ""),       // ($+(a+b)*a)b* => (a+b)*
+      new REPattern("", "", ""),       // ab(cd) => abcd
+      new REPattern("", "", ""),       // (a+(b+c)) => a+b+c
+  };
   private final Context cx;
   private final Scriptable scope;
   private final String noamGraph;
@@ -86,99 +129,31 @@ public class RegularExpressionGenerator implements Closeable {
     return regex;
   }
 
-//  specials.ALT.toString = function() { return "+"; };
-//      specials.KSTAR.toString = function() { return "*"; };
-//      specials.LEFT_PAREN.toString = function() { return "("; };
-//      specials.RIGHT_PAREN.toString = function() { return ")"; };
-//      specials.EPS.toString = function() { return "$"; };
-//      makeEps Returns a node representing the empty string regular expression.
-//      LIT=literal
-
-
   public String preProcessSimplifyRegex() {
-    Object[][] patterns = {
-        // Remove redundant (((())))
-        {"(?<braces>\\({20}(?<braces_body>(?>[^()]|(?'braces')|(?'brace'))*)\\){20})", "(${braces_body})"},
-        {"(?<braces>\\({10}(?<braces_body>(?>[^()]|(?'braces')|(?'brace'))*)\\){10})", "(${braces_body})"},
-        {"(?<braces>\\({5}(?<braces_body>(?>[^()]|(?'braces')|(?'brace'))*)\\){5})", "(${braces_body})"},
-        {"(?<braces>\\({2}(?<braces_body>(?>[^()]|(?'braces')|(?'brace'))*)\\){2})", "(${braces_body})"},
-        // End of remove redundant (((())))
-        {"\\((?'element')\\(\\)\\)", "()"},                   // (a()) => ()
-        {"\\(\\)\\*", "()"},                                  // ()* => ()
-        {"\\((?'element')\\)", "${element}"},                 // (a) => a
-        {"\\$\\*", "\\$"},                                    // $* => $
-        {"\\((?'element')\\*\\)\\*", "${element}*"},          // (a*)* => a*
-        {"\\((?=(?>(?'any_element')\\+)*(?'element_star'))(?'or_sequence')\\)\\*", new DefaultCaptureReplacer() {
-          @Override
-          public String replace(CaptureTreeNode node) {
-            if ("element_star".equals(node.getGroupName()))
-              return replace(node.getChildren().get(0));
-            return super.replace(node);
-          }
-        }},                                                   // (a+b*)* => (a+b)*
-        {"\\$\\+(?'element_star')", "${element_star}"},       // $+a* => a*
-        {"(?<=\\()(?'star_sequence')(?=(?'element_star')\\)\\*)", new DefaultCaptureReplacer() {
-          @Override
-          public String replace(CaptureTreeNode node) {
-            if ("element_star".equals(node.getGroupName()))
-              return super.replace(node) + "+";
-            return super.replace(node);
-          }
-        }},                                                   // (a*b*)* => (a*+b*)*
-        {"\\$(?'element')", "${element}"},                    // $a => a
-        {"(?<before>(?>(?'any_element')\\+)*)(?<first>(?'any_element'))\\+(?<after>(?>(?'any_element')\\+){0,}?)\\k<first>(?![^)+])",
-            "${before}${after}${first}"},                     // a+a => a
-        {"", ""},       // a+a* => a*
-        {"", ""},       // a*a* => a*
-        {"", ""},       // (aa+a)* => (a)*
-        {"", ""},       // (a + $)* => (a)*
-        {"", ""},       // (ab+ac) => a(b+c)
-        {"", ""},       // a*aa* => aa*
-        {"", ""},       // (ab+cb) => (a+c)b
-        {"", ""},       // a*($+b(a+b)*) => (a+b)*
-        {"", ""},       // ($+(a+b)*a)b* => (a+b)*
-        {"", ""},       // ab(cd) => abcd
-        {"", ""},       // (a+(b+c)) => a+b+c
+    regex = RegularExpressionGenerator.preProcessSimplifyRegex(regex);
+    return regex;
+  }
 
+  public static String simplify(String regex, String pattern) {
+    return simplify(regex, Arrays.stream(patterns).filter(p->p.name.equals(pattern)).findFirst().orElseThrow());
+  }
 
-        {"(?(DEFINE)(?<brace>\\((?>[^()]|(?'brace'))*\\))(?<kstar>(?>\\w|(?'brace'))(?<star>\\*)))" +
-            "\\((?'kstar')+(?>\\w|(?'brace'))\\*\\)\\*", new DefaultCaptureReplacer() {
-          @Override
-          public String replace(CaptureTreeNode node) {
-            if ("star".equals(node.getGroupName()))
-              return "*+";
-            return super.replace(node);
-          }
-        }},   //(a*b*)* => (a*+b*)*
-        {"(?<estar>(?'element')\\*)\\k<estar>", "${estar}"},  // a*a* => a*
-        {"(?(DEFINE)(?<brace>\\((?>[^()]|(?'brace'))*\\))(?<t>(?>(?'brace')|\\w)*))(?'t')(?<eps>\\$)(?'t')", new DefaultCaptureReplacer() {
-          @Override
-          public String replace(CaptureTreeNode node) {
-            if ("eps".equals(node.getGroupName()))
-              return "";
-            return super.replace(node);
-          }
-        }},   // $a => a
-        /*{"(?(DEFINE)(?<brace>\\((?>[^()]|(?'brace'))*\\))(?<t>(?>(?'brace')|\\w)*))(?'t')(?<eps>\\$)(?'t')", new DefaultCaptureReplacer() {
-          @Override
-          public String replace(CaptureTreeNode node) {
-            if ("eps".equals(node.getGroupName()))
-              return "";
-            return super.replace(node);
-          }
-        }},   // a+a => a*/
-//        {"(\\w*)\\((\\w*)\\)([\\(\\[])", "$1$2$3"},   // ab(cd) => abcd
-    };
+  public static String simplify(String regex, REPattern pattern) {
+    Matcher m = Pattern.compile(definitions + pattern.pattern).matcher(regex);
+    String regex2;
+    if (pattern.replace instanceof String)
+      regex2 = m.replaceAll((String) pattern.replace);
+    else
+      regex2 = m.replaceAll((CaptureReplacer) pattern.replace);
+    return regex2;
+  }
+
+  public static String preProcessSimplifyRegex(String regex) {
     int iter;
     for (iter = 0; iter < 4000; iter++) {
       boolean found = false;
       for (int i = 0; i < patterns.length; i++) {
-        Matcher m = Pattern.compile(definitions + patterns[i][0]).matcher(regex);
-        String regex2;
-        if (patterns[i][1] instanceof String)
-          regex2 = m.replaceAll((String) patterns[i][1]);
-        else
-          regex2 = m.replaceAll((CaptureReplacer) patterns[i][1]);
+        String regex2 = simplify(regex, patterns[i]);
         if (!regex2.equals(regex)) {
           regex = regex2;
           found = true;
@@ -201,5 +176,24 @@ public class RegularExpressionGenerator implements Closeable {
   public void close() {
     if (cx != null)
       Context.exit();
+  }
+
+
+  static class REPattern {
+    public final String name;
+    public final String pattern;
+    public final Object replace;
+
+    REPattern(String name, String pattern, String replace) {
+      this.name = name;
+      this.pattern = pattern;
+      this.replace = replace;
+    }
+
+    REPattern(String name, String pattern, DefaultCaptureReplacer replace) {
+      this.name = name;
+      this.pattern = pattern;
+      this.replace = replace;
+    }
   }
 }
