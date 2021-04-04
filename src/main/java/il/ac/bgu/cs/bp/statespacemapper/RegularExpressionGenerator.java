@@ -111,8 +111,9 @@ public class RegularExpressionGenerator implements Closeable {
     return simplify(regex, Arrays.stream(patterns).filter(p->p.name.equals(pattern)).findFirst().orElseThrow());
   }
 
-  public static String simplify(String regex, int patternId) {
-    return simplify(regex, patterns[patternId]);
+  static String testPattern(String regex, String pattern, String replace) {
+    Matcher m = Pattern.compile(definitions + pattern).matcher(regex);
+    return m.replaceAll(replace);
   }
 
   public static String simplify(String regex, REPattern pattern) {
