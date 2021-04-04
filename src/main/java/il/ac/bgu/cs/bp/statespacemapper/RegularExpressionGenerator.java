@@ -10,12 +10,18 @@ import java.io.*;
 import com.florianingerl.util.regex.*;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class RegularExpressionGenerator implements Closeable {
+  private final static String definitions = "(?(DEFINE)" +
+      "(?<brace>\\((?<body>(?>[^()]|(?'brace'))*)\\))" +
+      "(?<element>(?'brace')|\\w)" +
+      "(?<element_star>(?'element')\\*)" +
+      "(?<start_element>(?<=\\()(?'element'))" +
+      "(?<start_element_or>(?<=[(+])(?'element'))" +
+      "(?<end_element>(?'element')(?=$|\\)))" +
+      "(?<or_sequence>(?>(?'element')\\+)+(?'element'))" +
+      "(?<star_sequence>(?>(?'element')\\*){2,})" +
+      ")";
   private final Context cx;
   private final Scriptable scope;
   private final String noamGraph;
@@ -47,15 +53,28 @@ public class RegularExpressionGenerator implements Closeable {
   }
 
   public static void main(String[] args) {
-    String p = "(?(DEFINE)(?<brace>\\((?>[^()]|(?'brace'))*\\)))(?<braces>\\({2}(?<body>(?>[^()]|(?'braces')|(?'brace'))*)\\){2})";
-    String s = "aab((af(t)wet(a(a())f)ff))b((b))";
-    Matcher m = Pattern.compile(p).matcher(s);
+    Object[] p = {"(?'start_element_or')", "--${start_element_or}"/*new DefaultCaptureReplacer() {
+      @Override
+      public String replace(CaptureTreeNode node) {
+        if ("eps".equals(node.getGroupName()))
+          return "";
+        return super.replace(node);
+      }
+    }*/};
+//    String s = "a$b$t(a$g)a";
+    String s = "(a*b*(c*)+d)";
+    Matcher m = Pattern.compile(definitions + p[0]).matcher(s);
     System.out.println("original: " + s);
     while (m.find()) {
       System.out.println("group: " + m.group());
-      System.out.println("body: " + m.group("body"));
+//      System.out.println("body: " + m.group("body"));
     }
-    System.out.println(m.replaceAll("---(${body})---"));
+    String regex2;
+    if (p[1] instanceof String)
+      regex2 = m.replaceAll((String) p[1]);
+    else
+      regex2 = m.replaceAll((CaptureReplacer) p[1]);
+    System.out.println(regex2);
   }
 
   public String generateRegex() {
@@ -64,24 +83,84 @@ public class RegularExpressionGenerator implements Closeable {
     return regex;
   }
 
+//  specials.ALT.toString = function() { return "+"; };
+//      specials.KSTAR.toString = function() { return "*"; };
+//      specials.LEFT_PAREN.toString = function() { return "("; };
+//      specials.RIGHT_PAREN.toString = function() { return ")"; };
+//      specials.EPS.toString = function() { return "$"; };
+//      makeEps Returns a node representing the empty string regular expression.
+//      LIT=literal
+
+
   public String preProcessSimplifyRegex() {
-    String patterns[][] = {
-        {"(?(DEFINE)(?<brace>\\((?>[^()]|(?'brace'))*\\)))(?<braces>\\({20}(?<body>(?>[^()]|(?'braces')|(?'brace'))*)\\){20})", "(${body})"},
-        {"(?(DEFINE)(?<brace>\\((?>[^()]|(?'brace'))*\\)))(?<braces>\\({10}(?<body>(?>[^()]|(?'braces')|(?'brace'))*)\\){10})", "(${body})"},
-        {"(?(DEFINE)(?<brace>\\((?>[^()]|(?'brace'))*\\)))(?<braces>\\({5}(?<body>(?>[^()]|(?'braces')|(?'brace'))*)\\){5})", "(${body})"},
-        {"(?(DEFINE)(?<brace>\\((?>[^()]|(?'brace'))*\\)))(?<braces>\\({2}(?<body>(?>[^()]|(?'braces')|(?'brace'))*)\\){2})", "(${body})"},
-//        {"\\(([^\\[\\]\\(\\)]*)\\)([^\\*\\+])", "$1$2"},          //(a) => a
-//        {"^((.*)\\({5})(.*)(\\){5}[^\\*\\+](.*))$", "$2$3$5"},          //(a) => a
-        {"\\((.)\\)", "$1"},                                      //(a) => a
-//        {"([^()\\[\\]]*\\*){2}", "($1)"},                       //a*a* => a*
-//        {"(\\w*)\\((\\w*)\\)([\\(\\[])", "$1$2$3"},   //ab(cd) => abcd
+    Object[][] patterns = {
+        // Remove redundant (((())))
+        {"(?<braces>\\({20}(?<braces_body>(?>[^()]|(?'braces')|(?'brace'))*)\\){20})", "(${braces_body})"},
+        {"(?<braces>\\({10}(?<braces_body>(?>[^()]|(?'braces')|(?'brace'))*)\\){10})", "(${braces_body})"},
+        {"(?<braces>\\({5}(?<braces_body>(?>[^()]|(?'braces')|(?'brace'))*)\\){5})", "(${braces_body})"},
+        {"(?<braces>\\({2}(?<braces_body>(?>[^()]|(?'braces')|(?'brace'))*)\\){2})", "(${braces_body})"},
+        // End of remove redundant (((())))
+        {"\\((?'element')\\(\\)\\)", "()"},                   // (a()) => ()
+        {"\\(\\)\\*", "()"},                                  // ()* => ()
+        {"\\((?'element')\\)", "${element}"},                 // (a) => a
+        {"\\$\\*", "\\$"},                                    // $* => $
+        {"\\((?'element')\\*\\)\\*", "${element}*"},          // (a*)* => a*
+        {"\\((?'element')\\+)\\1", "$1"},                     // (a+b*)* => (a+b)*
+        {"\\$\\+(?'element_star')", "${element_star}"},       // $+a* => a*
+        {"", ""},       // (a*b*)* => (a*+b*)*
+        {"", ""},       // $a => a
+        {"", ""},       // a+a => a
+        {"", ""},       // a+a* => a*
+        {"", ""},       // a*a* => a*
+        {"", ""},       // (aa+a)* => (a)*
+        {"", ""},       // (a + $)* => (a)*
+        {"", ""},       // (ab+ac) => a(b+c)
+        {"", ""},       // a*aa* => aa*
+        {"", ""},       // (ab+cb) => (a+c)b
+        {"", ""},       // a*($+b(a+b)*) => (a+b)*
+        {"", ""},       // ($+(a+b)*a)b* => (a+b)*
+        {"", ""},       // ab(cd) => abcd
+        {"", ""},       // (a+(b+c)) => a+b+c
+
+
+        {"(?(DEFINE)(?<brace>\\((?>[^()]|(?'brace'))*\\))(?<kstar>(?>\\w|(?'brace'))(?<star>\\*)))" +
+            "\\((?'kstar')+(?>\\w|(?'brace'))\\*\\)\\*", new DefaultCaptureReplacer() {
+          @Override
+          public String replace(CaptureTreeNode node) {
+            if ("star".equals(node.getGroupName()))
+              return "*+";
+            return super.replace(node);
+          }
+        }},   //(a*b*)* => (a*+b*)*
+        {"(?<estar>(?'element')\\*)\\k<estar>", "${estar}"},  // a*a* => a*
+        {"(?(DEFINE)(?<brace>\\((?>[^()]|(?'brace'))*\\))(?<t>(?>(?'brace')|\\w)*))(?'t')(?<eps>\\$)(?'t')", new DefaultCaptureReplacer() {
+          @Override
+          public String replace(CaptureTreeNode node) {
+            if ("eps".equals(node.getGroupName()))
+              return "";
+            return super.replace(node);
+          }
+        }},   // $a => a
+        /*{"(?(DEFINE)(?<brace>\\((?>[^()]|(?'brace'))*\\))(?<t>(?>(?'brace')|\\w)*))(?'t')(?<eps>\\$)(?'t')", new DefaultCaptureReplacer() {
+          @Override
+          public String replace(CaptureTreeNode node) {
+            if ("eps".equals(node.getGroupName()))
+              return "";
+            return super.replace(node);
+          }
+        }},   // a+a => a*/
+//        {"(\\w*)\\((\\w*)\\)([\\(\\[])", "$1$2$3"},   // ab(cd) => abcd
     };
     int iter;
     for (iter = 0; iter < 4000; iter++) {
       boolean found = false;
       for (int i = 0; i < patterns.length; i++) {
-        Matcher m = Pattern.compile(patterns[i][0]).matcher(regex);
-        String regex2 = m.replaceAll(patterns[i][1]);
+        Matcher m = Pattern.compile(definitions + patterns[i][0]).matcher(regex);
+        String regex2;
+        if (patterns[i][1] instanceof String)
+          regex2 = m.replaceAll((String) patterns[i][1]);
+        else
+          regex2 = m.replaceAll((CaptureReplacer) patterns[i][1]);
         if (!regex2.equals(regex)) {
           regex = regex2;
           found = true;

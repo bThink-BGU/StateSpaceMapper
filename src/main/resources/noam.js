@@ -3200,7 +3200,7 @@ let noam = function () {
         };
       }
 
-      // Wraps the given expressin tree unde a Kleene star operator.
+      // Wraps the given expression tree under a Kleene star operator.
       // Returns the root of the new tree.
       function makeKStar(expr) {
         return {
