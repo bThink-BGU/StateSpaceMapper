@@ -279,4 +279,84 @@ class RegularExpressionGeneratorTest {
             {"((a*b*c*)*d*)*", "((a*b*c*)*+d*)*"},
         });
   }
+
+  @Test
+  void test13() {
+//    testDefinition("(a+b*)*", "\\((?=(?>(?'element')\\+)*(?'element_star'))(?'or_any_element_sequence')\\)\\*", "()", "(a+b)*");
+    testSimplify("$a=>a",
+        new String[][]{
+            {"$a", "a"},
+            {"a$", "a"},
+            {"a$b", "ab"},
+            {"$ab", "ab"},
+            {"ab$", "ab"},
+            {"ab$cd", "abcd"},
+        });
+  }
+
+  @Test
+  void test14() {
+//    testDefinition("a+a", "(?<first>(?'start_any_element_or')(?'any_element')*)(?<middle>(\\+(?'any_element')+)*)\\+\\k<first>(?![^)+])", "|${first}|${middle}", "(a+b)*");
+    testSimplify("a+a=>a",
+        new String[][]{
+            {"a+a", "a"},
+            {"aa+a", "aa+a"},
+            {"a+aa", "a+aa"},
+            {"()a+a", "()a+a"},
+            {"a()+a", "a()+a"},
+            {"aa+aa", "aa"},
+            {"c+aa+aa", "c+aa"},
+            {"aa+aa+c", "aa+c"},
+            {"aa+c+aa", "aa+c"},
+            {"aa+cc+aa", "aa+cc"},
+            {"dd+aa+cc+aac", "dd+aa+cc+aac"},
+            {"dd+aa+cc+aa*", "dd+aa+cc+aa*"},
+        });
+  }
+
+  @Test
+  void test15() {
+//    testDefinition("a+a*", "(?<first>(?<![^(+])(?'element'))(?<middle>(\\+(?'any_element')+)*)", "|${first}|${middle}", "(a+b)*");
+    testSimplify("a+a*=>a*",
+        new String[][]{
+            {"a+a*", "a*"},
+            {"(a+b)+(a+b)*", "(a+b)*"},
+            {"aa*+a", "aa*+a"},
+            {"c+a+a*", "c+a*"},
+            {"a*+a*+c", "a*+a*+c"},
+            {"aa+c+aa*", "aa+c+aa*"},
+        });
+  }
+
+  @Test
+  void test16() {
+//    testDefinition("a*+a*+c", "(?<first>(?<![^(+])(?'element'))\\*(?<middle>(\\+(?'any_element')+)*)\\+\\k<first>(?![^)])", "|${first}|-${middle}-", "(a+b)*");
+    testSimplify("a*+a=>a*",
+        new String[][]{
+            {"a*+a", "a*"},
+            {"(a+b)*+(a+b)", "(a+b)*"},
+            {"aa*+a", "aa*+a"},
+            {"c+a*+a", "c+a*"},
+            {"c+a+a*", "c+a+a*"},
+            {"a*+a+c", "a*+c"},
+            {"a*+a*+c", "a*+a*+c"},
+            {"aa*+c+aa", "aa*+c+aa"},
+        });
+  }
+
+  @Test
+  void test17() {
+//    testDefinition("a*+a*+c", "(?<first>(?<![^(+])(?'element'))\\*(?<middle>(\\+(?'any_element')+)*)\\+\\k<first>(?![^)])", "|${first}|-${middle}-", "(a+b)*");
+    testSimplify("a*a*=>a*",
+        new String[][]{
+            {"a*a*", "a*"},
+            {"(a+b)*(a+b)*", "(a+b)*"},
+            {"aa*a*", "aa*"},
+            {"aa*a*", "aa*"},
+            {"a*a*a", "a*a"},
+            {"ca*a*d", "ca*d"},
+            {"aa*", "aa*"},
+            {"a*a", "a*a"},
+        });
+  }
 }

@@ -55,20 +55,20 @@ public class RegularExpressionGenerator implements Closeable {
           return super.replace(node);
         }
       }),
-      new REPattern(13, "$a => a", "\\$(?'element')", "${element}"),
-      new REPattern(14, "a+a => a", "(?<before>(?>(?'any_element')\\+)*)(?<first>(?'any_element'))\\+(?<after>(?>(?'any_element')\\+){0,}?)\\k<first>(?![^)+])",
-          "${before}${after}${first}"),                     //
-      new REPattern(15, "", "", ""),       // a+a* => a*
-      new REPattern(16, "", "", ""),       // a*a* => a*
-      new REPattern(17, "", "", ""),       // (aa+a)* => (a)*
-      new REPattern(18, "", "", ""),       // (a + $)* => (a)*
-      new REPattern(19, "", "", ""),       // (ab+ac) => a(b+c)
-      new REPattern(20, "", "", ""),       // a*aa* => aa*
-      new REPattern(21, "", "", ""),       // (ab+cb) => (a+c)b
-      new REPattern(22, "", "", ""),       // a*($+b(a+b)*) => (a+b)*
-      new REPattern(23, "", "", ""),       // ($+(a+b)*a)b* => (a+b)*
-      new REPattern(24, "", "", ""),       // ab(cd) => abcd
-      new REPattern(25, "", "", ""),       // (a+(b+c)) => a+b+c
+      new REPattern(13, "$a=>a", "(?>\\$(?'any_element'))|(?>(?'any_element')\\$)", "${any_element}"),
+      new REPattern(14, "a+a=>a", "(?<first>(?'start_any_element_or')(?'any_element')*)(?<middle>(\\+(?'any_element')+)*)\\+\\k<first>(?![^)+])", "${first}${middle}"),
+      new REPattern(15, "a+a*=>a*", "(?<first>(?<![^(+])(?'element'))(?<middle>(\\+(?'any_element')+)*)\\+\\k<first>\\*(?![^)+])", "${first}*${middle}"),
+      new REPattern(16, "a*+a=>a*", "(?<first>(?<![^(+])(?'element'))\\*(?<middle>(\\+(?'any_element')+)*)\\+\\k<first>(?![^)+])", "${first}*${middle}"),
+      new REPattern(17, "a*a*=>a*", "(?'element_star')\\k<element_star>", "${element_star}"),
+/*      new REPattern(18, "(aa+a)*=>(a)*", "", ""),
+      new REPattern(19, "(a+$)*=>(a)*", "", ""),
+      new REPattern(20, "(ab+ac)=>a(b+c)", "", ""),
+      new REPattern(21, "a*aa*=>aa*", "", ""),
+      new REPattern(22, "(ab+cb)=>(a+c)b", "", ""),
+      new REPattern(23, "a*($+b(a+b)*)=>(a+b)*", "", ""),
+      new REPattern(24, "($+(a+b)*a)b*=>(a+b)*", "", ""),
+      new REPattern(25, "ab(cd)=>abcd", "", ""),
+      new REPattern(26, "(a+(b+c))=>a+b+c", "", ""),*/
   };
   private final Context cx;
   private final Scriptable scope;
