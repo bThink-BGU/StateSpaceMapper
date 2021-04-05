@@ -11,30 +11,34 @@ import com.florianingerl.util.regex.*;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.function.Supplier;
 
 public class RegularExpressionGenerator implements Closeable {
   private final static String definitions = "(?(DEFINE)" +
       "(?<brace>\\((?<body>(?>[^()]|(?'brace'))*)\\))" +
       "(?<element>(?'brace')|\\w)" +
       "(?<element_star>(?'element')\\*)" +
-      "(?<any_element>(?'element')|(?'element_star'))" +
-      "(?<start_element>(?<![^(])(?'element'))" +
-      "(?<start_element_or>(?<![^(+])(?'element'))" +
-      "(?<end_element>(?'element')(?=$|\\)))" +
-      "(?<or_sequence>(?>(?'any_element')\\+)+(?'any_element'))" +
-      "(?<star_sequence>(?'element_star'){2,})" +
+      "(?<any_element>(?'element_star')|(?'element'))" +
+      "(?<start_any_element>(?<![^(])(?'any_element'))" +
+      "(?<start_any_element_or>(?<![^(+])(?'any_element'))" +
+      "(?<end_any_element>(?'any_element')(?=$|\\)))" +
+      "(?<or_sequence>(?>(?'any_element')+\\+)+(?'any_element')+)" +
+      "(?<or_any_element_sequence>(?>(?'any_element')\\+)+(?'any_element')(?!(?'any_element')))" +
+      "(?<and_sequence>(?'any_element'){2,})" +
+      "(?<star_sequence>(?<![\\w)])(?'element_star'){2,}(?!(?'element')))" +
       ")";
   private final static REPattern[] patterns = {
       new REPattern(0, "({20})=>()", "(?<braces>\\({20}(?<braces_body>(?>[^()]|(?'braces')|(?'brace'))*)\\){20})", "(${braces_body})"),
       new REPattern(1, "({10})=>()", "(?<braces>\\({10}(?<braces_body>(?>[^()]|(?'braces')|(?'brace'))*)\\){10})", "(${braces_body})"),
       new REPattern(2, "({5})=>()", "(?<braces>\\({5}(?<braces_body>(?>[^()]|(?'braces')|(?'brace'))*)\\){5})", "(${braces_body})"),
       new REPattern(3, "({2})=>()", "(?<braces>\\({2}(?<braces_body>(?>[^()]|(?'braces')|(?'brace'))*)\\){2})", "(${braces_body})"),
-      new REPattern(4, "(a()) => ()", "\\(( ? 'element')\\(\\)\\)", " () "),
-      new REPattern(5, "()* => ()", "\\(\\)\\*", "()"),
-      new REPattern(6, "(a) => a", "\\((?'element')\\)", "${element}"),
-      new REPattern(7, "$* => $", "\\$\\*", "\\$"),
-      new REPattern(8, "(a*)* => a*", "\\((?'element')\\*\\)\\*", "${element}*"),
-      new REPattern(9, "(a+b*)* => (a+b)*", "\\((?=(?>(?'any_element')\\+)*(?'element_star'))(?'or_sequence')\\)\\*", new DefaultCaptureReplacer() {
+      new REPattern(4, "a()=>()", "(?=(?'and_sequence'))(?'any_element')*\\(\\)(?'any_element')*", "()"),
+      new REPattern(5, "()*=>()", "\\(\\)\\*", "()"),
+      new REPattern(6, "(a)=>a", "\\((?'element')\\)", "${element}"),
+      new REPattern(7, "(a*)=>a*", "\\((?'element_star')\\)(?!\\*)", "${element_star}"),
+      new REPattern(8, "$*=>$", "\\$\\*", "\\$"),
+      new REPattern(9, "(a*)*=>a*", "\\((?<seq>(?'element_star')+)\\)\\*", "${seq}"),
+      new REPattern(10, "(a+b*)*=>(a+b)*", "(?>\\()(?=(?'or_any_element_sequence')\\))(?>(?'element')\\+)*(?'element_star')(\\+(?'any_element'))*(?>\\)\\*)", new DefaultCaptureReplacer() {
         @Override
         public String replace(CaptureTreeNode node) {
           if ("element_star".equals(node.getGroupName()))
@@ -42,8 +46,8 @@ public class RegularExpressionGenerator implements Closeable {
           return super.replace(node);
         }
       }),
-      new REPattern(10, "$+a* => a*", "\\$\\+(?'element_star')", "${element_star}"),
-      new REPattern(11, "(a*b*)* => (a*+b*)*", "(?<=\\()(?'star_sequence')(?=(?'element_star')\\)\\*)", new DefaultCaptureReplacer() {
+      new REPattern(11, "$+a*=>a*", "(?<![\\w\\)])(?>\\$\\+(?'element_star')(?!(?'any_element')))|(?>(?<![^(+])(?'element_star')\\+\\$(?!(?'any_element')))", "${element_star}"),
+      new REPattern(12, "(a*b*)*=>(a*+b*)*", "(?>\\()(?'element_star')+(?=(?'element_star')\\)\\*)", new DefaultCaptureReplacer() {
         @Override
         public String replace(CaptureTreeNode node) {
           if ("element_star".equals(node.getGroupName()))
@@ -51,20 +55,20 @@ public class RegularExpressionGenerator implements Closeable {
           return super.replace(node);
         }
       }),
-      new REPattern(12, "$a => a", "\\$(?'element')", "${element}"),
-      new REPattern(13, "a+a => a", "(?<before>(?>(?'any_element')\\+)*)(?<first>(?'any_element'))\\+(?<after>(?>(?'any_element')\\+){0,}?)\\k<first>(?![^)+])",
+      new REPattern(13, "$a => a", "\\$(?'element')", "${element}"),
+      new REPattern(14, "a+a => a", "(?<before>(?>(?'any_element')\\+)*)(?<first>(?'any_element'))\\+(?<after>(?>(?'any_element')\\+){0,}?)\\k<first>(?![^)+])",
           "${before}${after}${first}"),                     //
-      new REPattern(14, "", "", ""),       // a+a* => a*
-      new REPattern(15, "", "", ""),       // a*a* => a*
-      new REPattern(16, "", "", ""),       // (aa+a)* => (a)*
-      new REPattern(17, "", "", ""),       // (a + $)* => (a)*
-      new REPattern(18, "", "", ""),       // (ab+ac) => a(b+c)
-      new REPattern(19, "", "", ""),       // a*aa* => aa*
-      new REPattern(20, "", "", ""),       // (ab+cb) => (a+c)b
-      new REPattern(21, "", "", ""),       // a*($+b(a+b)*) => (a+b)*
-      new REPattern(22, "", "", ""),       // ($+(a+b)*a)b* => (a+b)*
-      new REPattern(23, "", "", ""),       // ab(cd) => abcd
-      new REPattern(24, "", "", ""),       // (a+(b+c)) => a+b+c
+      new REPattern(15, "", "", ""),       // a+a* => a*
+      new REPattern(16, "", "", ""),       // a*a* => a*
+      new REPattern(17, "", "", ""),       // (aa+a)* => (a)*
+      new REPattern(18, "", "", ""),       // (a + $)* => (a)*
+      new REPattern(19, "", "", ""),       // (ab+ac) => a(b+c)
+      new REPattern(20, "", "", ""),       // a*aa* => aa*
+      new REPattern(21, "", "", ""),       // (ab+cb) => (a+c)b
+      new REPattern(22, "", "", ""),       // a*($+b(a+b)*) => (a+b)*
+      new REPattern(23, "", "", ""),       // ($+(a+b)*a)b* => (a+b)*
+      new REPattern(24, "", "", ""),       // ab(cd) => abcd
+      new REPattern(25, "", "", ""),       // (a+(b+c)) => a+b+c
   };
   private final Context cx;
   private final Scriptable scope;
@@ -108,11 +112,13 @@ public class RegularExpressionGenerator implements Closeable {
   }
 
   public static String simplify(String regex, String pattern) {
-    return simplify(regex, Arrays.stream(patterns).filter(p->p.name.equals(pattern)).findFirst().orElseThrow());
+    return simplify(regex, Arrays.stream(patterns).filter(p->p.name.equals(pattern)).findFirst().orElseThrow(() -> {
+      throw new RuntimeException("No such pattern: " + pattern);
+    }));
   }
 
-  static String testPattern(String regex, String pattern, String replace) {
-    Matcher m = Pattern.compile(definitions + pattern).matcher(regex);
+  static String testPattern(String searchString, String pattern, String replace) {
+    Matcher m = Pattern.compile(definitions + pattern).matcher(searchString);
     return m.replaceAll(replace);
   }
 
