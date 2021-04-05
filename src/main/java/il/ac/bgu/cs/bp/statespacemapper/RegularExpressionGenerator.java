@@ -16,7 +16,7 @@ import java.util.function.Supplier;
 public class RegularExpressionGenerator implements Closeable {
   private final static String definitions = "(?(DEFINE)" +
       "(?<brace>\\((?<body>(?>[^()]|(?'brace'))*)\\))" +
-      "(?<element>(?'brace')|\\w)" +
+      "(?<element>(?'brace')|[\\w$])" +
       "(?<element_star>(?'element')\\*)" +
       "(?<any_element>(?'element_star')|(?'element'))" +
       "(?<start_any_element>(?<![^(])(?'any_element'))" +
@@ -25,7 +25,7 @@ public class RegularExpressionGenerator implements Closeable {
       "(?<or_sequence>(?>(?'any_element')+\\+)+(?'any_element')+)" +
       "(?<or_any_element_sequence>(?>(?'any_element')\\+)+(?'any_element')(?!(?'any_element')))" +
       "(?<and_sequence>(?'any_element'){2,})" +
-      "(?<star_sequence>(?<![\\w)])(?'element_star'){2,}(?!(?'element')))" +
+      "(?<star_sequence>(?<![\\w$)])(?'element_star'){2,}(?!(?'element')))" +
       ")";
   private final static REPattern[] patterns = {
       new REPattern(0, "({20})=>()", "(?<braces>\\({20}(?<braces_body>(?>[^()]|(?'braces')|(?'brace'))*)\\){20})", "(${braces_body})"),
@@ -46,7 +46,7 @@ public class RegularExpressionGenerator implements Closeable {
           return super.replace(node);
         }
       }),
-      new REPattern(11, "$+a*=>a*", "(?<![\\w\\)])(?>\\$\\+(?'element_star')(?!(?'any_element')))|(?>(?<![^(+])(?'element_star')\\+\\$(?!(?'any_element')))", "${element_star}"),
+      new REPattern(11, "$+a*=>a*", "(?<![\\w$)])(?>\\$\\+(?'element_star')(?!(?'any_element')))|(?>(?<![^(+])(?'element_star')\\+\\$(?!(?'any_element')))", "${element_star}"),
       new REPattern(12, "(a*b*)*=>(a*+b*)*", "(?>\\()(?'element_star')+(?=(?'element_star')\\)\\*)", new DefaultCaptureReplacer() {
         @Override
         public String replace(CaptureTreeNode node) {

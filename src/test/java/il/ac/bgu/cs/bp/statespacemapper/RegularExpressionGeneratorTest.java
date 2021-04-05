@@ -20,8 +20,8 @@ class RegularExpressionGeneratorTest {
   @Test
   void testDefinitionsElement() {
     String[][] element = {
-        {"a*(bc+d)+e*+()", "(?'element')", "<${element}>", "<a>*<(bc+d)>+<e>*+<()>"},
-        {"(a*(bc+d)+e*+())f(gh*+i)", "(?'element')", "<${element}>", "<(a*(bc+d)+e*+())><f><(gh*+i)>"},
+        {"a*(bc+d)+e*+()+$", "(?'element')", "<${element}>", "<a>*<(bc+d)>+<e>*+<()>+<$>"},
+        {"(a*(bc+d)+e*+())$f(gh*+i)", "(?'element')", "<${element}>", "<(a*(bc+d)+e*+())><$><f><(gh*+i)>"},
     };
     Arrays.stream(element).forEach(arr -> testDefinition(arr[0], arr[1], arr[2], arr[3]));
   }
@@ -144,7 +144,9 @@ class RegularExpressionGeneratorTest {
   void test3() { //({2})=>()
     testSimplify("({2})=>()",
         new String[][]{
+            {"(a)", "(a)"},
             {"((a))", "(a)"},
+            {"(((a)))", "((a))"},
             {"((aa))", "(aa)"},
             {"((a*))", "(a*)"},
             {"((a*+b*))", "(a*+b*)"},
@@ -185,6 +187,7 @@ class RegularExpressionGeneratorTest {
         new String[][]{
             {"()", "()"},
             {"(a)", "a"},
+            {"(a)*", "a*"},
             {"(a*)", "(a*)"},
         });
   }
@@ -194,7 +197,7 @@ class RegularExpressionGeneratorTest {
     testSimplify("(a*)=>a*",
         new String[][]{
             {"()", "()"},
-            {"(a)", "(a)"},
+            {"(a)*", "(a)*"},
             {"(a*)", "a*"},
             {"(a*)*", "(a*)*"},
         });

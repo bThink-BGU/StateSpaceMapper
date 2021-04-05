@@ -2048,7 +2048,7 @@ let noam = function () {
         Array.isArray(grammar.productions))) {
       throw new Error('Grammar must be defined and have nonterminals, terminals, initialNonterminal and productions array properties!');
     }
-    
+
     var i, j;
 
     if (grammar.nonterminals.length < 1) {
@@ -2104,7 +2104,7 @@ let noam = function () {
       }
 
       if (production.right.length === 1 && production.right[0] === noam.grammar.epsilonSymbol) {
-        
+
       } else {
         if (production.right.length === 0) {
           throw new Error('Right side of production must have at least one terminal or nonterminal or epsilon symbol');
@@ -2402,7 +2402,10 @@ let noam = function () {
       function _regex_simplify_1(tree, fsmCache) {
         if (tree.tag === tags.SEQ && tree.elements.length === 1){
           tree.tag = tree.elements[0].tag;
-
+          println("1: " + tree.tag)
+          for (p in tree.elements[0]) {
+            println(p+": " + tree.elements[0][p])
+          }
           copyAndDeleteProperties(tree, tree.elements[0]);
           return true;
         }
@@ -2414,7 +2417,7 @@ let noam = function () {
       function _regex_simplify_2(tree, fsmCache) {
         if (tree.tag === tags.ALT && tree.choices.length === 1) {
           tree.tag = tree.choices[0].tag;
-
+          println("1: " + tree.tag)
           copyAndDeleteProperties(tree, tree.choices[0]);
           return true;
         }
@@ -3144,7 +3147,7 @@ let noam = function () {
           result = _simplify_recursion(tree, pattern['function'], fsmCache);
 
           if (result) {
-            if(iteration % 500 === 0)
+            // if(iteration % 500 === 0)
               println('applied pattern: '+pattern.pattern);
             return pattern.pattern;
           }
@@ -3875,7 +3878,7 @@ function getRE(fsm) {
   return regex;
 }
 
-function simplify(regex) {  
+function simplify(regex) {
   let res = noam.re.string.simplify(regex);
   // let res = noam.re.string.simplify(regex,10000);
   return res;
