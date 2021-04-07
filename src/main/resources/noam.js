@@ -2402,10 +2402,8 @@ let noam = function () {
       function _regex_simplify_1(tree, fsmCache) {
         if (tree.tag === tags.SEQ && tree.elements.length === 1){
           tree.tag = tree.elements[0].tag;
-          println("1: " + tree.tag)
-          for (p in tree.elements[0]) {
-            println(p+": " + tree.elements[0][p])
-          }
+          // println("1: " + tree.tag)
+          // println(JSON.stringify(tree))
           copyAndDeleteProperties(tree, tree.elements[0]);
           return true;
         }
@@ -2417,7 +2415,7 @@ let noam = function () {
       function _regex_simplify_2(tree, fsmCache) {
         if (tree.tag === tags.ALT && tree.choices.length === 1) {
           tree.tag = tree.choices[0].tag;
-          println("1: " + tree.tag)
+          // println("2: " + tree.tag)
           copyAndDeleteProperties(tree, tree.choices[0]);
           return true;
         }
@@ -3879,8 +3877,8 @@ function getRE(fsm) {
 }
 
 function simplify(regex) {
-  let res = noam.re.string.simplify(regex);
-  // let res = noam.re.string.simplify(regex,10000);
+  // let res = noam.re.string.simplify(regex);
+  let res = noam.re.string.simplify(regex,1);
   return res;
 }
 

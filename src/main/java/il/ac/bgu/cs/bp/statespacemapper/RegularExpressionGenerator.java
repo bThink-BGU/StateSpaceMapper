@@ -10,8 +10,8 @@ import java.io.*;
 import com.florianingerl.util.regex.*;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.function.Supplier;
 
 public class RegularExpressionGenerator implements Closeable {
   private final static String definitions = "(?(DEFINE)" +
@@ -34,8 +34,8 @@ public class RegularExpressionGenerator implements Closeable {
       new REPattern(3, "({2})=>()", "(?<braces>\\({2}(?<braces_body>(?>[^()]|(?'braces')|(?'brace'))*)\\){2})", "(${braces_body})"),
       new REPattern(4, "a()=>()", "(?=(?'and_sequence'))(?'any_element')*\\(\\)(?'any_element')*", "()"),
       new REPattern(5, "()*=>()", "\\(\\)\\*", "()"),
-      new REPattern(6, "(a)=>a", "\\((?'element')\\)", "${element}"),
-      new REPattern(7, "(a*)=>a*", "\\((?'element_star')\\)(?!\\*)", "${element_star}"),
+      new REPattern(6, "(a)*=>a*", "\\((?'element')\\)\\*", "${element}*"),
+      new REPattern(7, "(bc)d=>abcd", "\\((?<seq>(?'any_element')+)\\)(?!\\*)", "${seq}"),
       new REPattern(8, "$*=>$", "\\$\\*", "\\$"),
       new REPattern(9, "(a*)*=>a*", "\\((?<seq>(?'element_star')+)\\)\\*", "${seq}"),
       new REPattern(10, "(a+b*)*=>(a+b)*", "(?>\\()(?=(?'or_any_element_sequence')\\))(?>(?'element')\\+)*(?'element_star')(\\+(?'any_element'))*(?>\\)\\*)", new DefaultCaptureReplacer() {
@@ -60,15 +60,99 @@ public class RegularExpressionGenerator implements Closeable {
       new REPattern(15, "a+a*=>a*", "(?<first>(?<![^(+])(?'element'))(?<middle>(\\+(?'any_element')+)*)\\+\\k<first>\\*(?![^)+])", "${first}*${middle}"),
       new REPattern(16, "a*+a=>a*", "(?<first>(?<![^(+])(?'element'))\\*(?<middle>(\\+(?'any_element')+)*)\\+\\k<first>(?![^)+])", "${first}*${middle}"),
       new REPattern(17, "a*a*=>a*", "(?'element_star')\\k<element_star>", "${element_star}"),
-/*      new REPattern(18, "(aa+a)*=>(a)*", "", ""),
-      new REPattern(19, "(a+$)*=>(a)*", "", ""),
-      new REPattern(20, "(ab+ac)=>a(b+c)", "", ""),
-      new REPattern(21, "a*aa*=>aa*", "", ""),
-      new REPattern(22, "(ab+cb)=>(a+c)b", "", ""),
+      new REPattern(18, "(aaaa+aa)*=>(aa)*", "(?>\\()(?=(?'or_sequence')\\)\\*)(?<before>((?'any_element')+\\+)*)(?<first>(?<![^(+])(?'any_element')+)\\k<first>+(?<middle>(\\+(?'any_element')+)*)\\+\\k<first>(?![^)+])", "(${before}${first}${middle}"),
+      new REPattern(19, "(aa+aaaa)*=>(aa)*", "(?>\\()(?=(?'or_sequence')\\)\\*)(?<before>((?'any_element')+\\+)*)(?<first>(?<![^(+])(?'any_element')+)(?<middle>(\\+(?'any_element')+)*)\\+\\k<first>+(?![^)+])", "(${before}${first}${middle}"),
+      new REPattern(20, "(ab+d+ac+a)=>(d+a(b+c+$))", "(?<![^(+])(?<start>(?'any_element')+)(?<as>(?'any_element')*)(?<middle>(?>\\+(?'any_element')*)*?)((?<repeat>\\+\\k<start>)(?<ar>(?'any_element')*))+(?![^+)])(?<end>)", new DefaultCaptureReplacer() {
+        private ArrayList<String> matches;
+        private String start;
+        private boolean hasMiddle;
+
+        @Override
+        public String replace(CaptureTreeNode node) {
+          if (node.getGroupNumber() == 0) {
+            matches = new ArrayList<>();
+            hasMiddle = false;
+          }
+          if ("end".equals(node.getGroupName())) {
+            return super.replace(node) + (hasMiddle ? "+" : "") + this.start + "(" + String.join("+", matches) + ")";
+          }
+          if (Arrays.asList("as", "ar").contains(node.getGroupName())) {
+            String capture = node.getCapture().getValue();
+            if (capture.length() == 0) capture = "$";
+            matches.add(capture);
+            return "";
+          }
+          if ("start".equals(node.getGroupName())) {
+            this.start = node.getCapture().getValue();
+            return "";
+          }
+          if ("repeat".equals(node.getGroupName())) {
+            return "";
+          }
+          if ("middle".equals(node.getGroupName())) {
+            String capture = super.replace(node);
+            if (capture.length() > 1) {
+              hasMiddle = true;
+              capture = capture.substring(1);
+            }
+            return capture;
+          }
+          return super.replace(node);
+        }
+      }),
+      new REPattern(21, "(ba+d+ca)=>(d+(b+c)a)", "(?<![^+(])(?<bs>(?'any_element')*)(?<start>(?'any_element')+)(?<middle>(?>\\+(?'any_element')*)*?)((?<drop>\\+)(?<br>(?'any_element')*)(?<repeat>\\k<start>))+(?![^+)])(?<end>)", new DefaultCaptureReplacer() {
+        private ArrayList<String> matches;
+        private String start;
+        private boolean hasMiddle;
+
+        @Override
+        public String replace(CaptureTreeNode node) {
+          if (node.getGroupNumber() == 0) {
+            matches = new ArrayList<>();
+            hasMiddle = false;
+          }
+          if ("end".equals(node.getGroupName())) {
+            return super.replace(node) + (hasMiddle ? "+" : "") + "(" + String.join("+", matches) + ")" + this.start;
+          }
+          if (Arrays.asList("bs", "br").contains(node.getGroupName())) {
+            String capture = node.getCapture().getValue();
+            if (capture.length() == 0) capture = "$";
+            matches.add(capture);
+            return "";
+          }
+          if ("start".equals(node.getGroupName())) {
+            this.start = node.getCapture().getValue();
+            return "";
+          }
+          if (Arrays.asList("repeat","drop").contains(node.getGroupName())) {
+            return "";
+          }
+          if ("middle".equals(node.getGroupName())) {
+            String capture = super.replace(node);
+            if (capture.length() > 1) {
+              hasMiddle = true;
+              capture = capture.substring(1);
+            }
+            return capture;
+          }
+          return super.replace(node);
+        }
+      }),
+      new REPattern(22, "(a+$)*=>(a)*", "(?>\\()(?=(?'or_sequence')\\)\\*)((?<before>\\$\\+)|((?>(?'any_element')+\\+)*(?'any_element')+(?<after>\\+\\$)(?![^+)])))", new DefaultCaptureReplacer() {
+        @Override
+        public String replace(CaptureTreeNode node) {
+          if (Arrays.asList("before", "after").contains(node.getGroupName())) {
+            return "";
+          }
+          return super.replace(node);
+        }
+      }),
+      new REPattern(23, "a*aa*=>aa*", "(?<first>(?'element'))\\*(?<second>\\k<first>+)\\*", "${second}*"),
+/*
       new REPattern(23, "a*($+b(a+b)*)=>(a+b)*", "", ""),
-      new REPattern(24, "($+(a+b)*a)b*=>(a+b)*", "", ""),
-      new REPattern(25, "ab(cd)=>abcd", "", ""),
-      new REPattern(26, "(a+(b+c))=>a+b+c", "", ""),*/
+      new REPattern(24, "($+(a+b)*a)b*=>(a+b)*", "", ""),*/
+      new REPattern(25, "a+(b+c)=>a+b+c", "(?<![^+(])\\((?'or_sequence')\\)(?![^+)])", "${or_sequence}"),
+
   };
   private final Context cx;
   private final Scriptable scope;
@@ -112,7 +196,7 @@ public class RegularExpressionGenerator implements Closeable {
   }
 
   public static String simplify(String regex, String pattern) {
-    return simplify(regex, Arrays.stream(patterns).filter(p->p.name.equals(pattern)).findFirst().orElseThrow(() -> {
+    return simplify(regex, Arrays.stream(patterns).filter(p -> p.name.equals(pattern)).findFirst().orElseThrow(() -> {
       throw new RuntimeException("No such pattern: " + pattern);
     }));
   }

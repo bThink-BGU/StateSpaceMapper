@@ -183,23 +183,26 @@ class RegularExpressionGeneratorTest {
 
   @Test
   void test6() {
-    testSimplify("(a)=>a",
+    testSimplify("(a)*=>a*",
         new String[][]{
             {"()", "()"},
-            {"(a)", "a"},
+            {"(a)", "(a)"},
             {"(a)*", "a*"},
+            {"b(a)*c", "ba*c"},
             {"(a*)", "(a*)"},
         });
   }
 
   @Test
   void test7() {
-    testSimplify("(a*)=>a*",
+    testSimplify("(bc)d=>abcd",
         new String[][]{
-            {"()", "()"},
-            {"(a)*", "(a)*"},
-            {"(a*)", "a*"},
-            {"(a*)*", "(a*)*"},
+            {"a(bc)d", "abcd"},
+            {"(ab)cd", "abcd"},
+            {"(ab)*cd", "(ab)*cd"},
+            {"ab(cd)*", "ab(cd)*"},
+            {"ab(cd)", "abcd"},
+            {"(cd)", "cd"},
         });
   }
 
@@ -353,13 +356,144 @@ class RegularExpressionGeneratorTest {
     testSimplify("a*a*=>a*",
         new String[][]{
             {"a*a*", "a*"},
+            {"a*b*a*", "a*b*a*"},
             {"(a+b)*(a+b)*", "(a+b)*"},
             {"aa*a*", "aa*"},
+            {"a*ba*", "a*ba*"},
             {"aa*a*", "aa*"},
+            {"aa*aa*", "aa*aa*"},
             {"a*a*a", "a*a"},
             {"ca*a*d", "ca*d"},
             {"aa*", "aa*"},
             {"a*a", "a*a"},
+            {"a*aa", "a*aa"},
+        });
+  }
+
+  @Test
+  void test18() {
+//    testDefinition("(aa+a)*", "(?>\\()(?=(?'or_sequence')\\)\\*)(?<before>((?'any_element')+\\+)*)(?<first>(?<![^(+])(?'any_element'))(?<middle>(\\k<first>)*(\\+(?'any_element')+)*)\\+(\\k<first>)+(?![^)+])", "B<${before}>F<${first}>M<${middle}>", "(a+b)*");
+    testSimplify("(aaaa+aa)*=>(aa)*",
+        new String[][]{
+            {"(aa+a)*","(a)*"},
+            {"(a+aa)*","(a+aa)*"},
+            {"(aaa+aa)*","(aaa+aa)*"},
+            {"(aa+aaa)*","(aa+aaa)*"},
+            {"(aaaa+aa)*","(aa)*"},
+            {"(aa+aaaa+aa)*","(aa+aa)*"},
+            {"(a+aa+b)*","(a+aa+b)*"},
+            {"(aa+a+b)*","(a+b)*"},
+            {"(b+a+aa)*","(b+a+aa)*"},
+            {"(b+aa+a)*","(b+a)*"},
+            {"(a+b+aa)*","(a+b+aa)*"},
+            {"(aa+b+a)*","(a+b)*"},
+            {"(a*+b+a*a)*","(a*+b+a*a)*"},
+            {"(a*a+b+a*)*","(a*a+b+a*)*"},
+            {"(a*a*+b+a*)*","(a*+b)*"},
+            {"(a*+b+a*a*)*","(a*+b+a*a*)*"},
+        });
+  }
+
+  @Test
+  void test19() {
+//    testDefinition("(aa+a)*", "(?>\\()(?=(?'or_sequence')\\)\\*)(?<before>((?'any_element')+\\+)*)(?<first>(?<![^(+])(?'any_element'))(?<middle>(\\k<first>)*(\\+(?'any_element')+)*)\\+(\\k<first>)+(?![^)+])", "B<${before}>F<${first}>M<${middle}>", "(a+b)*");
+    testSimplify("(aa+aaaa)*=>(aa)*",
+        new String[][]{
+            {"(aa+a)*","(aa+a)*"},
+            {"(a+aa)*","(a)*"},
+            {"(aaa+aa)*","(aaa+aa)*"},
+            {"(aa+aaa)*","(aa+aaa)*"},
+            {"(aaaa+aa)*","(aaaa+aa)*"},
+            {"(aa+aaaa+aa)*","(aa+aaaa)*"},
+            {"(a+aa+b)*","(a+b)*"},
+            {"(aa+a+b)*","(aa+a+b)*"},
+            {"(b+a+aa)*","(b+a)*"},
+            {"(b+aa+a)*","(b+aa+a)*"},
+            {"(a+b+aa)*","(a+b)*"},
+            {"(aa+b+a)*","(aa+b+a)*"},
+            {"(a*+b+a*a)*","(a*+b+a*a)*"},
+            {"(a*a+b+a*)*","(a*a+b+a*)*"},
+            {"(a*a*+b+a*)*","(a*a*+b+a*)*"},
+            {"(a*+b+a*a*)*","(a*+b)*"},
+        });
+  }
+
+  @Test
+  void test20() {
+//    testDefinition("a*+a*+c", "(?<first>(?<![^(+])(?'element'))\\*(?<middle>(\\+(?'any_element')+)*)\\+\\k<first>(?![^)])", "|${first}|-${middle}-", "(a+b)*");
+    testSimplify("(ab+d+ac+a)=>(d+a(b+c+$))",
+        new String[][]{
+            {"ab+ac","a(b+c)"},
+            {"a(b+c)+a(d+e)","a((b+c)+(d+e))"},
+            {"(ab+ac)", "(a(b+c))"},
+            {"(ab+ac+ad)", "(a(b+c+d))"},
+            {"(ab+ac+a)", "(a(b+c+$))"},
+            {"(a+ab+ac)", "(a($+b+c))"},
+            {"(ba+ca+da)", "(ba+ca+da)"},
+            {"(b+ac+ad)", "(b+a(c+d))"},
+            {"(ab+c+ad)", "(c+a(b+d))"},
+            {"(ab+ac+d)", "(a(b+c)+d)"},
+        });
+  }
+
+  @Test
+  void test21() {
+//    testDefinition("a*+a*+c", "(?<first>(?<![^(+])(?'element'))\\*(?<middle>(\\+(?'any_element')+)*)\\+\\k<first>(?![^)])", "|${first}|-${middle}-", "(a+b)*");
+    testSimplify("(ba+d+ca)=>(d+(b+c)a)",
+        new String[][]{
+            {"(ba+ca)", "((b+c)a)"},
+            {"ba+ca", "(b+c)a"},
+            {"(ba+ca+da)", "((b+c+d)a)"},
+            {"(ba+ca+a)", "((b+c+$)a)"},
+            {"(a+ba+ca)", "(($+b+c)a)"},
+            {"a+ba+ca", "($+b+c)a"},
+            {"c+a+ba+ca+b", "c+($+b+c)a+b"},
+            {"(ab+ac+ad)", "(ab+ac+ad)"},
+            {"(ab+ac+ad)", "(ab+ac+ad)"},
+            {"(b+ca+da)", "(b+(c+d)a)"},
+            {"(ba+c+da)", "(c+(b+d)a)"},
+            {"ba+c+da", "c+(b+d)a"},
+            {"(ba+ca+d)", "((b+c)a+d)"},
+            {"ba+ca+d", "(b+c)a+d"},
+        });
+  }
+
+  @Test
+  void test22() {
+//    testDefinition("(aa+a)*", "(?>\\()(?=(?'or_sequence')\\)\\*)(?<before>((?'any_element')+\\+)*)(?<first>(?<![^(+])(?'any_element'))(?<middle>(\\k<first>)*(\\+(?'any_element')+)*)\\+(\\k<first>)+(?![^)+])", "B<${before}>F<${first}>M<${middle}>", "(a+b)*");
+    testSimplify("(a+$)*=>(a)*",
+        new String[][]{
+            {"(a+$)*","(a)*"},
+            {"($+a)*","(a)*"},
+            {"(a+$+b)*","(a+b)*"},
+        });
+  }
+
+
+  @Test
+  void test23() {
+//    testDefinition("(aa+a)*", "(?>\\()(?=(?'or_sequence')\\)\\*)(?<before>((?'any_element')+\\+)*)(?<first>(?<![^(+])(?'any_element'))(?<middle>(\\k<first>)*(\\+(?'any_element')+)*)\\+(\\k<first>)+(?![^)+])", "B<${before}>F<${first}>M<${middle}>", "(a+b)*");
+    testSimplify("a*aa*=>aa*",
+        new String[][]{
+            {"a*aa*","aa*"},
+            {"aa*a*","aa*"},
+            {"a*b*aa*","a*b*aa*"},
+        });
+  }
+
+  @Test
+  void test25() {
+//    testDefinition("a*+a*+c", "(?<first>(?<![^(+])(?'element'))\\*(?<middle>(\\+(?'any_element')+)*)\\+\\k<first>(?![^)])", "|${first}|-${middle}-", "(a+b)*");
+    testSimplify("a+(b+c)=>a+b+c",
+        new String[][]{
+            {"a+(b+c)", "a+b+c"},
+            {"(a+(b+c))d", "(a+b+c)d"},
+            {"(a+(b+cd))z", "(a+b+cd)z"},
+            {"(a+b)+c", "a+b+c"},
+            {"z((a+b)+c)", "z(a+b+c)"},
+            {"((ab+c)+d)z", "(ab+c+d)z"},
+            {"a+(b+c)+d", "a+b+c+d"},
+            {"a+((b+c)+d)", "a+(b+c)+d"},
         });
   }
 }
