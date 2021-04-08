@@ -43,6 +43,14 @@
             <version>5.7.1</version>
             <scope>test</scope>
         </dependency>
+        <!-- http://goal.im.ntu.edu.tw/ -->
+        <dependency>
+            <groupId>org.svvrl.goal</groupId>
+            <artifactId>core</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/lib/goal.jar</systemPath>
+        </dependency>
     </dependencies>
 
     <build>

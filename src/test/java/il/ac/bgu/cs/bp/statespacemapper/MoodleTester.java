@@ -3,9 +3,11 @@ package il.ac.bgu.cs.bp.statespacemapper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.svvrl.goal.core.UnsupportedException;
+import org.svvrl.goal.core.logic.LogicSimplifier;
 import org.svvrl.goal.core.logic.ParseException;
 import org.svvrl.goal.core.logic.re.REParser;
 import org.svvrl.goal.core.logic.re.RESimplifier;
+import org.svvrl.goal.core.logic.re.RegularExpression;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -54,9 +56,9 @@ public class MoodleTester {
 
   @Test
   void testSimplifyWithGoal() throws IOException, ParseException, UnsupportedException {
-    String goal = moodleOriginal.replace('e', 'z').replace('$', 'e');
+    String goal = moodleOriginal.replace('e', 'z').replace('$', 'e').replaceAll("\\(\\)","E");
     var re = new REParser().parse(goal);
-    var simplified = new RESimplifier().rewrite(re).toJFLAPString();
+    var simplified = ((RegularExpression)LogicSimplifier.simplify(re)).toString();
     write(simplified);
   }
 
