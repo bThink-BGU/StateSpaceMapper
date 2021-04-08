@@ -46,7 +46,7 @@ public class RegularExpressionGenerator implements Closeable {
           return super.replace(node);
         }
       }),
-      new REPattern(11, "$+a*=>a*", "(?<![\\w$)])(?>\\$\\+(?'element_star')(?!(?'any_element')))|(?>(?<![^(+])(?'element_star')\\+\\$(?!(?'any_element')))", "${element_star}"),
+      new REPattern(11, "$+a*=>a*", "(?<![^+(])(?>\\$\\+(?<middle1>((?'any_element')+\\+)*?)(?'element_star')(?!(?'any_element')))|(?>(?<![^(+])(?'element_star')(?<middle2>(\\+(?'any_element')+)*?)\\+\\$(?!(?'any_element')))", "${middle1}${element_star}${middle2}"),
       new REPattern(12, "(a*b*)*=>(a*+b*)*", "(?>\\()(?'element_star')+(?=(?'element_star')\\)\\*)", new DefaultCaptureReplacer() {
         @Override
         public String replace(CaptureTreeNode node) {

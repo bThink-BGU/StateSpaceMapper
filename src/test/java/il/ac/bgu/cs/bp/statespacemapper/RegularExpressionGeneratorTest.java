@@ -250,8 +250,19 @@ class RegularExpressionGeneratorTest {
         new String[][]{
             {"$+a*", "a*"},
             {"a*+$", "a*"},
+            {"(a)*+$", "(a)*"},
             {"$+a*+b", "a*+b"},
             {"a*+$+b", "a*+b"},
+            {"a*+bc+$", "a*+bc"},
+            {"a*+bc*+$", "a*+bc*"},
+            {"a*+b*c+$", "a*+b*c"},
+            {"a*+b*c+$", "a*+b*c"},
+            {"a*+b*c*+$", "a*+b*c*"},
+            {"$+bc+a*", "bc+a*"},
+            {"$+bc*+a*", "bc*+a*"},
+            {"$+b*c+a*", "b*c+a*"},
+            {"$+b*c+a*", "b*c+a*"},
+            {"$+b*c*+a*", "b*c*+a*"},
             {"b+$+a*", "b+a*"},
             {"b+a*+$", "b+a*"},
             {"(a*)+$", "(a*)+$"},
@@ -306,9 +317,15 @@ class RegularExpressionGeneratorTest {
     testSimplify("a+a=>a",
         new String[][]{
             {"a+a", "a"},
+            {"(a+a)", "(a)"},
+            {"b+a+c+a+e", "b+a+c+e"},
             {"aa+a", "aa+a"},
             {"a+aa", "a+aa"},
             {"()a+a", "()a+a"},
+            {"ba+a", "ba+a"},
+            {"ab+a", "ab+a"},
+            {"a+ab", "a+ab"},
+            {"a+ba", "a+ba"},
             {"a()+a", "a()+a"},
             {"aa+aa", "aa"},
             {"c+aa+aa", "c+aa"},
@@ -326,9 +343,13 @@ class RegularExpressionGeneratorTest {
     testSimplify("a+a*=>a*",
         new String[][]{
             {"a+a*", "a*"},
+            {"(a+a*)", "(a*)"},
+            {"ca+a*", "ca+a*"},
             {"(a+b)+(a+b)*", "(a+b)*"},
             {"aa*+a", "aa*+a"},
             {"c+a+a*", "c+a*"},
+            {"c+a+d+a*+e", "c+a*+d+e"},
+            {"a+c+a*", "a*+c"},
             {"a*+a*+c", "a*+a*+c"},
             {"aa+c+aa*", "aa+c+aa*"},
         });
@@ -340,9 +361,12 @@ class RegularExpressionGeneratorTest {
     testSimplify("a*+a=>a*",
         new String[][]{
             {"a*+a", "a*"},
+            {"(a*+a)", "(a*)"},
             {"(a+b)*+(a+b)", "(a+b)*"},
             {"aa*+a", "aa*+a"},
             {"c+a*+a", "c+a*"},
+            {"(c+a*+a)", "(c+a*)"},
+            {"e+a*+c+a+d", "e+a*+c+d"},
             {"c+a+a*", "c+a+a*"},
             {"a*+a+c", "a*+c"},
             {"a*+a*+c", "a*+a*+c"},
@@ -466,9 +490,11 @@ class RegularExpressionGeneratorTest {
             {"(a+$)*","(a)*"},
             {"($+a)*","(a)*"},
             {"(a+$+b)*","(a+b)*"},
+            {"(a+b+$)*","(a+b)*"},
+            {"(a+b*+$)*","(a+b*)*"},
+            {"(a*+b+$)*","(a*+b)*"},
         });
   }
-
 
   @Test
   void test23() {
@@ -476,7 +502,10 @@ class RegularExpressionGeneratorTest {
     testSimplify("a*aa*=>aa*",
         new String[][]{
             {"a*aa*","aa*"},
+            {"(a)*(a)(a)*","(a)(a)*"},
+            {"(aa)*(aa)(aa)*","(aa)(aa)*"},
             {"aa*a*","aa*"},
+            {"(a)(a)*(a)*","(a)(a)*"},
             {"a*b*aa*","a*b*aa*"},
         });
   }

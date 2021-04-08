@@ -3877,8 +3877,8 @@ function getRE(fsm) {
 }
 
 function simplify(regex) {
-  // let res = noam.re.string.simplify(regex);
-  let res = noam.re.string.simplify(regex,1);
+  let res = noam.re.string.simplify(regex);
+  // let res = noam.re.string.simplify(regex,2);
   return res;
 }
 
