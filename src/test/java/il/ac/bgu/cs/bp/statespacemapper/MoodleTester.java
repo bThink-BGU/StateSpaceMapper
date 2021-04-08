@@ -3,16 +3,16 @@ package il.ac.bgu.cs.bp.statespacemapper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.svvrl.goal.core.UnsupportedException;
-import org.svvrl.goal.core.logic.LogicSimplifier;
+import org.svvrl.goal.core.io.CodecException;
 import org.svvrl.goal.core.logic.ParseException;
-import org.svvrl.goal.core.logic.re.REParser;
-import org.svvrl.goal.core.logic.re.RESimplifier;
-import org.svvrl.goal.core.logic.re.RegularExpression;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 
 
 public class MoodleTester {
@@ -28,7 +28,7 @@ public class MoodleTester {
 
   private static void write(String simplified) throws IOException {
     Files.write(pathSimplified, simplified.getBytes());
-    String goal = simplified.replace('e', 'z').replace('$', 'e');
+    String goal = GoalTool.noam2goalRegexFormat(simplified);
     Files.write(pathSimplifiedGOAL, goal.getBytes());
   }
 
@@ -40,7 +40,7 @@ public class MoodleTester {
       if (simplified.equals(simplified2)) break;
       simplified = simplified2;
     }
-    System.out.println("finished pattern <"+pattern+"> in " + i + " iterations");
+    System.out.println("finished pattern <" + pattern + "> in " + i + " iterations");
     return simplified;
   }
 
@@ -56,17 +56,36 @@ public class MoodleTester {
 
   @Test
   void testSimplifyWithGoal() throws IOException, ParseException, UnsupportedException {
-    String goal = moodleOriginal.replace('e', 'z').replace('$', 'e').replaceAll("\\(\\)","E");
-    var re = new REParser().parse(goal);
-    var simplified = ((RegularExpression)LogicSimplifier.simplify(re)).toString();
+    String goal = GoalTool.noam2goalRegexFormat(moodleOriginal);
+    var simplified = GoalTool.simplifyGoalRegex(goal);
     write(simplified);
   }
 
   @Test
   void testSimplifyAll() throws IOException {
-    pathSimplified = Paths.get("graphs/moodle-all-simplified.re");
-    pathSimplifiedGOAL = Paths.get("graphs/moodle-all-simplified-goal.re");
+//    pathSimplified = Paths.get("graphs/moodle-all-simplified.re");
+//    pathSimplifiedGOAL = Paths.get("graphs/moodle-all-simplified-goal.re");
     String simplified = RegularExpressionGenerator.preProcessSimplifyRegex(moodleOriginal);
     write(simplified);
+  }
+
+  @Test
+  void testEquals() throws IOException, ParseException, UnsupportedException, CodecException {
+    String goal = GoalTool.noam2goalRegexFormat(moodleOriginal);
+    var goalSimplified = GoalTool.simplifyGoalRegex(goal);
+    Files.write(Paths.get("graphs/moodle-all-simplified-goal.re"), goalSimplified.getBytes());
+    String mineSimplified = RegularExpressionGenerator.preProcessSimplifyRegex(moodleOriginal);
+    Files.write(Paths.get("graphs/moodle-all-simplified-mine.re"), mineSimplified.getBytes());
+    String mineInGoal = GoalTool.noam2goalRegexFormat(mineSimplified);
+
+    var autGoal = GoalTool.re2fsa(goalSimplified);
+    var autMine = GoalTool.re2fsa(mineInGoal);
+    var equality = GoalTool.compareAutomata(autGoal, autMine);
+    assertTrue(equality.isEquivalent(),
+        MessageFormat.format("counter 1: {0}\n\ncounter 2: {1}",
+            equality.isContained1() ? "" : equality.getCounterexample1().toString(),
+            equality.isContained2() ? "" : equality.getCounterexample2().toString()
+        )
+    );
   }
 }

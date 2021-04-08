@@ -9,10 +9,13 @@ import static org.junit.jupiter.api.Assertions.*;
 class GoalToolTest {
 
   @Test
-  void simplifyGoalRegex() throws ParseException, UnsupportedException {
+  void goal() throws ParseException, UnsupportedException {
     assertEquals("a+", GoalTool.simplifyGoalRegex("a a*"));
     assertEquals("a+", GoalTool.simplifyGoalRegex("a* a"));
-    var result = GoalTool.compareAutomata(GoalTool.re2fsa("a*a"), GoalTool.re2fsa("aa*"));
+
+    var result = GoalTool.compareAutomata(GoalTool.re2fsa("a* a"), GoalTool.re2fsa("a a*"));
     assertEquals(true, result.isEquivalent());
+
+    assertEquals("(a a* a) g (a b) | b e E", GoalTool.noam2goalRegexFormat("(aa*a)g(ab)+b$()"), "Original string was: (aa*a)+b$()");
   }
 }

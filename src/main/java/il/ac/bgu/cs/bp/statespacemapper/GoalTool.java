@@ -36,7 +36,17 @@ public class GoalTool {
   }
 
   public static String noam2goalRegexFormat(String regex) {
-    return regex.replace('$', 'e').replace('+', '|').replaceAll("\\(\\)", "E");
+    String result = regex
+        .replace('$', 'e')
+        .replaceAll("\\(\\)", "E")
+        .replaceAll("\\+", " | ");
+    while(true){
+      String s = result
+          .replaceAll("([a-zA-Z)*])([a-zA-Z(])", "$1 $2");
+      if(s.equals(result)) break;
+      result = s;
+    }
+    return result;
   }
 
   /**
