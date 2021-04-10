@@ -5,14 +5,15 @@ import org.svvrl.goal.core.aut.fsa.Equivalence;
 import org.svvrl.goal.core.aut.fsa.FSA;
 import org.svvrl.goal.core.io.CodecException;
 import org.svvrl.goal.core.io.FSACodec;
+import org.svvrl.goal.core.io.RECodec;
 import org.svvrl.goal.core.logic.ParseException;
-import org.svvrl.goal.core.logic.re.REParser;
-import org.svvrl.goal.core.logic.re.RESimplifier;
-import org.svvrl.goal.core.logic.re.RETranslator;
-import org.svvrl.goal.core.logic.re.RegularExpression;
+import org.svvrl.goal.core.logic.re.*;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 
 @SuppressWarnings("unused")
 public class GoalTool {
@@ -40,27 +41,42 @@ public class GoalTool {
         .replace('$', 'e')
         .replaceAll("\\(\\)", "E")
         .replaceAll("\\+", " | ");
-    while(true){
+    while (true) {
       String s = result
           .replaceAll("([a-zA-Z)*])([a-zA-Z(])", "$1 $2");
-      if(s.equals(result)) break;
+      if (s.equals(result)) break;
       result = s;
     }
     return result;
   }
 
   /**
-   * Generates a {@link FSA} from the output of {@link il.ac.bgu.cs.bp.statespacemapper.writers.TraceResultGoalWriter}.
+   * Generates a {@link FSA} from the output of {@link il.ac.bgu.cs.bp.statespacemapper.writers.TraceResultGoalWriter}
+   * and tries to simplify its transitions.
    *
-   * @param automaton
-   * @return
+   * @param automaton a string of the automaton to generate.
+   * @return the generated automaton.
    */
-  public static FSA string2automaton(String automaton) throws CodecException, IOException {
-    try (var stream = new ByteArrayInputStream(automaton.getBytes("UTF-8"))) {
+  public static FSA string2fsa(String automaton) throws CodecException, IOException {
+    return string2fsa(automaton, true);
+  }
+
+  public static FSA string2fsa(String automaton, boolean simplify) throws CodecException, IOException {
+    try (var stream = new ByteArrayInputStream(automaton.getBytes(StandardCharsets.UTF_8))) {
       var codec = new FSACodec();
-      var decode = (FSA)codec.decode(stream);
-      decode.simplifyTransitions();
+      var decode = (FSA) codec.decode(stream);
+      if(simplify)
+        decode.simplifyTransitions();
       return decode;
+    }
+  }
+
+  public static String fsa2string(FSA automaton) throws IOException, CodecException {
+    var codec = new FSACodec();
+    try (var baos = new ByteArrayOutputStream();
+         var strOut = new PrintStream(baos, false, StandardCharsets.UTF_8)) {
+      codec.encode(automaton, strOut);
+      return baos.toString();
     }
   }
 
@@ -73,8 +89,8 @@ public class GoalTool {
     return new REParser().parse(regex);
   }
 
-  public static RegularExpression regex2string(String regex) throws ParseException {
-    return new REParser().parse(regex);
+  public static String regex2string(RegularExpression regex) throws ParseException {
+    return regex.toString();
   }
 
   public static FSA re2fsa(String regex) throws UnsupportedException, ParseException {
@@ -85,6 +101,16 @@ public class GoalTool {
     var aut = new RETranslator().translate(regex);
     aut.simplifyTransitions();
     return aut;
+  }
+
+  public static RegularExpression fsa2re(FSA fsa) throws UnsupportedException {
+    return fsa2re(fsa, true);
+  }
+
+  public static RegularExpression fsa2re(FSA fsa, boolean simplifyRegex) throws UnsupportedException {
+    REExtractor extractor = new REExtractor(fsa);
+    var re = extractor.getRegularExpression();
+    return simplifyGoalRegex(re);
   }
 
   public static Equivalence.Result compareAutomata(FSA automaton1, FSA automaton2) {

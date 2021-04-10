@@ -5,65 +5,80 @@ import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
 import il.ac.bgu.cs.bp.bpjs.model.SyncStatement;
 import il.ac.bgu.cs.bp.statespacemapper.GenerateAllTracesInspection;
+import il.ac.bgu.cs.bp.statespacemapper.GoalTool;
+import org.svvrl.goal.core.UnsupportedException;
+import org.svvrl.goal.core.aut.fsa.FSA;
+import org.svvrl.goal.core.io.CodecException;
+import org.svvrl.goal.core.logic.ParseException;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.text.MessageFormat;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.joining;
 
 /**
  * A Writer for the <a href="http://goal.im.ntu.edu.tw/wiki/doku.php?id=start">GOAL</a> - a graphical interactive tool for defining and manipulating Büchi automata and temporal logic formulae.<br/>
  */
-public class TraceResultGoalWriter extends TraceResultWriter {
+public class TraceResultGoalWriter extends TraceResultWriter implements AutoCloseable {
   private int level;
   private final AtomicInteger edgeCounter = new AtomicInteger();
+  private boolean generateRegularExpression = true;
+  private boolean simplifyAutomaton = true;
+  private final PrintStream gff;
+  private final ByteArrayOutputStream baos;
+  public String regularExpression = null;
 
   public TraceResultGoalWriter(String name) {
     super(name, "gff");
+    baos = new ByteArrayOutputStream();
+    gff = new PrintStream(baos);
   }
 
   @Override
   protected void writePre() {
-    out.println("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>");
-    out.println("<Structure label-on=\"Transition\" type=\"FiniteStateAutomaton\">");
+    gff.println("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>");
+    gff.println("<Structure label-on=\"Transition\" type=\"FiniteStateAutomaton\">");
     level = 1;
-    out.println(MessageFormat.format("{0}<Name>{1}</Name>", "    ".repeat(level), sanitize(name)));
-    out.println("    ".repeat(level) + "<Description/>");
-    out.println("    ".repeat(level) + "<Properties/>");
-    out.println("    ".repeat(level) + "<Formula/>");
-    out.println("    ".repeat(level) + "<Alphabet type=\"Classical\">");
+    gff.println(MessageFormat.format("{0}<Name>{1}</Name>", "    ".repeat(level), sanitize(name)));
+    gff.println("    ".repeat(level) + "<Description/>");
+    gff.println("    ".repeat(level) + "<Properties/>");
+    gff.println("    ".repeat(level) + "<Formula/>");
+    gff.println("    ".repeat(level) + "<Alphabet type=\"Classical\">");
     level++;
-    result.events.values().forEach(e -> out.println(MessageFormat.format("{0}<Symbol>{1}</Symbol>", "    ".repeat(level), e)));
+    result.events.values().forEach(e -> gff.println(MessageFormat.format("{0}<Symbol>{1}</Symbol>", "    ".repeat(level), e)));
     level--;
-    out.println("    ".repeat(level) + "</Alphabet>");
+    gff.println("    ".repeat(level) + "</Alphabet>");
   }
 
   @Override
   protected void writeNodesPre() {
-    out.println("    ".repeat(level) + "<StateSet>");
+    gff.println("    ".repeat(level) + "<StateSet>");
     level++;
   }
 
   @Override
   protected void writeNodesPost() {
     level--;
-    out.println("    ".repeat(level) + "</StateSet>");
-    out.println("    ".repeat(level) + "<InitialStateSet>");
-    out.println(MessageFormat.format("{0}<StateID>{1}</StateID>", "    ".repeat(level + 1), result.startNodeId));
-    out.println("    ".repeat(level) + "</InitialStateSet>");
+    gff.println("    ".repeat(level) + "</StateSet>");
+    gff.println("    ".repeat(level) + "<InitialStateSet>");
+    gff.println(MessageFormat.format("{0}<StateID>{1}</StateID>", "    ".repeat(level + 1), result.startNodeId));
+    gff.println("    ".repeat(level) + "</InitialStateSet>");
   }
 
   @Override
   protected void writeEdgesPre() {
-    out.println("    ".repeat(level) + "<TransitionSet complete=\"false\">");
+    gff.println("    ".repeat(level) + "<TransitionSet complete=\"false\">");
     level++;
   }
 
   @Override
   protected void writeEdgesPost() {
     level--;
-    out.println("    ".repeat(level) + "</TransitionSet>");
+    gff.println("    ".repeat(level) + "</TransitionSet>");
   }
 
   @Override
@@ -119,11 +134,67 @@ public class TraceResultGoalWriter extends TraceResultWriter {
 
   @Override
   protected void writePost() {
-    out.println("    ".repeat(level) + "<Acc type=\"Classic\">");
-    result.acceptingStates.forEach((key, bpss) -> out.println(
+    gff.println("    ".repeat(level) + "<Acc type=\"Classic\">");
+    result.acceptingStates.forEach((key, bpss) -> gff.println(
         MessageFormat.format("{0}<StateID>{1}</StateID>", "    ".repeat(level + 1), key)));
-    out.println("    ".repeat(level) + "</Acc>");
+    gff.println("    ".repeat(level) + "</Acc>");
     level--;
-    out.println("</Structure>");
+    gff.println("</Structure>");
+    finalizeOutput();
+  }
+
+  private void finalizeOutput() {
+    String s = baos.toString();
+    FSA fsa = null;
+    if (simplifyAutomaton) {
+      try {
+        fsa = GoalTool.string2fsa(s);
+        s = GoalTool.fsa2string(fsa);
+      } catch (CodecException | IOException e) {
+        System.out.println("Could not simplify the automaton using GOAL. Exception:" + e.getMessage());
+      }
+    }
+    if (generateRegularExpression) {
+      if (fsa == null) {
+        try {
+          fsa = GoalTool.string2fsa(s);
+          var re = GoalTool.fsa2re(fsa);
+          this.regularExpression = GoalTool.regex2string(re);
+        } catch (CodecException | IOException | UnsupportedException | ParseException e) {
+          System.out.println("Could not simplify the automaton using GOAL. Exception:" + e.getMessage());
+        }
+      }
+    }
+    out.println(s);
+  }
+
+  public void setGenerateRegularExpression(boolean createRegularExpression) {
+    this.generateRegularExpression = createRegularExpression;
+  }
+
+  public boolean isSimplifyAutomaton() {
+    return simplifyAutomaton;
+  }
+
+  public void setSimplifyAutomaton(boolean simplifyAutomaton) {
+    this.simplifyAutomaton = simplifyAutomaton;
+  }
+
+  @Override
+  public void close() throws Exception {
+    try {
+      gff.close();
+    } catch (Exception ignored) {
+    } finally {
+      try {
+        baos.close();
+      } catch (Exception ignored) {
+      }
+    }
+  }
+
+  public Optional<String> getRegularExpression() {
+    if(regularExpression == null) return Optional.empty();
+    return Optional.of(regularExpression);
   }
 }

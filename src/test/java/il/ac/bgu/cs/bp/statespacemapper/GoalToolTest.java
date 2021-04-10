@@ -28,7 +28,7 @@ class GoalToolTest {
   @Test
   void testAutomatonLoading() throws IOException, CodecException {
     String vault = String.join("\n", Files.readAllLines(Path.of("graphs", "vault.gff")));
-    FSA automaton = GoalTool.string2automaton(vault);
+    FSA automaton = GoalTool.string2fsa(vault);
     System.out.println("File automaton: " + vault);
     System.out.println("Parsed automaton: " + automaton.toString());
   }
