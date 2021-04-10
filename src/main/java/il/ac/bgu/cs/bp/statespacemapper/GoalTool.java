@@ -56,8 +56,11 @@ public class GoalTool {
    * @return
    */
   public static FSA string2automaton(String automaton) throws CodecException, IOException {
-    try (var stream = new ByteArrayInputStream(automaton.getBytes())) {
-      return (FSA) new FSACodec().decode(stream);
+    try (var stream = new ByteArrayInputStream(automaton.getBytes("UTF-8"))) {
+      var codec = new FSACodec();
+      var decode = (FSA)codec.decode(stream);
+      decode.simplifyTransitions();
+      return decode;
     }
   }
 
@@ -79,7 +82,9 @@ public class GoalTool {
   }
 
   public static FSA re2fsa(RegularExpression regex) throws UnsupportedException {
-    return new RETranslator().translate(regex);
+    var aut = new RETranslator().translate(regex);
+    aut.simplifyTransitions();
+    return aut;
   }
 
   public static Equivalence.Result compareAutomata(FSA automaton1, FSA automaton2) {

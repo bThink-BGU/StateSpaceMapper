@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>il.ac.bgu.cs.bp</groupId>
     <artifactId>StateSpaceMapper</artifactId>
-    <version>0.1.13</version>
+    <version>0.2.0</version>
     <packaging>jar</packaging>
     <description>Draws a b-program's state space.</description>
     <properties>
@@ -50,6 +50,14 @@
             <version>1.0</version>
             <scope>system</scope>
             <systemPath>${basedir}/lib/goal.jar</systemPath>
+        </dependency>
+        <!-- http://goal.im.ntu.edu.tw/ -->
+        <dependency>
+            <groupId>jhoafparser</groupId>
+            <artifactId>core</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/lib/jhoafparser-1.1.1.jar</systemPath>
         </dependency>
     </dependencies>
 
