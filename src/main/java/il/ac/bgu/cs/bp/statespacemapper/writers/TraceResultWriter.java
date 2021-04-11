@@ -39,7 +39,7 @@ public abstract class TraceResultWriter {
     this.printStore = printStore;
   }
 
-  public final void write(PrintStream out, GenerateAllTracesInspection.MapperResult result) {
+  public void write(PrintStream out, GenerateAllTracesInspection.MapperResult result) {
     if (out == null || result == null)
       throw new IllegalArgumentException("Result argument cannot be null");
     this.out = out;

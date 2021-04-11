@@ -4,15 +4,11 @@ import org.svvrl.goal.core.UnsupportedException;
 import org.svvrl.goal.core.aut.fsa.Equivalence;
 import org.svvrl.goal.core.aut.fsa.FSA;
 import org.svvrl.goal.core.io.CodecException;
-import org.svvrl.goal.core.io.FSACodec;
-import org.svvrl.goal.core.io.RECodec;
+import org.svvrl.goal.core.io.GFFCodec;
 import org.svvrl.goal.core.logic.ParseException;
 import org.svvrl.goal.core.logic.re.*;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 
 @SuppressWarnings("unused")
@@ -63,21 +59,25 @@ public class GoalTool {
 
   public static FSA string2fsa(String automaton, boolean simplify) throws CodecException, IOException {
     try (var stream = new ByteArrayInputStream(automaton.getBytes(StandardCharsets.UTF_8))) {
-      var codec = new FSACodec();
+      var codec = new GFFCodec();
       var decode = (FSA) codec.decode(stream);
-      if(simplify)
+      if (simplify)
         decode.simplifyTransitions();
       return decode;
     }
   }
 
   public static String fsa2string(FSA automaton) throws IOException, CodecException {
-    var codec = new FSACodec();
     try (var baos = new ByteArrayOutputStream();
          var strOut = new PrintStream(baos, false, StandardCharsets.UTF_8)) {
-      codec.encode(automaton, strOut);
+      fsa2string(automaton, strOut);
       return baos.toString();
     }
+  }
+
+  public static void fsa2string(FSA automaton, OutputStream out) throws CodecException {
+    var codec = new GFFCodec();
+    codec.encode(automaton, out);
   }
 
   public static RegularExpression simplifyGoalRegex(RegularExpression regex) throws UnsupportedException {

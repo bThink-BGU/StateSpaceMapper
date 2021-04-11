@@ -1,7 +1,7 @@
 {
   "name": "vault", 
-  "start": "4", 
-  "runDate": "2021-03-16T16:05:14.3736726",
+  "start": "5", 
+  "runDate": "2021-04-11T13:46:03.6185223",
   "# states": 8, 
   "# transitions": 26, 
   "# traces": 6, 
@@ -14,19 +14,19 @@
       ],
       "statements": [
         {
-          "name":"correct code",
-          "isHot":false,
-          "request":[],
-          "waitFor":"{all}",
-          "block":"{none}",
-          "interrupt":"{none}"
-        },
-        {
           "name":"try",
           "isHot":false,
           "request":["[BEvent name:0]","[BEvent name:1]","[BEvent name:2]","[BEvent name:3]","[BEvent name:4]"],
           "waitFor":"{none}",
           "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"correct code",
+          "isHot":false,
+          "request":["[BEvent name:CORRECTCODE]"],
+          "waitFor":"{none}",
+          "block":"not([BEvent name:CORRECTCODE])",
           "interrupt":"{none}"
         }
       ]
@@ -38,18 +38,18 @@
       ],
       "statements": [
         {
-          "name":"correct code",
-          "isHot":false,
-          "request":[],
-          "waitFor":"{all}",
-          "block":"{none}",
-          "interrupt":"{none}"
-        },
-        {
           "name":"try",
           "isHot":false,
           "request":["[BEvent name:0]","[BEvent name:1]","[BEvent name:2]","[BEvent name:3]","[BEvent name:4]"],
           "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"correct code",
+          "isHot":false,
+          "request":[],
+          "waitFor":"{all}",
           "block":"{none}",
           "interrupt":"{none}"
         }
@@ -62,18 +62,18 @@
       ],
       "statements": [
         {
-          "name":"correct code",
-          "isHot":false,
-          "request":[],
-          "waitFor":"{all}",
-          "block":"{none}",
-          "interrupt":"{none}"
-        },
-        {
           "name":"try",
           "isHot":false,
           "request":["[BEvent name:0]","[BEvent name:1]","[BEvent name:2]","[BEvent name:3]","[BEvent name:4]"],
           "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"correct code",
+          "isHot":false,
+          "request":[],
+          "waitFor":"{all}",
           "block":"{none}",
           "interrupt":"{none}"
         }
@@ -86,18 +86,18 @@
       ],
       "statements": [
         {
-          "name":"correct code",
-          "isHot":false,
-          "request":[],
-          "waitFor":"{all}",
-          "block":"{none}",
-          "interrupt":"{none}"
-        },
-        {
           "name":"try",
           "isHot":false,
           "request":["[BEvent name:0]","[BEvent name:1]","[BEvent name:2]","[BEvent name:3]","[BEvent name:4]"],
           "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"correct code",
+          "isHot":false,
+          "request":[],
+          "waitFor":"{all}",
           "block":"{none}",
           "interrupt":"{none}"
         }
@@ -110,18 +110,18 @@
       ],
       "statements": [
         {
-          "name":"correct code",
-          "isHot":false,
-          "request":[],
-          "waitFor":"{all}",
-          "block":"{none}",
-          "interrupt":"{none}"
-        },
-        {
           "name":"try",
           "isHot":false,
           "request":["[BEvent name:0]","[BEvent name:1]","[BEvent name:2]","[BEvent name:3]","[BEvent name:4]"],
           "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"correct code",
+          "isHot":false,
+          "request":[],
+          "waitFor":"{all}",
           "block":"{none}",
           "interrupt":"{none}"
         }
@@ -134,18 +134,18 @@
       ],
       "statements": [
         {
-          "name":"correct code",
-          "isHot":false,
-          "request":["[BEvent name:CORRECTCODE]"],
-          "waitFor":"{none}",
-          "block":"not([BEvent name:CORRECTCODE])",
-          "interrupt":"{none}"
-        },
-        {
           "name":"try",
           "isHot":false,
           "request":["[BEvent name:0]","[BEvent name:1]","[BEvent name:2]","[BEvent name:3]","[BEvent name:4]"],
           "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        },
+        {
+          "name":"correct code",
+          "isHot":false,
+          "request":[],
+          "waitFor":"{all}",
           "block":"{none}",
           "interrupt":"{none}"
         }
@@ -153,22 +153,6 @@
     },
     {
       "id":"6",
-      "store": [
-
-      ],
-      "statements": [
-        {
-          "name":"try",
-          "isHot":false,
-          "request":["[BEvent name:0]","[BEvent name:1]","[BEvent name:2]","[BEvent name:3]","[BEvent name:4]"],
-          "waitFor":"{none}",
-          "block":"{none}",
-          "interrupt":"{none}"
-        }
-      ]
-    },
-    {
-      "id":"7",
       "store": [
 
       ],
@@ -190,34 +174,50 @@
           "interrupt":"{none}"
         }
       ]
+    },
+    {
+      "id":"7",
+      "store": [
+
+      ],
+      "statements": [
+        {
+          "name":"try",
+          "isHot":false,
+          "request":["[BEvent name:0]","[BEvent name:1]","[BEvent name:2]","[BEvent name:3]","[BEvent name:4]"],
+          "waitFor":"{none}",
+          "block":"{none}",
+          "interrupt":"{none}"
+        }
+      ]
     }
   ],
   "links": [
-    {"source":"0", "target":"5", "eventData":"[BEvent name:4]"},
-    {"source":"0", "target":"6", "eventData":"[BEvent name:0]"},
-    {"source":"0", "target":"6", "eventData":"[BEvent name:1]"},
-    {"source":"0", "target":"6", "eventData":"[BEvent name:2]"},
-    {"source":"0", "target":"6", "eventData":"[BEvent name:3]"},
-    {"source":"1", "target":"0", "eventData":"[BEvent name:3]"},
-    {"source":"1", "target":"6", "eventData":"[BEvent name:0]"},
-    {"source":"1", "target":"6", "eventData":"[BEvent name:1]"},
-    {"source":"1", "target":"6", "eventData":"[BEvent name:2]"},
-    {"source":"1", "target":"6", "eventData":"[BEvent name:4]"},
-    {"source":"2", "target":"1", "eventData":"[BEvent name:2]"},
-    {"source":"2", "target":"6", "eventData":"[BEvent name:0]"},
-    {"source":"2", "target":"6", "eventData":"[BEvent name:1]"},
-    {"source":"2", "target":"6", "eventData":"[BEvent name:3]"},
-    {"source":"2", "target":"6", "eventData":"[BEvent name:4]"},
-    {"source":"3", "target":"2", "eventData":"[BEvent name:1]"},
-    {"source":"3", "target":"6", "eventData":"[BEvent name:0]"},
-    {"source":"3", "target":"6", "eventData":"[BEvent name:2]"},
-    {"source":"3", "target":"6", "eventData":"[BEvent name:3]"},
-    {"source":"3", "target":"6", "eventData":"[BEvent name:4]"},
-    {"source":"4", "target":"3", "eventData":"[BEvent name:0]"},
-    {"source":"4", "target":"6", "eventData":"[BEvent name:1]"},
-    {"source":"4", "target":"6", "eventData":"[BEvent name:2]"},
-    {"source":"4", "target":"6", "eventData":"[BEvent name:3]"},
-    {"source":"4", "target":"6", "eventData":"[BEvent name:4]"},
-    {"source":"5", "target":"7", "eventData":"[BEvent name:CORRECTCODE]"}
+    {"source":"0", "target":"6", "eventData":"[BEvent name:CORRECTCODE]"},
+    {"source":"1", "target":"0", "eventData":"[BEvent name:4]"},
+    {"source":"1", "target":"7", "eventData":"[BEvent name:0]"},
+    {"source":"1", "target":"7", "eventData":"[BEvent name:1]"},
+    {"source":"1", "target":"7", "eventData":"[BEvent name:2]"},
+    {"source":"1", "target":"7", "eventData":"[BEvent name:3]"},
+    {"source":"2", "target":"1", "eventData":"[BEvent name:3]"},
+    {"source":"2", "target":"7", "eventData":"[BEvent name:0]"},
+    {"source":"2", "target":"7", "eventData":"[BEvent name:1]"},
+    {"source":"2", "target":"7", "eventData":"[BEvent name:2]"},
+    {"source":"2", "target":"7", "eventData":"[BEvent name:4]"},
+    {"source":"3", "target":"2", "eventData":"[BEvent name:2]"},
+    {"source":"3", "target":"7", "eventData":"[BEvent name:0]"},
+    {"source":"3", "target":"7", "eventData":"[BEvent name:1]"},
+    {"source":"3", "target":"7", "eventData":"[BEvent name:3]"},
+    {"source":"3", "target":"7", "eventData":"[BEvent name:4]"},
+    {"source":"4", "target":"3", "eventData":"[BEvent name:1]"},
+    {"source":"4", "target":"7", "eventData":"[BEvent name:0]"},
+    {"source":"4", "target":"7", "eventData":"[BEvent name:2]"},
+    {"source":"4", "target":"7", "eventData":"[BEvent name:3]"},
+    {"source":"4", "target":"7", "eventData":"[BEvent name:4]"},
+    {"source":"5", "target":"4", "eventData":"[BEvent name:0]"},
+    {"source":"5", "target":"7", "eventData":"[BEvent name:1]"},
+    {"source":"5", "target":"7", "eventData":"[BEvent name:2]"},
+    {"source":"5", "target":"7", "eventData":"[BEvent name:3]"},
+    {"source":"5", "target":"7", "eventData":"[BEvent name:4]"}
   ]
 }
