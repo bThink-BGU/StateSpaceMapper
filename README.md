@@ -16,7 +16,7 @@ Create a Maven project and add the followings to your pom.xml:
 	<dependency>
 		<groupId>com.github.bThink-BGU</groupId>
 		<artifactId>StateSpaceMapper</artifactId>
-		<version>0.1.12</version>
+		<version>0.2.0</version>
 	</dependency>
 </dependencies>
 ```
@@ -34,8 +34,6 @@ Once the run is completed, a new directory, called "graphs", will be created, wi
 You can change the default output directory by calling: ```mpr.setOutputPath("graphs");```
 
 You can generate a set of all possible traces, by calling ```mpr.setGenerateTraces(true);``` (default=true)
-
-Generate a regular expression by calling ```mpr.setGenerateRegularExpression(true);```
 
 ## Accepting states
 In your js code, you may mark certain states as accepting by using the following code:
@@ -56,9 +54,9 @@ This type of accepting state is useful for Buchi automatons, that accepts an inp
 Currently, the supported formats are:
 * Json
 * [Noam](https://github.com/izuzak/noam) (allows for translating the automaton into a regular expression)
-* [Regular Expression](https://github.com/izuzak/noam) - translates the Noam automata into a regular expression)
 * [GraphViz](https://graphviz.org/)
 * [GOAL](http://goal.im.ntu.edu.tw) - a graphical interactive tool for defining and manipulating Büchi automata and temporal logic formulae.
+* [Regular Expression](http://goal.im.ntu.edu.tw) - Uses GOAl to translate the automaton into a regular expression)
 * [Neo4J](https://neo4j.com/) (requires an installation of Neo4J and configuring the driver ```mpr.setNeo4jDriver(driver);```)
 
 ### Adding and extending the Output formats
