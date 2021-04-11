@@ -16,8 +16,8 @@ rows.forEach(i => {
   columns.forEach(j => {
     // O[i][j] = bp.Event("O(" + i + "," + j + ")");
     // X[i][j] = bp.Event("X(" + i + "," + j + ")");
-    O[i][j] = bp.Event(String.fromCharCode( 'a'.charCodeAt(0) + i*N + j));
-    X[i][j] = bp.Event(String.fromCharCode( 'A'.charCodeAt(0) + i*N + j));
+    O[i][j] = bp.Event("O("+i+","+j+")");
+    X[i][j] = bp.Event("X("+i+","+j+")");
   })
 })
 
@@ -47,7 +47,11 @@ const allMoves = OMoves.concat(XMoves);
 
 bp.registerBThread('Moves', function () {
   for(let i=0; i<4; i++)
-    bp.sync({ request: oMoves })
+    bp.sync({ request: OMoves })
+  if(use_accepting_states) {
+    // AcceptingState.Continuing()
+    AcceptingState.Stopping()
+  }
 })
 
 rows.forEach(i => {
