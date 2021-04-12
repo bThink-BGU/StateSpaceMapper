@@ -5,9 +5,6 @@ import il.ac.bgu.cs.bp.bpjs.model.eventselection.PrioritizedBSyncEventSelectionS
 import org.neo4j.driver.AuthTokens;
 import org.neo4j.driver.GraphDatabase;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
 public class SpaceMapperRunner {
 
   private static final boolean useNeo4j = false;
