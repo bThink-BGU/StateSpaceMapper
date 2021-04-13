@@ -10,20 +10,16 @@ import org.svvrl.goal.core.Preference;
 import org.svvrl.goal.core.UnsupportedException;
 import org.svvrl.goal.core.aut.*;
 import org.svvrl.goal.core.aut.fsa.FSA;
-import org.svvrl.goal.core.io.Codec;
-import org.svvrl.goal.core.io.CodecException;
 import org.svvrl.goal.core.io.FileHandler;
 import org.svvrl.goal.core.io.GFFCodec;
 import org.svvrl.goal.core.logic.ParseException;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
 import java.io.PrintStream;
-import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.joining;
@@ -97,7 +93,8 @@ public class TraceResultGoalWriter extends TraceResultWriter implements AutoClos
     var src = fsa.getStateByID(edge.srcId);
     var dst = fsa.getStateByID(edge.dstId);
     var transition = fsa.createTransition(src, dst, sanitize(eventToString(edge.event)));
-    transition.setDescription(edge.event.toString());
+    transition.setDescription(edge.event.maybeData == null ? edge.event.name :
+        "{" + edge.event.name + ", " + edge.event.maybeData + "}");
     transition.getProperties().setProperty("EventName", edge.event.name);
     transition.getProperties().setProperty("EventData", edge.event.getDataField().orElse("").toString());
     fsa.addTransition(transition);
@@ -106,7 +103,11 @@ public class TraceResultGoalWriter extends TraceResultWriter implements AutoClos
 
   @Override
   protected String eventToString(BEvent event) {
-    return "" + (char) ('a' + result.events.get(event));
+    return eventToString(result.events.get(event));
+  }
+
+  private String eventToString(int eventId) {
+    return "" + (char) ('a' + eventId);
   }
 
   @Override
@@ -118,10 +119,11 @@ public class TraceResultGoalWriter extends TraceResultWriter implements AutoClos
     Preference.addUserPropertyName("Store");
     Preference.addUserPropertyName("EventName");
     Preference.addUserPropertyName("EventData");
-    fsa.getProperties().setProperty("AboveTransition","Description");
+    fsa.getProperties().setProperty("AboveTransition", "Description");
     result.states.entrySet().stream()
         .sorted(Map.Entry.comparingByValue())
         .forEach(this::nodeToString);
+    fsa.expandAlphabet(result.events.values().stream().map(this::eventToString).collect(Collectors.toList()).toArray(new String[]{}));
     result.edges.forEach(this::edgeToString);
     fsa.setInitialState(fsa.getStateByID(result.startNodeId));
     var acc = new ClassicAcc();
@@ -162,7 +164,7 @@ public class TraceResultGoalWriter extends TraceResultWriter implements AutoClos
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() {
     try {
       gff.close();
     } catch (Exception ignored) {
