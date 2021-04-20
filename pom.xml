@@ -17,6 +17,13 @@
         <repository>
             <id>repo</id>
             <url>file://${project.basedir}/lib</url>
+            <releases>
+                <enabled>true</enabled>
+                <checksumPolicy>ignore</checksumPolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </repository>
     </repositories>
     <dependencies>
