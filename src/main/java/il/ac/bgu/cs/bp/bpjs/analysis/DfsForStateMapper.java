@@ -158,7 +158,7 @@ public class DfsForStateMapper extends DfsBProgramVerifier {
     visited.clear();
     trace = new ArrayExecutionTrace(currentBProgram);
 
-    // in case no verifications were specified, use the defauls set.
+    // in case no verifications were specified, use the defaults set.
     if ( inspections.isEmpty() ) {
       inspections.addAll( ExecutionTraceInspections.DEFAULT_SET );
     }

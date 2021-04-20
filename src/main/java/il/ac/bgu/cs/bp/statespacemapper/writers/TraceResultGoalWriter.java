@@ -8,18 +8,20 @@ import il.ac.bgu.cs.bp.statespacemapper.GenerateAllTracesInspection;
 import il.ac.bgu.cs.bp.statespacemapper.GoalTool;
 import org.svvrl.goal.core.Preference;
 import org.svvrl.goal.core.UnsupportedException;
-import org.svvrl.goal.core.aut.*;
+import org.svvrl.goal.core.aut.AlphabetType;
+import org.svvrl.goal.core.aut.ClassicAcc;
+import org.svvrl.goal.core.aut.Position;
 import org.svvrl.goal.core.aut.fsa.FSA;
 import org.svvrl.goal.core.io.FileHandler;
 import org.svvrl.goal.core.io.GFFCodec;
 import org.svvrl.goal.core.logic.ParseException;
+import org.svvrl.goal.core.logic.re.RegularExpression;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.joining;
@@ -133,22 +135,11 @@ public class TraceResultGoalWriter extends TraceResultWriter implements AutoClos
   }
 
   private void finalizeOutput() {
-    try {
-      if (simplifyAutomaton) {
-        System.out.println("Simplifying automaton using GOAL");
-        fsa.simplifyTransitions();
-      }
-      FileHandler.save(fsa, out, new GFFCodec());
-//      out.flush();
-//      var fsa = (FSA)FileHandler.open("graphs/vault.gff", new Codec[] {new GFFCodec()}).getLeft();
-      if (generateRegularExpression) {
-        System.out.println("Generating regular expression using GOAL");
-        var re = GoalTool.fsa2re(fsa);
-        this.regularExpression = GoalTool.regex2string(re);
-      }
-    } catch (UnsupportedException | ParseException e) {
-      e.printStackTrace();
+    if (simplifyAutomaton) {
+      System.out.println("Simplifying automaton using GOAL");
+      fsa.simplifyTransitions();
     }
+    FileHandler.save(fsa, out, new GFFCodec());
   }
 
   public void setGenerateRegularExpression(boolean createRegularExpression) {
@@ -177,7 +168,16 @@ public class TraceResultGoalWriter extends TraceResultWriter implements AutoClos
   }
 
   public Optional<String> getRegularExpression() {
-    if (regularExpression == null) return Optional.empty();
-    return Optional.of(regularExpression);
+    if (generateRegularExpression) {
+      try {
+        System.out.println("Generating regular expression using GOAL");
+        RegularExpression re = GoalTool.fsa2re(fsa);
+        this.regularExpression = GoalTool.regex2string(re);
+        return Optional.of(regularExpression);
+      } catch (UnsupportedException | ParseException e) {
+        e.printStackTrace();
+      }
+    }
+    return Optional.empty();
   }
 }
