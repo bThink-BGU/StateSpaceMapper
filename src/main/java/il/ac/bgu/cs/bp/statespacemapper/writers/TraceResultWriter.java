@@ -3,9 +3,11 @@ package il.ac.bgu.cs.bp.statespacemapper.writers;
 import il.ac.bgu.cs.bp.bpjs.internal.ScriptableUtils;
 import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
+import il.ac.bgu.cs.bp.bpjs.model.eventsets.EventSet;
 import il.ac.bgu.cs.bp.statespacemapper.GenerateAllTracesInspection;
 
 import java.io.PrintStream;
+import java.util.Arrays;
 import java.util.Map;
 
 import static java.util.stream.Collectors.joining;
@@ -59,6 +61,12 @@ public abstract class TraceResultWriter {
 
     out.flush();
   }
+
+  /*protected String eventSetToString(EventSet es) {
+    if(es.getClass().isArray()){
+      return
+    }
+  }*/
 
   protected abstract void writePre();
 
