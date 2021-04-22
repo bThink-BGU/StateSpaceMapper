@@ -46,7 +46,7 @@ public class PerBThreadStateSpaceMapper {
     this.generateTraces = generateTraces;
   }
 
-  public void mapSpace(BProgram bprog, int currentBThread) throws Exception {
+  public void mapSpace(BProgram bprog, String currentBThread) throws Exception {
     Files.createDirectories(Paths.get(outputPath));
     initGlobalScope(bprog, currentBThread);
     var tracesInspection = new GenerateAllTracesInspection();
@@ -67,33 +67,34 @@ public class PerBThreadStateSpaceMapper {
     }
   }
 
-  public void initGlobalScope(BProgram bprog, int currentBThread) {
-    bprog.putInGlobalScope("currentBT", currentBThread);
+  public void initGlobalScope(BProgram bprog, String currentBThread) {
+    bprog.putInGlobalScope("btName", currentBThread);
     bprog.putInGlobalScope("use_accepting_states", true);
     bprog.putInGlobalScope("AcceptingState", new AcceptingStateProxy());
   }
 
 
-  public static void main(String[] args) throws Exception {
-    if (args.length == 0) {
-      System.err.println("Missing input files");
-      System.exit(1);
-    }
+  public static void main(String[] args)  {
 
-    var bprogName = args[0].substring(0, args[0].lastIndexOf('.'));
-    final int numberOfBthreads = 2;
-    for (int i = 0; i < numberOfBthreads; i++) {
-      String runName = bprogName + "." + i;
-      System.out.println("// start " + i);
-      var bprog = new ResourceBProgram(args[0]);
+    final var bprogName = "test";
+    final List<String> names = List.of("bt1", "bt2");
+
+    names.forEach(name -> {
+      String runName = bprogName + "." + name;
+      System.out.println("// start " + name);
+      var bprog = new ResourceBProgram(bprogName+".js");
       var ess = new PrioritizedBSyncEventSelectionStrategy();
       ess.setDefaultPriority(0);
       bprog.setEventSelectionStrategy(ess);
       var mpr = new PerBThreadStateSpaceMapper(runName);
       mpr.setGenerateTraces(true); // Generates a set of all possible traces.
       mpr.setOutputPath("graphs");
-      mpr.mapSpace(bprog, i);
+      try {
+        mpr.mapSpace(bprog, name);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
       System.out.println("// done");
-    }
+    });
   }
 }
