@@ -1,0 +1,3 @@
+install:
+  - echo "Copy local repository"
+  - cp -r lib/* ~/.m2/repository/
