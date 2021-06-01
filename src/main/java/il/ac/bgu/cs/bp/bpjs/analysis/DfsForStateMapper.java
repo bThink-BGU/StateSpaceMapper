@@ -23,10 +23,10 @@
  */
 package il.ac.bgu.cs.bp.bpjs.analysis;
 
+import il.ac.bgu.cs.bp.bpjs.BPjs;
 import il.ac.bgu.cs.bp.bpjs.analysis.violations.JsErrorViolation;
 import il.ac.bgu.cs.bp.bpjs.analysis.violations.Violation;
 import il.ac.bgu.cs.bp.bpjs.exceptions.BPjsRuntimeException;
-import il.ac.bgu.cs.bp.bpjs.internal.ExecutorServiceMaker;
 import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgram;
 import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
@@ -163,7 +163,7 @@ public class DfsForStateMapper extends DfsBProgramVerifier {
       inspections.addAll( ExecutionTraceInspections.DEFAULT_SET );
     }
 
-    ExecutorService execSvc = ExecutorServiceMaker.makeWithName("DfsBProgramRunner-" + INSTANCE_COUNTER.incrementAndGet());
+    ExecutorService execSvc = BPjs.getExecutorServiceMaker().makeWithName("DfsBProgramRunner-" + INSTANCE_COUNTER.incrementAndGet());
     long start = System.currentTimeMillis();
     listener.started(this);
     Violation vio = dfsUsingStack(new DfsTraversalNode(currentBProgram, currentBProgram.setup().start(execSvc, currentBProgram.getStorageModificationStrategy()), null), execSvc);
