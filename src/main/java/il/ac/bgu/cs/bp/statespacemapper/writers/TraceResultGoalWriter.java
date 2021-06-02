@@ -3,6 +3,7 @@ package il.ac.bgu.cs.bp.statespacemapper.writers;
 import il.ac.bgu.cs.bp.bpjs.internal.ScriptableUtils;
 import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
+import il.ac.bgu.cs.bp.bpjs.model.BThreadSyncSnapshot;
 import il.ac.bgu.cs.bp.bpjs.model.SyncStatement;
 import il.ac.bgu.cs.bp.statespacemapper.GenerateAllTracesInspection;
 import il.ac.bgu.cs.bp.statespacemapper.GoalTool;
@@ -60,10 +61,12 @@ public class TraceResultGoalWriter extends TraceResultWriter implements AutoClos
     int hash = bpss.hashCode();
     String store = !printStore ? "" : getStore(bpss);
     String statements = !printStatements ? "" : getStatments(bpss);
+    String names = bpss.getBThreadSnapshots().stream().map(BThreadSyncSnapshot::getName).collect(joining(","));
 
     var state = fsa.newState(id);
     state.getProperties().setProperty("Hash", hash);
     state.getProperties().setProperty("Store", store);
+    state.getProperties().setProperty("BThreadsNames", names);
     state.getProperties().setProperty("Statements", statements);
     fsa.addState(state);
     return "";
@@ -118,6 +121,7 @@ public class TraceResultGoalWriter extends TraceResultWriter implements AutoClos
     this.result = result;
     Preference.addUserPropertyName("Hash");
     Preference.addUserPropertyName("Statements");
+    Preference.addUserPropertyName("BThreadsNames");
     Preference.addUserPropertyName("Store");
     Preference.addUserPropertyName("EventName");
     Preference.addUserPropertyName("EventData");
