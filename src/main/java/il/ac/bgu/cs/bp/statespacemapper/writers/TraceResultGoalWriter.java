@@ -30,14 +30,14 @@ import static java.util.stream.Collectors.joining;
  * A Writer for the <a href="http://goal.im.ntu.edu.tw/wiki/doku.php?id=start">GOAL</a> - a graphical interactive tool for defining and manipulating Büchi automata and temporal logic formulae.<br/>
  */
 public class TraceResultGoalWriter extends TraceResultWriter implements AutoCloseable {
-  private int level;
-  private final AtomicInteger edgeCounter = new AtomicInteger();
-  private boolean generateRegularExpression = true;
-  private boolean simplifyAutomaton = true;
-  private final PrintStream gff;
-  private final ByteArrayOutputStream baos;
+  protected int level;
+  protected final AtomicInteger edgeCounter = new AtomicInteger();
+  protected boolean generateRegularExpression = true;
+  protected boolean simplifyAutomaton = true;
+  protected final PrintStream gff;
+  protected final ByteArrayOutputStream baos;
   public String regularExpression = null;
-  private final FSA fsa;
+  protected final FSA fsa;
 
   public TraceResultGoalWriter(String name) {
     super(name, "gff");
@@ -108,7 +108,7 @@ public class TraceResultGoalWriter extends TraceResultWriter implements AutoClos
     return eventToString(result.events.get(event));
   }
 
-  private String eventToString(int eventId) {
+  protected String eventToString(int eventId) {
     return "" + (char) ('a' + eventId);
   }
 
@@ -134,7 +134,7 @@ public class TraceResultGoalWriter extends TraceResultWriter implements AutoClos
     finalizeOutput();
   }
 
-  private void finalizeOutput() {
+  protected void finalizeOutput() {
     if (simplifyAutomaton) {
       System.out.println("Simplifying automaton using GOAL");
       fsa.simplifyTransitions();

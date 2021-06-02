@@ -11,7 +11,7 @@ import java.time.format.DateTimeFormatter;
 import static java.util.stream.Collectors.joining;
 
 public class TraceResultJsonWriter extends TraceResultWriter {
-  private int level;
+  protected int level;
 
   public TraceResultJsonWriter(String name) {
     super(name, "json", ",\n", ",\n");
@@ -98,7 +98,7 @@ public class TraceResultJsonWriter extends TraceResultWriter {
     out.println("}");
   }
 
-  private static String getGuardedString(Object o) {
+  protected static String getGuardedString(Object o) {
     return o.toString().replace("\"", "\\\"").replace("\n", "").replace("JS_Obj ", "");
   }
 

@@ -11,7 +11,7 @@ import java.text.MessageFormat;
 import static java.util.stream.Collectors.joining;
 
 public class TraceResultGVWriter extends TraceResultWriter {
-  private int level;
+  protected int level;
 
   public TraceResultGVWriter(String name) {
     super(name, "dot");

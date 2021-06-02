@@ -15,20 +15,20 @@ import static java.util.stream.Collectors.joining;
 import static org.neo4j.driver.Values.parameters;
 
 public class TraceResultNeo4JWriter extends TraceResultWriter {
-  private final Driver driver;
+  protected final Driver driver;
 
   public TraceResultNeo4JWriter(String runName, Driver driver) {
     super(runName, "");
     this.driver = driver;
   }
 
-  private static String getStore(BProgramSyncSnapshot bpss) {
+  protected static String getStore(BProgramSyncSnapshot bpss) {
     return bpss.getDataStore().entrySet().stream()
         .map(entry -> "{" + ScriptableUtils.stringify(entry.getKey()) + ": " + ScriptableUtils.stringify(entry.getValue()) + "}")
         .collect(joining(",", "[", "]"));
   }
 
-  private String getStatements(BProgramSyncSnapshot bpss) {
+  protected String getStatements(BProgramSyncSnapshot bpss) {
     return bpss.getBThreadSnapshots().stream()
         .map(btss -> {
           SyncStatement syst = btss.getSyncStatement();
@@ -51,7 +51,7 @@ public class TraceResultNeo4JWriter extends TraceResultWriter {
     return e + "}";
   }
 
-  private void deleteAll() {
+  protected void deleteAll() {
     try (Session session = driver.session()) {
       session.writeTransaction(tx -> tx.run(
           "MATCH (n) DETACH DELETE n"));
