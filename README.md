@@ -3,7 +3,6 @@ A utility for mapping state spaces of b-programs written in BPjs.
 
 ## Installation
 Create a Maven project and add the followings to your pom.xml:
-
 ```xml
 <repositories>
 	<repository>
@@ -11,12 +10,13 @@ Create a Maven project and add the followings to your pom.xml:
 		<url>https://jitpack.io</url>
 	</repository>
 </repositories>
-
+```
+```xml
 <dependencies>
 	<dependency>
 		<groupId>com.github.bThink-BGU</groupId>
 		<artifactId>StateSpaceMapper</artifactId>
-		<version>0.2.5</version>
+		<version>0.2.9</version>
 	</dependency>
 </dependencies>
 ```
