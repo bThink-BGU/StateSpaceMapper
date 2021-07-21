@@ -79,7 +79,7 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
         add(new ArrayList<>(eventStack));
       }};
     } else {
-      Collection<List<BEvent>> res = outbounds.entrySet().stream()
+      Collection<List<BEvent>> continueRes = outbounds.entrySet().stream()
           .filter(o -> !nodeStack.contains(o.getKey()))
           .map(o -> {
             o.getValue().forEach(eventStack::push);
@@ -88,9 +88,13 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
             return innerDfs;
           })
           .flatMap(Collection::stream)
-          .collect(Collectors.toUnmodifiableList());
+          .collect(Collectors.toList());
+      if(this.acceptingStates.contains(id)) {
+        endStates.add(id);
+        continueRes.add(new ArrayList<>(eventStack));
+      }
       nodeStack.pop();
-      return res;
+      return continueRes;
     }
   }
 
