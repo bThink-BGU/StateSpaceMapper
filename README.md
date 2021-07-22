@@ -1,3 +1,5 @@
+[![](https://jitpack.io/v/bThink-BGU/StateSpaceMapper.svg)](https://jitpack.io/#bThink-BGU/StateSpaceMapper)
+
 # StateSpaceMapper
 A utility for mapping state spaces of b-programs written in BPjs.
 
