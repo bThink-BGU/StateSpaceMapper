@@ -34,6 +34,6 @@ jobs:
         uses: badasintended/autojitpack@v1
         with:
           # Released version
-          version: $GITHUB_ENV
+          version: $GIT_TAG
           # Timeout for the request, set to -1 to disable timeout and wait for jitpack to finish building
           timeout: -1 # optional, default is -1
