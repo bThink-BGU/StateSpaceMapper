@@ -23,15 +23,15 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
       - name: Set env
-        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+        run: echo "GIT_TAG=`echo $(git describe --tags --abbrev=0)`" >> $GITHUB_ENV
       - name: Test env
-        run: echo "$RELEASE_VERSION"
+        run: echo "$GITHUB_ENV"
       - name: autojitpack
       # You may pin to the exact commit or the version.
       # uses: badasintended/autojitpack@07e74255c2fe5f3353477da9ee7b5767a87d390c
         uses: badasintended/autojitpack@v1
         with:
           # Released version
-          version: $RELEASE_VERSION
+          version: $GITHUB_ENV
           # Timeout for the request, set to -1 to disable timeout and wait for jitpack to finish building
           timeout: -1 # optional, default is -1
