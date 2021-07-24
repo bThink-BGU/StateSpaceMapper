@@ -69,22 +69,22 @@ public class SpaceMapperRunner {
           System.exit(-3);
         }
       };
-      var runName = bprog.getName();
-      var ess = new PrioritizedBSyncEventSelectionStrategy();
-      ess.setDefaultPriority(0);
-      bprog.setEventSelectionStrategy(ess);
-      StateSpaceMapper mpr = new StateSpaceMapper(runName);
-      mpr.setGenerateTraces(true); // Generates a set of all possible traces.
-      mpr.setOutputPath("graphs");
-      if (useNeo4j) {
-        try (var driver = GraphDatabase.driver("bolt://localhost:11002", AuthTokens.basic("neo4j", "StateMapper"))) {
-          mpr.setNeo4jDriver(driver);
-          mpr.mapSpace(bprog);
-        }
-      } else
-        mpr.mapSpace(bprog);
-
-      System.out.println("// done");
     }
+    var runName = bprog.getName();
+    var ess = new PrioritizedBSyncEventSelectionStrategy();
+    ess.setDefaultPriority(0);
+    bprog.setEventSelectionStrategy(ess);
+    StateSpaceMapper mpr = new StateSpaceMapper(runName);
+    mpr.setGenerateTraces(true); // Generates a set of all possible traces.
+    mpr.setOutputPath("graphs");
+    if (useNeo4j) {
+      try (var driver = GraphDatabase.driver("bolt://localhost:11002", AuthTokens.basic("neo4j", "StateMapper"))) {
+        mpr.setNeo4jDriver(driver);
+        mpr.mapSpace(bprog);
+      }
+    } else
+      mpr.mapSpace(bprog);
+
+    System.out.println("// done");
   }
 }

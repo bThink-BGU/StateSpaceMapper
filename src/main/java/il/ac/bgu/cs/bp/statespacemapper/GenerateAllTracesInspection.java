@@ -4,6 +4,7 @@ import il.ac.bgu.cs.bp.bpjs.analysis.ExecutionTrace;
 import il.ac.bgu.cs.bp.bpjs.analysis.ExecutionTraceInspection;
 import il.ac.bgu.cs.bp.bpjs.analysis.ExecutionTraceInspections;
 import il.ac.bgu.cs.bp.bpjs.analysis.violations.Violation;
+import il.ac.bgu.cs.bp.bpjs.internal.Pair;
 import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
 
@@ -16,7 +17,7 @@ import java.util.stream.Stream;
 
 public class GenerateAllTracesInspection implements ExecutionTraceInspection {
   /**
-   * Maps <sourceNode, <targetNode, eventFromSourceToTarget>>
+   * Maps <sourceNode, Map<targetNode, eventFromSourceToTarget>>
    */
   private final Map<BProgramSyncSnapshot, Map<BProgramSyncSnapshot, Set<BEvent>>> graph = new HashMap<>();
   private final Set<BProgramSyncSnapshot> acceptingStates = new HashSet<>();
@@ -34,7 +35,7 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
     Optional<Violation> inspection = ExecutionTraceInspections.FAILED_ASSERTIONS.inspectTrace(aTrace);
     int stateCount = aTrace.getStateCount();
     var lastNode = aTrace.getNodes().get(stateCount - 1);
-    if(inspection.isPresent()) {
+    if (inspection.isPresent()) {
       acceptingStates.add(lastNode.getState());
     }
     if (aTrace.isCyclic()) {
@@ -47,8 +48,8 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
         addEdge(src.getState(), lastNode.getState(), src.getEvent().get());
       }
     }
-    if(inspection.isPresent()) {
-      if(inspection.get().decsribe().contains("ContinuingAcceptingState")) {
+    if (inspection.isPresent()) {
+      if (inspection.get().decsribe().contains("ContinuingAcceptingState")) {
         return Optional.empty();
       }
     }
@@ -69,41 +70,39 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
     this.generateTraces = generateTraces;
   }
 
-  private List<List<BEvent>> dfsFrom(BProgramSyncSnapshot id, ArrayDeque<BProgramSyncSnapshot> nodeStack, ArrayDeque<BEvent> eventStack, Set<BProgramSyncSnapshot> endStates) {
+  private void dfsFrom(ArrayDeque<BProgramSyncSnapshot> nodeStack, ArrayDeque<BEvent> eventStack, Set<BProgramSyncSnapshot> endStates, List<List<BEvent>> paths) {
+    var id = nodeStack.pop();
     var outbounds = graph.get(id);
-    nodeStack.push(id);
-    if (outbounds == null || outbounds.isEmpty()) {
-      nodeStack.pop();
+    if (outbounds == null || outbounds.isEmpty() || this.acceptingStates.contains(id) || nodeStack.contains(id)) {
       endStates.add(id);
       var l = new ArrayList<>(eventStack);
       Collections.reverse(l);
-      return List.of(l);
-    } else {
-      var continueRes = outbounds.entrySet().stream()
-          .filter(o -> !nodeStack.contains(o.getKey()))
-          .map(o -> {
-            o.getValue().forEach(eventStack::push);
-            var innerDfs = dfsFrom(o.getKey(), nodeStack, eventStack, endStates);
+      paths.add(l);
+    }
+
+    if (outbounds != null && !outbounds.isEmpty() && !nodeStack.contains(id)) {
+      nodeStack.push(id);
+      outbounds.entrySet().stream()
+          .flatMap(entry -> entry.getValue().stream().map(e -> new Pair<>(entry.getKey(), e)))
+          .forEach(p -> {
+            nodeStack.push(p.getLeft());
+            eventStack.push(p.getRight());
+            dfsFrom(nodeStack, eventStack, endStates, paths);
             eventStack.pop();
-            return innerDfs;
-          })
-          .flatMap(Collection::stream)
-          .collect(Collectors.toList());
-      if(this.acceptingStates.contains(id)) {
-        endStates.add(id);
-        var l = new ArrayList<>(eventStack);
-        Collections.reverse(l);
-        continueRes.add(l);
-      }
-      nodeStack.pop();
-      return continueRes;
+            nodeStack.pop();
+          });
+    } else {
+      nodeStack.push(id);
     }
   }
 
   private List<List<BEvent>> dfsFrom(BProgramSyncSnapshot startNode, HashSet<BProgramSyncSnapshot> tmpEndStates) {
-    var l = dfsFrom(startNode, new ArrayDeque<>(), new ArrayDeque<>(), tmpEndStates);
-    Collections.reverse(l);
-    return l;
+    var paths = new ArrayList<List<BEvent>>();
+    dfsFrom(new ArrayDeque<>() {{
+      push(startNode);
+    }}, new ArrayDeque<>(), tmpEndStates, paths);
+//    Collections.reverse(paths);
+    return paths;
   }
 
   public MapperResult getResult() {
@@ -124,7 +123,7 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
         .map(l -> l.stream().collect(Collectors.toUnmodifiableList()))
         .collect(Collectors.toUnmodifiableList()) : null;
 
-    var acceptingStates = Stream.concat(this.acceptingStates.stream(),tmpEndStates.stream()).distinct().collect(Collectors.toUnmodifiableMap(indexedStates::get, Function.identity()));
+    var acceptingStates = Stream.concat(this.acceptingStates.stream(), tmpEndStates.stream()).distinct().collect(Collectors.toUnmodifiableMap(indexedStates::get, Function.identity()));
 
     return new MapperResult(indexedStates, links, traces, startNode, acceptingStates);
   }
@@ -192,7 +191,7 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
       this.startNodeId = states.get(startNode);
       this.acceptingStates = acceptingStates;
       AtomicInteger counter = new AtomicInteger();
-      events = edges.stream().map(edge -> edge.event).distinct().collect(Collectors.toMap(Function.identity(),e->counter.getAndIncrement()));
+      events = edges.stream().map(edge -> edge.event).distinct().collect(Collectors.toMap(Function.identity(), e -> counter.getAndIncrement()));
     }
 
     @Override
@@ -204,7 +203,7 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
               "# Events: " + events.size() + "\n" +
               "# Transition: " + edges.size() + "\n" +
               (traces == null ? "" : "# Traces: " + traces.size() + "\n") +
-              "=================\n"+
+              "=================\n" +
               (traces == null ? "" : "# Traces: " + traces + "\n");
     }
   }
