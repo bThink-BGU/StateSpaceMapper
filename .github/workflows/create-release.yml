@@ -29,11 +29,11 @@ jobs:
           echo "$VER === ${{ env.VER }} === $GITHUB_ENV === ${{ env.GITHUB_ENV }}"
           perl -pi -e '$a=1 if(!$a && s|(<version>[0-9]+\.[0-9]+\.)[0-9]*|${1}${{ env.VER }}|);' pom.xml
           perl -pi -e '$a=1 if(!$a && s|(<version>[0-9]+\.[0-9]+\.)[0-9]*|${1}${{ env.VER }}|);' README.md
-          # git config user.name github-actions
-          # git config user.email github-actions@github.com
-          # git add .
-          # git commit -m "raise version"
-          # git push
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "raise version"
+          git push
           
       # Runs a set of commands using the runners shell
       #- name: Create release
