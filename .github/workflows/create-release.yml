@@ -6,6 +6,11 @@ name: Publish a new release
 on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+    inputs:
+      releaseTitle:
+        description: "Title for the release"
+        required: false
+        default: ""
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -22,22 +27,27 @@ jobs:
           fetch-depth: 0
 
       - name: Extract next version
-        run: echo "VER=$((`sed -nE 's|<version>[0-9]+\.[0-9]+\.([0-9]*)<.*|\1|p' pom.xml  | head -n 1` + 1))" >> $GITHUB_ENV
+        run: |
+          echo "VER_MINOR=$((`sed -nE 's|<version>[0-9]+\.[0-9]+\.([0-9]*)<.*|\1|p' pom.xml  | head -n 1` + 1))" >> $GITHUB_ENV
+          echo "VER_MAJOR=$((`sed -nE 's|<version>([0-9]+\.[0-9]+\.)[0-9]*<.*|\1|p' pom.xml  | head -n 1` + 1))" >> $GITHUB_ENV
+          echo "VER=$((`sed -nE 's|<version>([0-9]+\.[0-9]+\.[0-9]*)<.*|\1|p' pom.xml  | head -n 1` + 1))" >> $GITHUB_ENV
       
       - name: Raise POM and README.md version
         run: |
-          echo "$VER === ${{ env.VER }} === $GITHUB_ENV === ${{ env.GITHUB_ENV }}"
-          perl -pi -e '$a=1 if(!$a && s|(<version>[0-9]+\.[0-9]+\.)[0-9]*|${1}${{ env.VER }}|);' pom.xml
-          perl -pi -e '$a=1 if(!$a && s|(<version>[0-9]+\.[0-9]+\.)[0-9]*|${1}${{ env.VER }}|);' README.md
+          perl -pi -e '$a=1 if(!$a && s|(<version>[0-9]+\.[0-9]+\.)[0-9]*|${1}${{ env.VER_MINOR }}|);' pom.xml
+          perl -pi -e '$a=1 if(!$a && s|(<version>[0-9]+\.[0-9]+\.)[0-9]*|${1}${{ env.VER_MINOR }}|);' README.md
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add .
           git commit -m "raise version"
           git push
           
-      # Runs a set of commands using the runners shell
-      #- name: Create release
-      #  uses: varun-bst/release-action@v1.7
-      #  with: 
-      #    artifact: target
-          
+      - name: Create release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: ${{ env.VER }}
+          release_name: Release ${{ env.VER }}
+          draft: false
+          prerelease: false          
