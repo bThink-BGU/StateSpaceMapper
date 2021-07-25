@@ -26,7 +26,8 @@ jobs:
       
       - name: Raise POM and README.md version
         run: |
-          perl -pi -e '$a=1 if(!$a && s|(<version>[0-9]+\.[0-9]+\.)[0-9]*|$1${{ env.VER }}|);' pom.xml
+          perl -pi -e '$a=1 if(!$a && s|(<version>[0-9]+\.[0-9]+\.)[0-9]*|${1}${{ env.VER }}|);' pom.xml
+          perl -pi -e '$a=1 if(!$a && s|(<version>[0-9]+\.[0-9]+\.)[0-9]*|${1}${{ env.VER }}|);' README.md
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add .
@@ -34,8 +35,8 @@ jobs:
           git push
           
       # Runs a set of commands using the runners shell
-      - name: Create release
-        uses: varun-bst/release-action@v1.7
-        with: 
-          artifact: target
+      #- name: Create release
+      #  uses: varun-bst/release-action@v1.7
+      #  with: 
+      #    artifact: target
           
