@@ -3,6 +3,14 @@
 # StateSpaceMapper
 A utility for mapping state spaces of b-programs written in BPjs.
 
+## Running from JAR
+1. Download JAR for the [latest version](https://github.com/bThink-BGU/StateSpaceMapper/releases/latest).
+2. Create a js file in and add your b-thread to the file.
+3. Run:
+```
+java -jar <path-to-download-jar> "path-to-your-js-file(s)"
+```
+
 ## Running from sources
 1. Clone the project and compile it:
 ```
@@ -13,7 +21,7 @@ mvn compile
 2. Create a js file in and add your b-thread to the file.
 3. Run:
 ```
-mvn exec:java -D"exec.args"="path-to-your-js-file"
+mvn exec:java -D"exec.args"="path-to-your-js-file(s)"
 ```
 
 ## Embedding StateSpaceMapper 
@@ -31,7 +39,7 @@ Create a Maven project and add the followings to your pom.xml:
 	<dependency>
 		<groupId>com.github.bThink-BGU</groupId>
 		<artifactId>StateSpaceMapper</artifactId>
-		<version>0.2.14</version>
+		<version>0.2.15</version>
 	</dependency>
 </dependencies>
 ```
