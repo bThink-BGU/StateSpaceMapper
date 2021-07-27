@@ -129,6 +129,18 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
         .sorted(Comparator.comparing(Pair::getLeft))
         .collect(Collectors.toList());
 //        .collect(Collectors.toUnmodifiableMap(indexedStates::get, Function.identity()));
+    var two = acceptingStates.stream()
+        .filter(p1->acceptingStates.stream().filter(p2->p2.getLeft().equals(p1.getLeft())).count()>1)
+        .sorted(Comparator.comparing(Pair::getLeft))
+        .collect(Collectors.toList());
+    var eq1 = two.get(0).getRight().equals(two.get(1).getRight());
+    var eq2 = states.stream().filter(s->s.equals(two.get(0).getRight())).collect(Collectors.toList());
+    var eq3 = states.stream().filter(s->s.equals(two.get(1).getRight())).collect(Collectors.toList());
+    var eq4 = eq2.get(0).equals(eq3.get(0));
+    System.out.println("eq1: "+eq1);
+    System.out.println("eq2: "+eq2);
+    System.out.println("eq3: "+eq3);
+    System.out.println("eq4: "+eq4);
 
     var acceptingStatesMap = Stream.concat(this.acceptingStates.stream(), tmpEndStates.stream())
         .distinct()
