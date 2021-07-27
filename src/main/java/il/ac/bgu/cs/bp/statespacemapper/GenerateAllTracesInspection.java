@@ -7,6 +7,8 @@ import il.ac.bgu.cs.bp.bpjs.analysis.violations.Violation;
 import il.ac.bgu.cs.bp.bpjs.internal.Pair;
 import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
+import il.ac.bgu.cs.bp.bpjs.model.BThreadSyncSnapshot;
+import org.mozilla.javascript.NativeContinuation;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -139,6 +141,24 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
           var listSS1 = states.stream().filter(s -> s.equals(ss1)).collect(Collectors.toList());
           System.out.println("listSS1.get(0).equals(listSS1.get(1)) = " + listSS1.get(0).equals(listSS1.get(1)));
           System.out.println("listSS1.get(1).equals(listSS1.get(0)) = " + listSS1.get(1).equals(listSS1.get(0)));
+          BThreadSyncSnapshot list0bt=null;
+          BThreadSyncSnapshot list1bt=null;
+          BThreadSyncSnapshot ss1bt=null;
+          BThreadSyncSnapshot ss2bt=null;
+          for (var bt : listSS1.get(0).getBThreadSnapshots()) {
+            if(!listSS1.get(1).getBThreadSnapshots().contains(bt)){
+              list0bt = bt;
+              list1bt = listSS1.get(1).getBThreadSnapshots().stream().filter(snapshot->snapshot.getName().equals(bt.getName())).findFirst().get();
+              ss1bt = ss1.getBThreadSnapshots().stream().filter(snapshot->snapshot.getName().equals(bt.getName())).findFirst().get();
+              ss2bt = ss2.getBThreadSnapshots().stream().filter(snapshot->snapshot.getName().equals(bt.getName())).findFirst().get();
+            }
+          }
+          System.out.println("Name of conflicting b-thread: "+ss1bt.getName());
+          System.out.println("NativeContinuation.equalImplementations(list0bt.getContinuation(),list1bt.getContinuation()) = " + NativeContinuation.equalImplementations(list0bt.getContinuation(),list1bt.getContinuation()));
+          System.out.println("NativeContinuation.equalImplementations(ss1bt.getContinuation(),list0bt.getContinuation()) = " + NativeContinuation.equalImplementations(ss1bt.getContinuation(),list0bt.getContinuation()));
+          System.out.println("NativeContinuation.equalImplementations(ss1bt.getContinuation(),list1bt.getContinuation()) = " + NativeContinuation.equalImplementations(ss1bt.getContinuation(),list1bt.getContinuation()));
+          System.out.println("NativeContinuation.equalImplementations(ss2bt.getContinuation(),list0bt.getContinuation()) = " + NativeContinuation.equalImplementations(ss2bt.getContinuation(),list0bt.getContinuation()));
+          System.out.println("NativeContinuation.equalImplementations(ss2bt.getContinuation(),list1bt.getContinuation()) = " + NativeContinuation.equalImplementations(ss2bt.getContinuation(),list1bt.getContinuation()));
           System.out.println("listSS1.get(0).equals(ss1) = " + listSS1.get(0).equals(ss1));
           System.out.println("ss1.equals(listSS1.get(0)) = " + ss1.equals(listSS1.get(0)));
           System.out.println("listSS1.get(1).equals(ss1) = " + listSS1.get(1).equals(ss1));
