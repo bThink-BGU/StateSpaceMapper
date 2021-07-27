@@ -133,27 +133,24 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
       for (var ss2 : acceptingStates) {
         if (ss1 != ss2 &&
             indexedStates.get(ss1).equals(indexedStates.get(ss2)) &&
-            !ss1.equals(ss2)
+            !ss1.equals(ss2) &&
+            states.stream().filter(s -> s.equals(ss1)).count() > 1
         ) {
           var listSS1 = states.stream().filter(s -> s.equals(ss1)).collect(Collectors.toList());
-          var listSS2 = states.stream().filter(s -> s.equals(ss2)).collect(Collectors.toList());
-//          if (listSS1.size() != listSS2.size()) {
-          System.out.println("ss1.equals(ss2) = " + ss1.equals(ss2));
-          System.out.println("key: " + indexedStates.get(ss1) + "==" + indexedStates.get(ss2));
-          System.out.println("listSS1: " + listSS1);
-          System.out.println("listSS2: " + listSS2);
           System.out.println("listSS1.get(0).equals(listSS1.get(1)) = " + listSS1.get(0).equals(listSS1.get(1)));
-          System.out.println("key: " + indexedStates.get(listSS1.get(0)) + "==" + indexedStates.get(listSS1.get(1)));
+          System.out.println("listSS1.get(1).equals(listSS1.get(0)) = " + listSS1.get(1).equals(listSS1.get(0)));
+          System.out.println("listSS1.get(0).equals(ss1) = " + listSS1.get(0).equals(ss1));
+          System.out.println("ss1.equals(listSS1.get(0)) = " + ss1.equals(listSS1.get(0)));
+          System.out.println("listSS1.get(1).equals(ss1) = " + listSS1.get(1).equals(ss1));
+          System.out.println("ss1.equals(listSS1.get(1)) = " + ss1.equals(listSS1.get(1)));
           System.exit(1);
 //          }
         }
       }
     }
-
+    System.exit(1);
     var acceptingStatesMap = Stream.concat(this.acceptingStates.stream(), tmpEndStates.stream())
         .distinct()
-//        .map(s->new Pair<>(indexedStates.get(s), s))
-//        .collect(Collectors.toList());
         .collect(Collectors.toUnmodifiableMap(indexedStates::get, Function.identity()));
 
     return new MapperResult(indexedStates, links, traces, startNode, acceptingStatesMap);
