@@ -131,20 +131,28 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
 //        .collect(Collectors.toUnmodifiableMap(indexedStates::get, Function.identity()));
     for (var ss1 : acceptingStates) {
       for (var ss2 : acceptingStates) {
-        if (ss1 != ss2 && indexedStates.get(ss1).equals(indexedStates.get(ss2))) {
+        if (ss1 != ss2 &&
+            indexedStates.get(ss1).equals(indexedStates.get(ss2)) &&
+            !ss1.equals(ss2)
+        ) {
           var listSS1 = states.stream().filter(s -> s.equals(ss1)).collect(Collectors.toList());
           var listSS2 = states.stream().filter(s -> s.equals(ss2)).collect(Collectors.toList());
-          if (listSS1.size() != listSS2.size()) {
-            System.out.println("key: " + indexedStates.get(ss1) + "=="+ indexedStates.get(ss2));
-            System.out.println("listSS1: " + listSS1);
-            System.out.println("listSS2: " + listSS2);
-            System.out.println("ss1.equals(ss2) = "+ss1.equals(ss2));
-            if(listSS1.size()<listSS2.size())
+//          if (listSS1.size() != listSS2.size()) {
+          System.out.println("ss1.equals(ss2) = " + ss1.equals(ss2));
+          System.out.println("key: " + indexedStates.get(ss1) + "==" + indexedStates.get(ss2));
+          System.out.println("listSS1: " + listSS1);
+          System.out.println("listSS2: " + listSS2);
+
+          /*if (listSS1.size() < listSS2.size())
+            for (var s1 : listSS1)
+              for (var s2 : listSS2)
+                System.out.println(s1.equals(s2));
+          else
+            for (var s2 : listSS2)
               for (var s1 : listSS1)
-                for (var s2 : listSS2)
-                  System.out.println(s1.equals(s2));
-            System.exit(1);
-          }
+                System.out.println(s2.equals(s1));*/
+          System.exit(1);
+//          }
         }
       }
     }

@@ -51,9 +51,10 @@ bthread('Simulate day/night', function () {
     sync({request: Event('time 08:00')})
   // }
 })
+/*
 
 bthread('Simulate vacuum', function () {
   // while (true) {
     sync({request: Event('vacuum')})
   // }
-})
+})*/
