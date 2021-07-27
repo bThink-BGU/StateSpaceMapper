@@ -142,15 +142,8 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
           System.out.println("key: " + indexedStates.get(ss1) + "==" + indexedStates.get(ss2));
           System.out.println("listSS1: " + listSS1);
           System.out.println("listSS2: " + listSS2);
-
-          /*if (listSS1.size() < listSS2.size())
-            for (var s1 : listSS1)
-              for (var s2 : listSS2)
-                System.out.println(s1.equals(s2));
-          else
-            for (var s2 : listSS2)
-              for (var s1 : listSS1)
-                System.out.println(s2.equals(s1));*/
+          System.out.println("listSS1.get(0).equals(listSS1.get(1)) = " + listSS1.get(0).equals(listSS1.get(1)));
+          System.out.println("key: " + indexedStates.get(listSS1.get(0)) + "==" + indexedStates.get(listSS1.get(1)));
           System.exit(1);
 //          }
         }
