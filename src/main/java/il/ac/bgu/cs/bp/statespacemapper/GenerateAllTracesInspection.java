@@ -163,6 +163,10 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
           System.out.println("ss1.equals(listSS1.get(0)) = " + ss1.equals(listSS1.get(0)));
           System.out.println("listSS1.get(1).equals(ss1) = " + listSS1.get(1).equals(ss1));
           System.out.println("ss1.equals(listSS1.get(1)) = " + ss1.equals(listSS1.get(1)));
+          System.out.println("listSS1.get(0).equals(ss2) = " + listSS1.get(0).equals(ss2));
+          System.out.println("ss2.equals(listSS1.get(0)) = " + ss2.equals(listSS1.get(0)));
+          System.out.println("listSS1.get(1).equals(ss2) = " + listSS1.get(1).equals(ss2));
+          System.out.println("ss2.equals(listSS1.get(1)) = " + ss2.equals(listSS1.get(1)));
           System.exit(1);
 //          }
         }
