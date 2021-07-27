@@ -15,6 +15,10 @@
     </properties>
     <repositories>
         <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+        <repository>
             <id>repo</id>
             <url>file://${project.basedir}/lib</url>
             <releases>
@@ -31,6 +35,11 @@
             <groupId>com.github.bthink-bgu</groupId>
             <artifactId>BPjs</artifactId>
             <version>0.12.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.bthink-bgu</groupId>
+            <artifactId>BPjs-Context</artifactId>
+            <version>0.2.1</version>
         </dependency>
         <dependency>
             <groupId>org.neo4j.driver</groupId>
@@ -105,7 +114,8 @@
                                 </goals>
                                 <configuration>
                                     <transformers>
-                                        <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                        <transformer
+                                                implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                             <manifestEntries>
                                                 <Main-Class>${exec.mainClass}</Main-Class>
                                             </manifestEntries>

@@ -123,9 +123,20 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
         .map(l -> l.stream().collect(Collectors.toUnmodifiableList()))
         .collect(Collectors.toUnmodifiableList()) : null;
 
-    var acceptingStates = Stream.concat(this.acceptingStates.stream(), tmpEndStates.stream()).distinct().collect(Collectors.toUnmodifiableMap(indexedStates::get, Function.identity()));
+    var acceptingStates = Stream.concat(this.acceptingStates.stream(), tmpEndStates.stream())
+        .distinct()
+        .map(s->new Pair<>(indexedStates.get(s), s))
+        .sorted(Comparator.comparing(Pair::getLeft))
+        .collect(Collectors.toList());
+//        .collect(Collectors.toUnmodifiableMap(indexedStates::get, Function.identity()));
 
-    return new MapperResult(indexedStates, links, traces, startNode, acceptingStates);
+    var acceptingStatesMap = Stream.concat(this.acceptingStates.stream(), tmpEndStates.stream())
+        .distinct()
+//        .map(s->new Pair<>(indexedStates.get(s), s))
+//        .collect(Collectors.toList());
+        .collect(Collectors.toUnmodifiableMap(indexedStates::get, Function.identity()));
+
+    return new MapperResult(indexedStates, links, traces, startNode, acceptingStatesMap);
   }
 
   public static class Edge {
