@@ -125,22 +125,29 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
 
     var acceptingStates = Stream.concat(this.acceptingStates.stream(), tmpEndStates.stream())
         .distinct()
-        .map(s->new Pair<>(indexedStates.get(s), s))
-        .sorted(Comparator.comparing(Pair::getLeft))
+//        .map(s->new Pair<>(indexedStates.get(s), s))
+//        .sorted(Comparator.comparing(Pair::getLeft))
         .collect(Collectors.toList());
 //        .collect(Collectors.toUnmodifiableMap(indexedStates::get, Function.identity()));
-    var two = acceptingStates.stream()
-        .filter(p1->acceptingStates.stream().filter(p2->p2.getLeft().equals(p1.getLeft())).count()>1)
-        .sorted(Comparator.comparing(Pair::getLeft))
-        .collect(Collectors.toList());
-    var eq1 = two.get(0).getRight().equals(two.get(1).getRight());
-    var eq2 = states.stream().filter(s->s.equals(two.get(0).getRight())).collect(Collectors.toList());
-    var eq3 = states.stream().filter(s->s.equals(two.get(1).getRight())).collect(Collectors.toList());
-    var eq4 = eq2.get(0).equals(eq3.get(0));
-    System.out.println("eq1: "+eq1);
-    System.out.println("eq2: "+eq2);
-    System.out.println("eq3: "+eq3);
-    System.out.println("eq4: "+eq4);
+    for (var ss1 : acceptingStates) {
+      for (var ss2 : acceptingStates) {
+        if (ss1 != ss2 && indexedStates.get(ss1).equals(indexedStates.get(ss2))) {
+          var listSS1 = states.stream().filter(s -> s.equals(ss1)).collect(Collectors.toList());
+          var listSS2 = states.stream().filter(s -> s.equals(ss2)).collect(Collectors.toList());
+          if (listSS1.size() != listSS2.size()) {
+            System.out.println("key: " + indexedStates.get(ss1) + "=="+ indexedStates.get(ss2));
+            System.out.println("listSS1: " + listSS1);
+            System.out.println("listSS2: " + listSS2);
+            System.out.println("ss1.equals(ss2) = "+ss1.equals(ss2));
+            if(listSS1.size()<listSS2.size())
+              for (var s1 : listSS1)
+                for (var s2 : listSS2)
+                  System.out.println(s1.equals(s2));
+            System.exit(1);
+          }
+        }
+      }
+    }
 
     var acceptingStatesMap = Stream.concat(this.acceptingStates.stream(), tmpEndStates.stream())
         .distinct()
