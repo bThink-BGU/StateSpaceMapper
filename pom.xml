@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>il.ac.bgu.cs.bp</groupId>
     <artifactId>StateSpaceMapper</artifactId>
-    <version>0.2.15</version>
+    <version>0.2.16</version>
     <packaging>jar</packaging>
     <description>Draws a b-program's state space.</description>
     <properties>
@@ -31,6 +31,7 @@
         </repository>
     </repositories>
     <dependencies>
+             <!-- A patched BPjs version to overcome the equals bug -->
         <dependency>
             <groupId>com.github.bthink-bgu</groupId>
             <artifactId>BPjs</artifactId>
