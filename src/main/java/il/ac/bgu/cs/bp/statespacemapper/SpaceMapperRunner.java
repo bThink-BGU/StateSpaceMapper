@@ -1,6 +1,5 @@
 package il.ac.bgu.cs.bp.statespacemapper;
 
-import il.ac.bgu.cs.bp.bpjs.context.ContextBProgram;
 import il.ac.bgu.cs.bp.bpjs.model.BProgram;
 import il.ac.bgu.cs.bp.bpjs.model.ResourceBProgram;
 import il.ac.bgu.cs.bp.bpjs.model.eventselection.PrioritizedBSyncEventSelectionStrategy;
@@ -73,9 +72,8 @@ public class SpaceMapperRunner {
     }
     var runName = bprog.getName();
     var ess = new PrioritizedBSyncEventSelectionStrategy();
-//    ess.setDefaultPriority(0);
-    bprog = new ContextBProgram("HotCold/dal.js","HotCold/bl.js");
-//    bprog.setEventSelectionStrategy(ess);
+    ess.setDefaultPriority(0);
+    bprog.setEventSelectionStrategy(ess);
     StateSpaceMapper mpr = new StateSpaceMapper(runName);
     mpr.setGenerateTraces(true); // Generates a set of all possible traces.
     mpr.setOutputPath("graphs");
