@@ -7,6 +7,8 @@ import il.ac.bgu.cs.bp.bpjs.analysis.violations.Violation;
 import il.ac.bgu.cs.bp.bpjs.internal.Pair;
 import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
+import il.ac.bgu.cs.bp.bpjs.model.BThreadSyncSnapshot;
+import org.mozilla.javascript.NativeContinuation;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -123,7 +125,9 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
         .map(l -> l.stream().collect(Collectors.toUnmodifiableList()))
         .collect(Collectors.toUnmodifiableList()) : null;
 
-    var acceptingStates = Stream.concat(this.acceptingStates.stream(), tmpEndStates.stream()).distinct().collect(Collectors.toUnmodifiableMap(indexedStates::get, Function.identity()));
+    var acceptingStates = Stream.concat(this.acceptingStates.stream(), tmpEndStates.stream())
+        .distinct()
+        .collect(Collectors.toUnmodifiableMap(indexedStates::get, Function.identity()));
 
     return new MapperResult(indexedStates, links, traces, startNode, acceptingStates);
   }
