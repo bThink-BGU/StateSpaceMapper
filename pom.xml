@@ -15,19 +15,13 @@
     </properties>
     <repositories>
         <repository>
-            <id>a. repo</id>
-            <url>file://${project.basedir}/lib</url>
+            <id>StateMapperRepo</id>
+            <url>https://github.com/bThink-BGU/StateSpaceMapper/raw/repository</url>
             <releases>
                 <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
                 <checksumPolicy>ignore</checksumPolicy>
             </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
         </repository>
     </repositories>
     <dependencies>
