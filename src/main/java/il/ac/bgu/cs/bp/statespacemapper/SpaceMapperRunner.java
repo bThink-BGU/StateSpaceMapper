@@ -1,23 +1,32 @@
 package il.ac.bgu.cs.bp.statespacemapper;
 
-import il.ac.bgu.cs.bp.bpjs.model.BProgram;
-import il.ac.bgu.cs.bp.bpjs.model.ResourceBProgram;
-import il.ac.bgu.cs.bp.bpjs.model.eventselection.PrioritizedBSyncEventSelectionStrategy;
+import il.ac.bgu.cs.bp.bpjs.internal.ScriptableUtils;
+import il.ac.bgu.cs.bp.bpjs.model.*;
+import org.jgrapht.nio.Attribute;
+import org.jgrapht.nio.DefaultAttribute;
+import org.jgrapht.nio.dot.DOTExporter;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.EvaluatorException;
 import org.mozilla.javascript.Scriptable;
-import org.neo4j.driver.AuthTokens;
-import org.neo4j.driver.GraphDatabase;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+import static java.util.stream.Collectors.joining;
 
 public class SpaceMapperRunner {
-
-  private static final boolean useNeo4j = false;
 
   public static void main(String[] args) throws Exception {
     System.out.println("// start");
@@ -29,7 +38,7 @@ public class SpaceMapperRunner {
     try {
       bprog = new ResourceBProgram(args);
     } catch (Exception ignored) {
-      bprog = new BProgram(args[0].replaceAll("\\.\\.[/\\\\]","")) {
+      bprog = new BProgram(args[0].replaceAll("\\.\\.[/\\\\]", "")) {
         @Override
         protected void setupProgramScope(Scriptable scope) {
           for (String arg : args) {
@@ -71,20 +80,101 @@ public class SpaceMapperRunner {
       };
     }
     var runName = bprog.getName();
-    var ess = new PrioritizedBSyncEventSelectionStrategy();
-    ess.setDefaultPriority(0);
-    bprog.setEventSelectionStrategy(ess);
-    StateSpaceMapper mpr = new StateSpaceMapper(runName);
-    mpr.setGenerateTraces(true); // Generates a set of all possible traces.
-    mpr.setOutputPath("graphs");
-    if (useNeo4j) {
-      try (var driver = GraphDatabase.driver("bolt://localhost:11002", AuthTokens.basic("neo4j", "StateMapper"))) {
-        mpr.setNeo4jDriver(driver);
-        mpr.mapSpace(bprog);
-      }
-    } else
-      mpr.mapSpace(bprog);
+
+    // You can use a different EventSelectionStrategy, for example:
+    /* var ess = new PrioritizedBSyncEventSelectionStrategy();
+    bprog.setEventSelectionStrategy(ess); */
+    StateSpaceMapper mpr = new StateSpaceMapper();
+    var res = mpr.mapSpace(bprog);
+    System.out.println("// completed mapping the states graph");
+    System.out.println(res.toString());
+
+    getAllPaths(res);
+
+    exportGraph(runName, res);
 
     System.out.println("// done");
+  }
+
+  private static List<List<BEvent>> getAllPaths(GenerateAllTracesInspection.MapperResult res) {
+    System.out.println("// Generated paths:");
+    boolean findSimplePathsOnly = true; // acyclic paths
+    int maxPathLength = Integer.MAX_VALUE;
+    var paths = res.generatePaths(findSimplePathsOnly, maxPathLength);
+    System.out.println(paths);
+    return paths;
+  }
+
+  private static void exportGraph(String runName, GenerateAllTracesInspection.MapperResult res) throws IOException {
+    Function<GenerateAllTracesInspection.MapperEdge, Map<String, Attribute>> edgeAttributeProvider = e -> Map.of(
+        "label", DefaultAttribute.createAttribute(e.event.toString()),
+        "Event", DefaultAttribute.createAttribute(e.event.toString()),
+        "Event_name", DefaultAttribute.createAttribute(e.event.name),
+        "Event_value", DefaultAttribute.createAttribute(Objects.toString(e.event.maybeData))
+    );
+    Function<GenerateAllTracesInspection.MapperVertex, Map<String, Attribute>> vertexAttributeProvider = v -> {
+      boolean startNode = v.equals(res.startNode);
+      boolean acceptingNode = res.acceptingStates.contains(v);
+      return Map.of(
+          "hash", DefaultAttribute.createAttribute(v.hashCode()),
+          "store", DefaultAttribute.createAttribute(getStore(v.bpss)),
+          "statements", DefaultAttribute.createAttribute(getStatments(v.bpss)),
+          "bthreads", DefaultAttribute.createAttribute(getBThreads(v.bpss)),
+          "shape", DefaultAttribute.createAttribute(startNode ? "none " : acceptingNode? "doublecircle" : "circle")
+      );
+    };
+    Supplier<Map<String, Attribute>> graphAttributeProvider = () -> Map.of(
+        "name", DefaultAttribute.createAttribute("\"" + runName + "\""),
+        "run_date", DefaultAttribute.createAttribute("\"" + DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now()) + "\""),
+        "num_of_vertices", DefaultAttribute.createAttribute(res.states().size()),
+        "num_of_edges", DefaultAttribute.createAttribute(res.edges().size()),
+        "num_of_events", DefaultAttribute.createAttribute(res.events.size())
+    );
+
+    System.out.println("// Export to GraphViz...");
+    var outputDir = "exports";
+    Files.createDirectories(Paths.get(outputDir));
+    var path = Paths.get(outputDir, runName + ".dot");
+    var dotExporter = new DOTExporter<GenerateAllTracesInspection.MapperVertex, GenerateAllTracesInspection.MapperEdge>();
+    dotExporter.setEdgeAttributeProvider(edgeAttributeProvider);
+    dotExporter.setVertexAttributeProvider(vertexAttributeProvider);
+    dotExporter.setGraphAttributeProvider(graphAttributeProvider);
+    try (var out = new PrintStream(path.toString())) {
+      dotExporter.exportGraph(res.graph, out);
+    }
+  }
+
+  private static String getBThreads(BProgramSyncSnapshot bpss) {
+    return bpss.getBThreadSnapshots().stream().map(BThreadSyncSnapshot::getName).collect(joining(","));
+  }
+
+  private static String sanitize(String in) {
+    return in
+        .replace("\r\n", "")
+        .replace("\n", "")
+        .replace("\"", "\\\"")
+        .replace("JS_Obj ", "")
+        .replaceAll("[\\. \\-+]", "_");
+  }
+
+  private static String getStore(BProgramSyncSnapshot bpss) {
+    return bpss.getDataStore().entrySet().stream()
+        .map(entry -> "{" + sanitize(ScriptableUtils.stringify(entry.getKey())) + "," + sanitize(ScriptableUtils.stringify(entry.getValue())) + "}")
+        .collect(joining(",", "[", "]"));
+  }
+
+  private static String getStatments(BProgramSyncSnapshot bpss) {
+    return bpss.getBThreadSnapshots().stream()
+        .map(btss -> {
+          SyncStatement syst = btss.getSyncStatement();
+          return
+              "{name: " + sanitize(btss.getName()) + ", " +
+                  "isHot: " + syst.isHot() + ", " +
+                  "request: " + syst.getRequest().stream().map(e -> sanitize(e.toString())).collect(joining(",", "[", "]")) + ", " +
+                  "waitFor: " + sanitize(syst.getWaitFor().toString()) + ", " +
+                  "block: " + sanitize(syst.getBlock().toString()) + ", " +
+                  "interrupt: " + sanitize(syst.getInterrupt().toString()) + "}";
+        })
+        .collect(joining(",\n", "[", "]"));
   }
 }
