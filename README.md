@@ -45,18 +45,8 @@ Create a Maven project and add the followings to your pom.xml:
 ```
 
 ## Usage
-After creating BProgram bprog, write the following code (replace "vault" with your file name):
-```java
-BProgram bprog = new ResourceBProgram("vault.js");
-StateSpaceMapper mpr = new StateSpaceMapper("vault");
-mpr.mapSpace(bprog);
-```
-Once the run is completed, a new directory, called "graphs", will be created, with the output files inside.
-
-## Configuration
-You can change the default output directory by calling: ```mpr.setOutputPath("graphs");```
-
-You can generate a set of all possible traces, by calling ```mpr.setGenerateTraces(true);``` (default=true)
+See [SpaceMapperRunner.java](src/main/java/il/ac/bgu/cs/bp/statespacemapper/SpaceMapperRunner.java) for usage examples.
+Once the run is completed, a new directory, called "exports", will be created, with the output files inside.
 
 ## Accepting states
 In your js code, you may mark certain states as accepting by using the following code:
@@ -66,18 +56,23 @@ if(use_accepting_states) {
 }
 ```
 
-The ```if(use_accepting_states)``` condition will allow you to use the same code both in BProgramRunner and in StateSpaceMapper. 
+The ```if(use_accepting_states)``` condition will allow you to use the same code both in BProgramRunner and in StateSpaceMapper.
 
 The ```AcceptingState.Stopping()``` will cause the StateMapper to stop the mapping for this branch and mark the state as accepting. The StateMapper **will** continue the state mapping in other branches.
 
-The ```AcceptingState.Continuing()``` will mark the state as accepting, without stopping the mapping for this branch. 
+The ```AcceptingState.Continuing()``` will mark the state as accepting, without stopping the mapping for this branch.
 This type of accepting state is useful for Buchi automatons, that accepts an input iff there is a run of the automaton over the input that begins at an initial state and  at least one of the infinitely often occurring states is an accepting state.
+
+## Configuration
+You can change the default output directory by calling: ```mpr.setOutputPath("graphs");```
+
+You can generate a set of all possible traces, by calling ```mpr.setGenerateTraces(true);``` (default=true)
 
 ## Output formats
 Currently, the supported formats are:
 * Json
 * [Noam](https://github.com/izuzak/noam) (allows for translating the automaton into a regular expression)
-* [GraphViz](https://graphviz.org/)
+* [GraphViz](https://graphviz.org/) (default)
 * [GOAL](http://goal.im.ntu.edu.tw) - a graphical interactive tool for defining and manipulating Büchi automata and temporal logic formulae.
 * [Regular Expression](http://goal.im.ntu.edu.tw) - Uses GOAl to translate the automaton into a regular expression)
 * [Neo4J](https://neo4j.com/) (requires an installation of Neo4J and configuring the driver ```mpr.setNeo4jDriver(driver);```)
