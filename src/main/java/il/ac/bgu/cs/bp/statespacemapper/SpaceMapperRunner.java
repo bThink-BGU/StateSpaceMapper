@@ -9,7 +9,6 @@ import org.mozilla.javascript.Context;
 import org.mozilla.javascript.EvaluatorException;
 import org.mozilla.javascript.Scriptable;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -96,7 +95,7 @@ public class SpaceMapperRunner {
     System.out.println("// done");
   }
 
-  private static List<List<BEvent>> getAllPaths(GenerateAllTracesInspection.MapperResult res) {
+  public static List<List<BEvent>> getAllPaths(GenerateAllTracesInspection.MapperResult res) {
     System.out.println("// Generated paths:");
     boolean findSimplePathsOnly = true; // acyclic paths
     int maxPathLength = Integer.MAX_VALUE;
@@ -105,7 +104,7 @@ public class SpaceMapperRunner {
     return paths;
   }
 
-  private static void exportGraph(String runName, GenerateAllTracesInspection.MapperResult res) throws IOException {
+  public static void exportGraph(String runName, GenerateAllTracesInspection.MapperResult res) throws IOException {
     Function<GenerateAllTracesInspection.MapperEdge, Map<String, Attribute>> edgeAttributeProvider = e -> Map.of(
         "label", DefaultAttribute.createAttribute(e.event.toString()),
         "Event", DefaultAttribute.createAttribute(e.event.toString()),
@@ -144,11 +143,11 @@ public class SpaceMapperRunner {
     }
   }
 
-  private static String getBThreads(BProgramSyncSnapshot bpss) {
+  public static String getBThreads(BProgramSyncSnapshot bpss) {
     return bpss.getBThreadSnapshots().stream().map(BThreadSyncSnapshot::getName).collect(joining(","));
   }
 
-  private static String sanitize(String in) {
+  public static String sanitize(String in) {
     return in
         .replace("\r\n", "")
         .replace("\n", "")
@@ -157,13 +156,13 @@ public class SpaceMapperRunner {
         .replaceAll("[\\. \\-+]", "_");
   }
 
-  private static String getStore(BProgramSyncSnapshot bpss) {
+  public static String getStore(BProgramSyncSnapshot bpss) {
     return bpss.getDataStore().entrySet().stream()
         .map(entry -> "{" + sanitize(ScriptableUtils.stringify(entry.getKey())) + "," + sanitize(ScriptableUtils.stringify(entry.getValue())) + "}")
         .collect(joining(",", "[", "]"));
   }
 
-  private static String getStatments(BProgramSyncSnapshot bpss) {
+  public static String getStatments(BProgramSyncSnapshot bpss) {
     return bpss.getBThreadSnapshots().stream()
         .map(btss -> {
           SyncStatement syst = btss.getSyncStatement();

@@ -101,12 +101,13 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
     @Override
     public String toString() {
       return
-          "StateMapper stats\n" +
-              "=================\n" +
+          "StateMapper stats:\n" +
+          "======================\n" +
               "# States: " + states().size() + "\n" +
               "# Events: " + events.size() + "\n" +
               "# Transition: " + graph.edgeSet().size() + "\n" +
-              "=================\n";
+              "# Accepting States: " + acceptingStates.size() + "\n" +
+              "======================\n";
     }
   }
 
