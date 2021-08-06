@@ -104,7 +104,7 @@ public class SpaceMapperRunner {
     return paths;
   }
 
-  public static void exportGraph(String runName, GenerateAllTracesInspection.MapperResult res) throws IOException {
+  private static void exportGraph(String runName, GenerateAllTracesInspection.MapperResult res) throws IOException {
     Function<GenerateAllTracesInspection.MapperEdge, Map<String, Attribute>> edgeAttributeProvider = e -> Map.of(
         "label", DefaultAttribute.createAttribute(e.event.toString()),
         "Event", DefaultAttribute.createAttribute(e.event.toString()),
@@ -116,10 +116,10 @@ public class SpaceMapperRunner {
       boolean acceptingNode = res.acceptingStates.contains(v);
       return Map.of(
           "hash", DefaultAttribute.createAttribute(v.hashCode()),
-          "store", DefaultAttribute.createAttribute(getStore(v.bpss)),
-          "statements", DefaultAttribute.createAttribute(getStatments(v.bpss)),
-          "bthreads", DefaultAttribute.createAttribute(getBThreads(v.bpss)),
-          "shape", DefaultAttribute.createAttribute(startNode ? "none " : acceptingNode? "doublecircle" : "circle")
+          "store", DefaultAttribute.createAttribute(dotSanitizer(getStore(v.bpss))),
+          "statements", DefaultAttribute.createAttribute(dotSanitizer(getStatments(v.bpss))),
+          "bthreads", DefaultAttribute.createAttribute(dotSanitizer(getBThreads(v.bpss))),
+          "shape", DefaultAttribute.createAttribute(startNode ? "none " : acceptingNode ? "doublecircle" : "circle")
       );
     };
     Supplier<Map<String, Attribute>> graphAttributeProvider = () -> Map.of(
@@ -143,36 +143,37 @@ public class SpaceMapperRunner {
     }
   }
 
-  public static String getBThreads(BProgramSyncSnapshot bpss) {
+  private static String getBThreads(BProgramSyncSnapshot bpss) {
     return bpss.getBThreadSnapshots().stream().map(BThreadSyncSnapshot::getName).collect(joining(","));
   }
 
-  public static String sanitize(String in) {
+  private static String dotSanitizer(String in) {
     return in
         .replace("\r\n", "")
         .replace("\n", "")
-        .replace("\"", "\\\"")
+        .replace("\"", "'")
         .replace("JS_Obj ", "")
-        .replaceAll("[\\. \\-+]", "_");
+//        .replaceAll("[\\. \\-+]", "_");
+        ;
   }
 
-  public static String getStore(BProgramSyncSnapshot bpss) {
+  private static String getStore(BProgramSyncSnapshot bpss) {
     return bpss.getDataStore().entrySet().stream()
-        .map(entry -> "{" + sanitize(ScriptableUtils.stringify(entry.getKey())) + "," + sanitize(ScriptableUtils.stringify(entry.getValue())) + "}")
+        .map(entry -> "{" + ScriptableUtils.stringify(entry.getKey()) + "," + ScriptableUtils.stringify(entry.getValue()) + "}")
         .collect(joining(",", "[", "]"));
   }
 
-  public static String getStatments(BProgramSyncSnapshot bpss) {
+  private static String getStatments(BProgramSyncSnapshot bpss) {
     return bpss.getBThreadSnapshots().stream()
         .map(btss -> {
           SyncStatement syst = btss.getSyncStatement();
           return
-              "{name: " + sanitize(btss.getName()) + ", " +
+              "{name: " + btss.getName() + ", " +
                   "isHot: " + syst.isHot() + ", " +
-                  "request: " + syst.getRequest().stream().map(e -> sanitize(e.toString())).collect(joining(",", "[", "]")) + ", " +
-                  "waitFor: " + sanitize(syst.getWaitFor().toString()) + ", " +
-                  "block: " + sanitize(syst.getBlock().toString()) + ", " +
-                  "interrupt: " + sanitize(syst.getInterrupt().toString()) + "}";
+                  "request: " + syst.getRequest().stream().map(BEvent::toString).collect(joining(",", "[", "]")) + ", " +
+                  "waitFor: " + syst.getWaitFor().toString() + ", " +
+                  "block: " + syst.getBlock().toString() + ", " +
+                  "interrupt: " + syst.getInterrupt().toString() + "}";
         })
         .collect(joining(",\n", "[", "]"));
   }
