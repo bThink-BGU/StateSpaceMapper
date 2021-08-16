@@ -153,7 +153,6 @@ public class SpaceMapperRunner {
         .replace("\n", "")
         .replace("\"", "'")
         .replace("JS_Obj ", "")
-        .replace("\\\\\"", "'")
 //        .replaceAll("[\\. \\-+]", "_");
         ;
   }
