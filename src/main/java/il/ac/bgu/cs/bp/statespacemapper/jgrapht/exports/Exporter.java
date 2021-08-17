@@ -1,4 +1,4 @@
-package il.ac.bgu.cs.bp.statespacemapper.exports;
+package il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports;
 
 import il.ac.bgu.cs.bp.bpjs.internal.ScriptableUtils;
 import il.ac.bgu.cs.bp.bpjs.model.BEvent;
@@ -6,8 +6,12 @@ import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
 import il.ac.bgu.cs.bp.bpjs.model.BThreadSyncSnapshot;
 import il.ac.bgu.cs.bp.bpjs.model.SyncStatement;
 import il.ac.bgu.cs.bp.statespacemapper.GenerateAllTracesInspection;
+import il.ac.bgu.cs.bp.statespacemapper.jgrapht.MapperEdge;
+import il.ac.bgu.cs.bp.statespacemapper.jgrapht.MapperVertex;
 import org.jgrapht.nio.Attribute;
+import org.jgrapht.nio.BaseExporter;
 import org.jgrapht.nio.DefaultAttribute;
+import org.jgrapht.nio.GraphExporter;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -22,27 +26,31 @@ import java.util.function.Supplier;
 
 import static java.util.stream.Collectors.joining;
 
-public abstract class Exporter {
+public class Exporter {
   protected final GenerateAllTracesInspection.MapperResult res;
   protected final String path;
   protected final String runName;
+  protected final BaseExporter<MapperVertex, MapperEdge> exporter;
 
-  protected Exporter(GenerateAllTracesInspection.MapperResult res, String path, String runName) {
+  public Exporter(GenerateAllTracesInspection.MapperResult res, String path, String runName,
+                     BaseExporter<MapperVertex, MapperEdge> exporter) {
     this.res = res;
     this.path = path;
     this.runName = runName;
+    this.exporter = exporter;
   }
 
-  protected abstract void exportGraph(PrintStream out);
-
   public void export() throws IOException {
+    exporter.setEdgeAttributeProvider(edgeAttributeProvider());
+    exporter.setVertexAttributeProvider(vertexAttributeProvider());
+    exporter.setGraphAttributeProvider(graphAttributeProvider());
     Files.createDirectories(Paths.get(path).getParent());
     try (var out = new PrintStream(path)) {
-      exportGraph(out);
+      ((GraphExporter<MapperVertex, MapperEdge>)exporter).exportGraph(res.graph, out);
     }
   }
 
-  protected Function<GenerateAllTracesInspection.MapperVertex, Map<String, Attribute>> vertexAttributeProvider() {
+  protected Function<MapperVertex, Map<String, Attribute>> vertexAttributeProvider() {
     return v -> {
       boolean startNode = v.equals(res.startNode);
       boolean acceptingNode = res.acceptingStates.contains(v);
@@ -66,7 +74,7 @@ public abstract class Exporter {
     );
   }
 
-  protected Function<GenerateAllTracesInspection.MapperEdge, Map<String, Attribute>> edgeAttributeProvider() {
+  protected Function<MapperEdge, Map<String, Attribute>> edgeAttributeProvider() {
     return e -> Map.of(
         "label", DefaultAttribute.createAttribute(sanitize(e.event.toString())),
         "Event", DefaultAttribute.createAttribute(sanitize(e.event.toString())),
