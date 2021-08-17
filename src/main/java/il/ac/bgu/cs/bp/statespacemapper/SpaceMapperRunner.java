@@ -88,9 +88,9 @@ public class SpaceMapperRunner {
     System.out.println("// completed mapping the states graph");
     System.out.println(res.toString());
 
-    getAllPaths(res);
-
     exportGraph(runName, res);
+
+    getAllPaths(res);
 
     System.out.println("// done");
   }
@@ -106,10 +106,10 @@ public class SpaceMapperRunner {
 
   private static void exportGraph(String runName, GenerateAllTracesInspection.MapperResult res) throws IOException {
     Function<GenerateAllTracesInspection.MapperEdge, Map<String, Attribute>> edgeAttributeProvider = e -> Map.of(
-        "label", DefaultAttribute.createAttribute(e.event.toString()),
-        "Event", DefaultAttribute.createAttribute(e.event.toString()),
+        "Event", DefaultAttribute.createAttribute(dotSanitizer(e.event.toString())),
         "Event_name", DefaultAttribute.createAttribute(e.event.name),
-        "Event_value", DefaultAttribute.createAttribute(Objects.toString(e.event.maybeData))
+        "Event_value", DefaultAttribute.createAttribute(dotSanitizer(Objects.toString(e.event.maybeData))),
+        "label", DefaultAttribute.createAttribute(dotSanitizer(e.event.toString()))
     );
     Function<GenerateAllTracesInspection.MapperVertex, Map<String, Attribute>> vertexAttributeProvider = v -> {
       boolean startNode = v.equals(res.startNode);
@@ -144,7 +144,10 @@ public class SpaceMapperRunner {
   }
 
   private static String getBThreads(BProgramSyncSnapshot bpss) {
-    return bpss.getBThreadSnapshots().stream().map(BThreadSyncSnapshot::getName).collect(joining(","));
+    return bpss.getBThreadSnapshots().stream()
+        .map(BThreadSyncSnapshot::getName)
+        .sorted()
+        .collect(joining(","));
   }
 
   private static String dotSanitizer(String in) {
@@ -153,13 +156,13 @@ public class SpaceMapperRunner {
         .replace("\n", "")
         .replace("\"", "'")
         .replace("JS_Obj ", "")
-//        .replaceAll("[\\. \\-+]", "_");
         ;
   }
 
   private static String getStore(BProgramSyncSnapshot bpss) {
     return bpss.getDataStore().entrySet().stream()
         .map(entry -> "{" + ScriptableUtils.stringify(entry.getKey()) + "," + ScriptableUtils.stringify(entry.getValue()) + "}")
+        .sorted()
         .collect(joining(",", "[", "]"));
   }
 
@@ -175,6 +178,7 @@ public class SpaceMapperRunner {
                   "block: " + syst.getBlock().toString() + ", " +
                   "interrupt: " + syst.getInterrupt().toString() + "}";
         })
+        .sorted()
         .collect(joining(",\n", "[", "]"));
   }
 }
