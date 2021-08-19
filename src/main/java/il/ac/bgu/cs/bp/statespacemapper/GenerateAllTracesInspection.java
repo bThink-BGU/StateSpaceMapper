@@ -6,10 +6,11 @@ import il.ac.bgu.cs.bp.bpjs.analysis.ExecutionTraceInspections;
 import il.ac.bgu.cs.bp.bpjs.analysis.violations.Violation;
 import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
+import il.ac.bgu.cs.bp.statespacemapper.jgrapht.MapperEdge;
+import il.ac.bgu.cs.bp.statespacemapper.jgrapht.MapperVertex;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
 import org.jgrapht.alg.shortestpath.AllDirectedPaths;
-import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedPseudograph;
 
 import java.util.*;
@@ -110,45 +111,4 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
               "======================\n";
     }
   }
-
-  public static class MapperVertex {
-    private static final long serialVersionUID = 2565436616076859325L;
-    public final BProgramSyncSnapshot bpss;
-
-    public MapperVertex(BProgramSyncSnapshot bpss) {
-      this.bpss = bpss;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
-      MapperVertex that = (MapperVertex) o;
-      return Objects.equals(bpss, that.bpss);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hashCode(bpss);
-    }
-  }
-
-  public static class MapperEdge extends DefaultEdge {
-    private static final long serialVersionUID = -7176704143413508648L;
-    public final BEvent event;
-
-    public MapperEdge(BEvent event) {
-      this.event = event;
-    }
-
-    public BEvent getEvent() {
-      return event;
-    }
-
-    @Override
-    public String toString() {
-      return "(" + getSource() + " : " + getTarget() + " : " + event + ")";
-    }
-  }
-
 }

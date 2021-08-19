@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>il.ac.bgu.cs.bp</groupId>
     <artifactId>StateSpaceMapper</artifactId>
-    <version>0.3.2</version>
+    <version>0.3.5</version>
     <packaging>jar</packaging>
     <description>Draws a b-program's state space.</description>
     <properties>
@@ -83,7 +83,7 @@
             <!-- Making uber jar for easy execution. -->
             <id>uber-jar</id>
             <build>
-                <finalName>BPStateSpaceMapper-${project.version}.uber</finalName>
+                <finalName>${project.artifactId}-${project.version}.uber</finalName>
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
