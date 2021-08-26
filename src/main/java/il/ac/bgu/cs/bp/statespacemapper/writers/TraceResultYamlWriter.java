@@ -1,8 +1,10 @@
 package il.ac.bgu.cs.bp.statespacemapper.writers;
 
+import il.ac.bgu.cs.bp.bpjs.internal.ScriptableUtils;
 import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
 import il.ac.bgu.cs.bp.bpjs.model.BThreadSyncSnapshot;
+import il.ac.bgu.cs.bp.statespacemapper.AnyOf;
 import il.ac.bgu.cs.bp.statespacemapper.GenerateAllTracesInspection;
 
 import java.time.LocalDateTime;
@@ -15,14 +17,14 @@ public class TraceResultYamlWriter extends TraceResultWriter {
   private int level;
 
   public TraceResultYamlWriter(String name) {
-    super(name, "yaml","\n","\n");
+    super(name, "yaml", "\n", "\n");
     this.printStatements = true;
     this.printStore = true;
   }
 
   @Override
   protected String eventToString(BEvent event) {
-    return event.name;
+    return ScriptableUtils.stringify(event);
   }
 
   @Override
@@ -52,10 +54,10 @@ public class TraceResultYamlWriter extends TraceResultWriter {
     Set<String> B = new HashSet<>();
     bpss.getBThreadSnapshots().stream()
         .map(BThreadSyncSnapshot::getSyncStatement).forEach(s -> {
-      R.addAll(s.getRequest().stream().map(this::eventToString).collect(Collectors.toList()));
-      W.add(s.getWaitFor().toString());
-      B.add(s.getBlock().toString());
-    });
+          R.addAll(s.getRequest().stream().map(this::eventToString).collect(Collectors.toList()));
+          W.addAll(((AnyOf) s.getWaitFor()).events.stream().map(this::eventToString).collect(Collectors.toList()));
+          B.addAll(((AnyOf) s.getBlock()).events.stream().map(this::eventToString).collect(Collectors.toList()));
+        });
     out.append("  ".repeat(level) + "  R: " + R + "\n");
     out.append("  ".repeat(level) + "  W: " + W + "\n");
     out.append("  ".repeat(level) + "  B: " + B + "");

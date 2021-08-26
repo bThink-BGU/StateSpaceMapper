@@ -15,7 +15,8 @@ const bthreads = {}
 
 bthreads['bt1'] = function () {
   while (true) {
-    sync({request: [bp.Event('a')]})
+    sync({request: [bp.Event('a',9)]})
+    sync({request: [bp.Event('a',8)]})
     sync({waitFor: AnyOf([bp.Event('b')])})
   }
 }
