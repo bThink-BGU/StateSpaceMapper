@@ -2,10 +2,13 @@ importPackage(Packages.il.ac.bgu.cs.bp.statespacemapper);
 const empty = AnyOf()
 
 
-function sync(stmt) {
+function sync(stmt, data) {
   if (!stmt.waitFor) stmt.waitFor = empty
   if (!stmt.block) stmt.block = empty
-  bp.sync(stmt)
+  if(data)
+    return bp.sync(stmt, data)
+  else
+    return bp.sync(stmt)
 }
 
 const bthreads = {}
