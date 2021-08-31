@@ -74,8 +74,8 @@ public class AllDirectedPathsDFS<V, E>
     public VisitColor color = VisitColor.WHITE;
 
     public DfsVertexData(GraphPath<V, E> path) {
-      if (path!=null)
-      paths.add(path);
+      if (path != null)
+        paths.add(path);
     }
 
     public void addPath(GraphPath<V, E> path) {
@@ -83,7 +83,7 @@ public class AllDirectedPathsDFS<V, E>
     }
 
     public E getLastEvent() {
-      if (paths.isEmpty())return null;
+      if (paths.isEmpty()) return null;
       var edges = paths.getLast().getEdgeList();
       return edges.get(edges.size() - 1);
     }

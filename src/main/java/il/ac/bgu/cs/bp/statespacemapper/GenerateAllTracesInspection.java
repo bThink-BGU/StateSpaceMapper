@@ -83,7 +83,7 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
       this.startNode = startNode;
     }
 
-    public List<List<BEvent>> generatePaths(boolean simplePathsOnly, int maxPathLength) {
+    public List<List<BEvent>> generatePaths() {
       return new AllDirectedPathsDFS<>(graph, startNode, acceptingStates).getAllPaths()
           .stream()
           .map(GraphPath::getEdgeList)
