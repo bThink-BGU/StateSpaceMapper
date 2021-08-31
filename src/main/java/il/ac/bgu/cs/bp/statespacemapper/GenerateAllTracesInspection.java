@@ -6,11 +6,11 @@ import il.ac.bgu.cs.bp.bpjs.analysis.ExecutionTraceInspections;
 import il.ac.bgu.cs.bp.bpjs.analysis.violations.Violation;
 import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
+import il.ac.bgu.cs.bp.statespacemapper.jgrapht.AllDirectedPathsDFS;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.MapperEdge;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.MapperVertex;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
-import org.jgrapht.alg.shortestpath.AllDirectedPaths;
 import org.jgrapht.graph.DirectedPseudograph;
 
 import java.util.*;
@@ -84,10 +84,19 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
     }
 
     public List<List<BEvent>> generatePaths(boolean simplePathsOnly, int maxPathLength) {
-      return new AllDirectedPaths<>(graph).getAllPaths(Set.of(startNode), acceptingStates, simplePathsOnly, maxPathLength)
+      return new AllDirectedPathsDFS<>(graph, startNode, acceptingStates).getAllPaths()
           .stream()
           .map(GraphPath::getEdgeList)
           .map(l -> l.stream().map(MapperEdge::getEvent).collect(Collectors.toUnmodifiableList()))
+          .sorted((o1, o2) -> {
+            for (int i = 0; i < o1.size(); i++) {
+              if (i == o2.size()) return 1;
+              var c = o1.get(i).toString().compareTo(o2.get(i).toString());
+              if (c != 0) return c;
+            }
+            if (o2.size() > o1.size()) return -1;
+            return 0;
+          })
           .collect(Collectors.toUnmodifiableList());
     }
 
@@ -103,7 +112,7 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
     public String toString() {
       return
           "StateMapper stats:\n" +
-          "======================\n" +
+              "======================\n" +
               "# States: " + states().size() + "\n" +
               "# Events: " + events.size() + "\n" +
               "# Transition: " + graph.edgeSet().size() + "\n" +
