@@ -25,8 +25,7 @@ public class StateSpaceMapper {
     vfr.setIterationCountGap(iterationCountGap);
     vfr.setProgressListener(new PrintDfsVerifierListener());
     vfr.verify(bprog);
-    var res = tracesInspection.getResult();
-    return res;
+    return tracesInspection.getResult();
   }
 
   protected void initGlobalScope(BProgram bprog) {

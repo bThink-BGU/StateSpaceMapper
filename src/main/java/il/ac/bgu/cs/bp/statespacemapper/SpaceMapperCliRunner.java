@@ -13,7 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class SpaceMapperRunner {
+public class SpaceMapperCliRunner {
 
   public static void main(String[] args) throws Exception {
     System.out.println("// start");
@@ -29,8 +29,8 @@ public class SpaceMapperRunner {
     /* var ess = new PrioritizedBSyncEventSelectionStrategy();
     bprog.setEventSelectionStrategy(ess); */
 
-    StateSpaceMapper mpr = new StateSpaceMapper();
-
+    var mpr = new StateSpaceMapper();
+    // the maximal trace length can be limited: mpr.setMaxTraceLength(50);
     var res = mpr.mapSpace(bprog);
 
     System.out.println("// completed mapping the states graph");
@@ -39,17 +39,16 @@ public class SpaceMapperRunner {
     System.out.println("// Export to GraphViz...");
     var outputDir = "exports";
     var path = Paths.get(outputDir, runName + ".dot").toString();
-    var exporter = new DotExporter(res, path, runName);
 
+    var exporter = new DotExporter(res, path, runName);
     // exporter parameters can be changed. For example:
     /*exporter.setVertexAttributeProvider(v ->
         Map.of("hash", DefaultAttribute.createAttribute(v.hashCode()))
     );*/
     // See DotExporter for another option that uses the base provider.
-
     exporter.export();
 
-    getAllPaths(res);
+    printAllPaths(res);
 
     System.out.println("// done");
   }
@@ -103,7 +102,7 @@ public class SpaceMapperRunner {
     return bprog;
   }
 
-  public static void getAllPaths(GenerateAllTracesInspection.MapperResult res) {
+  public static void printAllPaths(GenerateAllTracesInspection.MapperResult res) {
     System.out.println("// Generated paths:");
     // The resulted paths are sorted according to BEvent.toString(). Other Comparator<List<BEvent>> can be passed to res.generatePaths(comparator)
     var paths = res.generatePaths();
