@@ -19,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
@@ -94,34 +95,34 @@ public class Exporter {
     return v -> {
       boolean startVertex = v.equals(res.startNode);
       boolean acceptingVertex = res.acceptingStates.contains(v);
-      return Map.of(
+      return new HashMap<>(Map.of(
           "hash", DefaultAttribute.createAttribute(v.hashCode()),
           "store", DefaultAttribute.createAttribute(sanitizerProvider.apply(getStore(v.bpss))),
           "statements", DefaultAttribute.createAttribute(sanitizerProvider.apply(getStatments(v.bpss))),
           "bthreads", DefaultAttribute.createAttribute(sanitizerProvider.apply(getBThreads(v.bpss))),
           "start", DefaultAttribute.createAttribute(startVertex),
           "accepting", DefaultAttribute.createAttribute(acceptingVertex)
-      );
+      ));
     };
   }
 
   protected Supplier<Map<String, Attribute>> graphAttributeProvider() {
-    return () -> Map.of(
+    return () -> new HashMap<>(Map.of(
         "name", DefaultAttribute.createAttribute("\"" + sanitizerProvider.apply(runName) + "\""),
         "run_date", DefaultAttribute.createAttribute("\"" + DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now()) + "\""),
         "num_of_vertices", DefaultAttribute.createAttribute(res.states().size()),
         "num_of_edges", DefaultAttribute.createAttribute(res.edges().size()),
         "num_of_events", DefaultAttribute.createAttribute(res.events.size())
-    );
+    ));
   }
 
   protected Function<MapperEdge, Map<String, Attribute>> edgeAttributeProvider() {
-    return e -> Map.of(
+    return e -> new HashMap<>(Map.of(
         "label", DefaultAttribute.createAttribute(sanitizerProvider.apply(e.event.toString())),
         "Event", DefaultAttribute.createAttribute(sanitizerProvider.apply(e.event.toString())),
         "Event_name", DefaultAttribute.createAttribute(sanitizerProvider.apply(e.event.name)),
         "Event_value", DefaultAttribute.createAttribute(sanitizerProvider.apply(Objects.toString(e.event.maybeData)))
-    );
+    ));
   }
 
 
