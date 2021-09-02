@@ -83,21 +83,25 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
       this.startNode = startNode;
     }
 
-    public List<List<BEvent>> generatePaths() {
+    public List<List<BEvent>> generatePaths(Comparator<List<BEvent>> traceComparator) {
       return new AllDirectedPathsDFS<>(graph, startNode, acceptingStates).getAllPaths()
           .stream()
           .map(GraphPath::getEdgeList)
           .map(l -> l.stream().map(MapperEdge::getEvent).collect(Collectors.toUnmodifiableList()))
-          .sorted((o1, o2) -> {
-            for (int i = 0; i < o1.size(); i++) {
-              if (i == o2.size()) return 1;
-              var c = o1.get(i).toString().compareTo(o2.get(i).toString());
-              if (c != 0) return c;
-            }
-            if (o2.size() > o1.size()) return -1;
-            return 0;
-          })
+          .sorted(traceComparator)
           .collect(Collectors.toUnmodifiableList());
+    }
+
+    public List<List<BEvent>> generatePaths() {
+      return generatePaths((o1, o2) -> {
+        for (int i = 0; i < o1.size(); i++) {
+          if (i == o2.size()) return 1;
+          var c = o1.get(i).toString().compareTo(o2.get(i).toString());
+          if (c != 0) return c;
+        }
+        if (o2.size() > o1.size()) return -1;
+        return 0;
+      });
     }
 
     public Set<MapperVertex> states() {

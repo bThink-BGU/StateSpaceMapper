@@ -31,6 +31,10 @@ public class Exporter {
   protected final String path;
   protected final String runName;
   protected final BaseExporter<MapperVertex, MapperEdge> exporter;
+  private Function<MapperVertex, Map<String, Attribute>> vertexAttributeProvider;
+  private Function<MapperEdge, Map<String, Attribute>> edgeAttributeProvider;
+  private Supplier<Map<String, Attribute>> graphAttributeProvider;
+  private Function<String, String> sanitizerProvider;
 
   public Exporter(GenerateAllTracesInspection.MapperResult res, String path, String runName,
                      BaseExporter<MapperVertex, MapperEdge> exporter) {
@@ -38,12 +42,48 @@ public class Exporter {
     this.path = path;
     this.runName = runName;
     this.exporter = exporter;
+    this.vertexAttributeProvider = vertexAttributeProvider();
+    this.edgeAttributeProvider = edgeAttributeProvider();
+    this.graphAttributeProvider = graphAttributeProvider();
+    this.sanitizerProvider = sanitizerProvider();
+  }
+
+  public void setVertexAttributeProvider(Function<MapperVertex, Map<String, Attribute>> vertexAttributeProvider) {
+    this.vertexAttributeProvider = vertexAttributeProvider;
+  }
+
+  public void setEdgeAttributeProvider(Function<MapperEdge, Map<String, Attribute>> edgeAttributeProvider) {
+    this.edgeAttributeProvider = edgeAttributeProvider;
+  }
+
+  public void setGraphAttributeProvider(Supplier<Map<String, Attribute>> graphAttributeProvider) {
+    this.graphAttributeProvider = graphAttributeProvider;
+  }
+
+  public void setSanitizerProvider(Function<String, String> sanitizerProvider) {
+    this.sanitizerProvider = sanitizerProvider;
+  }
+
+  public Function<MapperVertex, Map<String, Attribute>> getVertexAttributeProvider() {
+    return vertexAttributeProvider;
+  }
+
+  public Function<MapperEdge, Map<String, Attribute>> getEdgeAttributeProvider() {
+    return edgeAttributeProvider;
+  }
+
+  public Supplier<Map<String, Attribute>> getGraphAttributeProvider() {
+    return graphAttributeProvider;
+  }
+
+  public Function<String, String> getSanitizerProvider() {
+    return sanitizerProvider;
   }
 
   public void export() throws IOException {
-    exporter.setEdgeAttributeProvider(edgeAttributeProvider());
-    exporter.setVertexAttributeProvider(vertexAttributeProvider());
-    exporter.setGraphAttributeProvider(graphAttributeProvider());
+    exporter.setEdgeAttributeProvider(this.edgeAttributeProvider);
+    exporter.setVertexAttributeProvider(this.vertexAttributeProvider);
+    exporter.setGraphAttributeProvider(this.graphAttributeProvider);
     Files.createDirectories(Paths.get(path).getParent());
     try (var out = new PrintStream(path)) {
       ((GraphExporter<MapperVertex, MapperEdge>)exporter).exportGraph(res.graph, out);
@@ -52,21 +92,22 @@ public class Exporter {
 
   protected Function<MapperVertex, Map<String, Attribute>> vertexAttributeProvider() {
     return v -> {
-      boolean startNode = v.equals(res.startNode);
-      boolean acceptingNode = res.acceptingStates.contains(v);
+      boolean startVertex = v.equals(res.startNode);
+      boolean acceptingVertex = res.acceptingStates.contains(v);
       return Map.of(
           "hash", DefaultAttribute.createAttribute(v.hashCode()),
-          "store", DefaultAttribute.createAttribute(sanitize(getStore(v.bpss))),
-          "statements", DefaultAttribute.createAttribute(sanitize(getStatments(v.bpss))),
-          "bthreads", DefaultAttribute.createAttribute(sanitize(getBThreads(v.bpss))),
-          "shape", DefaultAttribute.createAttribute(startNode ? "none " : acceptingNode ? "doublecircle" : "circle")
+          "store", DefaultAttribute.createAttribute(sanitizerProvider.apply(getStore(v.bpss))),
+          "statements", DefaultAttribute.createAttribute(sanitizerProvider.apply(getStatments(v.bpss))),
+          "bthreads", DefaultAttribute.createAttribute(sanitizerProvider.apply(getBThreads(v.bpss))),
+          "start", DefaultAttribute.createAttribute(startVertex),
+          "accepting", DefaultAttribute.createAttribute(acceptingVertex)
       );
     };
   }
 
   protected Supplier<Map<String, Attribute>> graphAttributeProvider() {
     return () -> Map.of(
-        "name", DefaultAttribute.createAttribute("\"" + sanitize(runName) + "\""),
+        "name", DefaultAttribute.createAttribute("\"" + sanitizerProvider.apply(runName) + "\""),
         "run_date", DefaultAttribute.createAttribute("\"" + DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now()) + "\""),
         "num_of_vertices", DefaultAttribute.createAttribute(res.states().size()),
         "num_of_edges", DefaultAttribute.createAttribute(res.edges().size()),
@@ -76,10 +117,10 @@ public class Exporter {
 
   protected Function<MapperEdge, Map<String, Attribute>> edgeAttributeProvider() {
     return e -> Map.of(
-        "label", DefaultAttribute.createAttribute(sanitize(e.event.toString())),
-        "Event", DefaultAttribute.createAttribute(sanitize(e.event.toString())),
-        "Event_name", DefaultAttribute.createAttribute(sanitize(e.event.name)),
-        "Event_value", DefaultAttribute.createAttribute(sanitize(Objects.toString(e.event.maybeData)))
+        "label", DefaultAttribute.createAttribute(sanitizerProvider.apply(e.event.toString())),
+        "Event", DefaultAttribute.createAttribute(sanitizerProvider.apply(e.event.toString())),
+        "Event_name", DefaultAttribute.createAttribute(sanitizerProvider.apply(e.event.name)),
+        "Event_value", DefaultAttribute.createAttribute(sanitizerProvider.apply(Objects.toString(e.event.maybeData)))
     );
   }
 
@@ -88,8 +129,8 @@ public class Exporter {
     return bpss.getBThreadSnapshots().stream().map(BThreadSyncSnapshot::getName).collect(joining(","));
   }
 
-  protected String sanitize(String in) {
-    return in
+  protected Function<String, String> sanitizerProvider() {
+    return in -> in
         .replace("\r\n", "")
         .replace("\n", "")
         .replace("\"", "'")

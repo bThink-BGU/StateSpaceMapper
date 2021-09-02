@@ -21,6 +21,40 @@ public class SpaceMapperRunner {
       System.err.println("Missing input files");
       System.exit(1);
     }
+    BProgram bprog = getBProgram(args);
+
+    var runName = bprog.getName();
+
+    // You can use a different EventSelectionStrategy, for example:
+    /* var ess = new PrioritizedBSyncEventSelectionStrategy();
+    bprog.setEventSelectionStrategy(ess); */
+
+    StateSpaceMapper mpr = new StateSpaceMapper();
+
+    var res = mpr.mapSpace(bprog);
+
+    System.out.println("// completed mapping the states graph");
+    System.out.println(res.toString());
+
+    System.out.println("// Export to GraphViz...");
+    var outputDir = "exports";
+    var path = Paths.get(outputDir, runName + ".dot").toString();
+    var exporter = new DotExporter(res, path, runName);
+
+    // exporter parameters can be changed. For example:
+    /*exporter.setVertexAttributeProvider(v ->
+        Map.of("hash", DefaultAttribute.createAttribute(v.hashCode()))
+    );*/
+    // See DotExporter for another option that uses the base provider.
+
+    exporter.export();
+
+    getAllPaths(res);
+
+    System.out.println("// done");
+  }
+
+  private static BProgram getBProgram(String[] args) {
     BProgram bprog = null;
     try {
       bprog = new ResourceBProgram(args);
@@ -66,28 +100,12 @@ public class SpaceMapperRunner {
         }
       };
     }
-    var runName = bprog.getName();
-
-    // You can use a different EventSelectionStrategy, for example:
-    /* var ess = new PrioritizedBSyncEventSelectionStrategy();
-    bprog.setEventSelectionStrategy(ess); */
-    StateSpaceMapper mpr = new StateSpaceMapper();
-    var res = mpr.mapSpace(bprog);
-    System.out.println("// completed mapping the states graph");
-    System.out.println(res.toString());
-
-    System.out.println("// Export to GraphViz...");
-    var outputDir = "exports";
-    var path = Paths.get(outputDir, runName + ".dot").toString();
-    new DotExporter(res,path,runName).export();
-
-    getAllPaths(res);
-
-    System.out.println("// done");
+    return bprog;
   }
 
   public static void getAllPaths(GenerateAllTracesInspection.MapperResult res) {
     System.out.println("// Generated paths:");
+    // The resulted paths are sorted according to BEvent.toString(). Other Comparator<List<BEvent>> can be passed to res.generatePaths(comparator)
     var paths = res.generatePaths();
     System.out.println(paths);
   }
