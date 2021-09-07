@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  * @param <E> the graph edge type
  * @author Andrew Gainer-Dewar, Google LLC
  */
-public class LongestSimplePaths<V, E> {
+public class BPAllDirectedPaths<V, E> {
   private final Graph<V, E> graph;
 
   /**
@@ -34,7 +34,7 @@ public class LongestSimplePaths<V, E> {
    * @param graph the input graph
    * @throws IllegalArgumentException if the graph is not directed
    */
-  public LongestSimplePaths(Graph<V, E> graph) {
+  public BPAllDirectedPaths(Graph<V, E> graph) {
     this(graph, null);
   }
 
@@ -49,7 +49,7 @@ public class LongestSimplePaths<V, E> {
    * @param pathValidator validator for computed paths; may be null
    * @throws IllegalArgumentException if the graph is not directed
    */
-  public LongestSimplePaths(Graph<V, E> graph, PathValidator<V, E> pathValidator) {
+  public BPAllDirectedPaths(Graph<V, E> graph, PathValidator<V, E> pathValidator) {
     this.graph = GraphTests.requireDirected(graph);
     this.pathValidator = pathValidator;
   }
@@ -93,8 +93,9 @@ public class LongestSimplePaths<V, E> {
           for (i = vertices.size() - 1; i >= 0; i--) {
             if (targetVertices.contains(vertices.get(i))) break;
           }
-          return makePath(p.getEdgeList().subList(0,i));
+          return makePath(p.getEdgeList().subList(0, i));
         })
+        .filter(p -> p.getLength() > 0)
         .collect(Collectors.toList());
   }
 
@@ -113,19 +114,19 @@ public class LongestSimplePaths<V, E> {
 
     // Bootstrap the search with the source vertices
 
-    if (targetVertices.contains(sourceVertex)) {
+    /*if (targetVertices.contains(sourceVertex)) {
       // pathValidator intentionally not invoked here
       completePaths.add(GraphWalk.singletonWalk(graph, sourceVertex, 0d));
-    }
+    }*/
 
     if (maxPathLength == null || maxPathLength != 0) {
       for (E edge : graph.outgoingEdgesOf(sourceVertex)) {
         assert graph.getEdgeSource(edge).equals(sourceVertex);
 
         if (pathValidator == null || pathValidator.isValidPath(GraphWalk.emptyWalk(graph), edge)) {
-          if (targetVertices.contains(graph.getEdgeTarget(edge))) {
+          /*if (targetVertices.contains(graph.getEdgeTarget(edge))) {
             completePaths.add(makePath(Collections.singletonList(edge)));
-          }
+          }*/
 
           if (maxPathLength == null || maxPathLength > 1) {
             List<E> path = Collections.singletonList(edge);
@@ -205,6 +206,7 @@ public class LongestSimplePaths<V, E> {
    * @return the corresponding GraphPath
    */
   private GraphPath<V, E> makePath(List<E> edges) {
+    if (edges.isEmpty()) return GraphWalk.emptyWalk(graph);
     V source = graph.getEdgeSource(edges.get(0));
     V target = graph.getEdgeTarget(edges.get(edges.size() - 1));
     double weight = edges.stream().mapToDouble(graph::getEdgeWeight).sum();
