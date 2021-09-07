@@ -24,7 +24,6 @@ import org.jgrapht.traverse.CrossComponentIterator;
 import org.jgrapht.util.TypeUtil;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * A DFS-based algorithm to find all paths from a source vertex to a set of nodes in a directed graph, with options to search only simple paths and to limit the path length.
@@ -40,7 +39,7 @@ import java.util.stream.Collectors;
  */
 public class AllDirectedPathsDFS<V, E>
     extends
-    CrossComponentIterator<V, E, AllDirectedPathsDFS.DfsVertexData<V, E>> {
+    CrossComponentIterator<V, E, AllDirectedPathsDFS.VisitColor> {
   /**
    * Sentinel object. Unfortunately, we can't use null, because ArrayDeque won't accept those. And
    * we don't want to rely on the caller to provide a sentinel object for us. So we have to play
@@ -52,7 +51,7 @@ public class AllDirectedPathsDFS<V, E>
   /**
    * Standard vertex visit state enumeration.
    */
-  protected enum VisitColor {
+  protected static enum VisitColor {
     /**
      * Vertex has not been returned via iterator yet.
      */
@@ -69,28 +68,9 @@ public class AllDirectedPathsDFS<V, E>
     BLACK
   }
 
-  protected static class DfsVertexData<V, E> {
-    public final LinkedList<GraphPath<V, E>> paths = new LinkedList<>();
-    public VisitColor color = VisitColor.WHITE;
-
-    public DfsVertexData(GraphPath<V, E> path) {
-      if (path != null)
-        paths.add(path);
-    }
-
-    public void addPath(GraphPath<V, E> path) {
-      paths.add(path);
-    }
-
-    public E getLastEvent() {
-      if (paths.isEmpty()) return null;
-      var edges = paths.getLast().getEdgeList();
-      return edges.get(edges.size() - 1);
-    }
-  }
-
-  private Deque<Object> stack = new ArrayDeque<>();
-  private Deque<E> edgeStack = new ArrayDeque<>();
+  private Deque<Object> verticeStack = new ArrayDeque<>();
+  private Deque<Object> edgeStack = new ArrayDeque<>();
+  private List<GraphPath<V, E>> paths = new ArrayList<>();
 
   /**
    * Creates a new depth-first iterator for the specified graph. Iteration will start at the
@@ -107,26 +87,20 @@ public class AllDirectedPathsDFS<V, E>
     this.targetVertices = targetVertices;
   }
 
-
   public List<GraphPath<V, E>> getAllPaths() {
     // iterate all graph:
     while (this.hasNext()) this.next();
     // return paths:
-    return targetVertices.stream()
-        .filter(v -> getSeenData(v) != null)
-        .map(v -> getSeenData(v).paths)
-        .flatMap(Collection::stream)
-        .collect(Collectors.toList());
+    return paths;
   }
-
 
   @Override
   protected boolean isConnectedComponentExhausted() {
     for (; ; ) {
-      if (stack.isEmpty()) {
+      if (verticeStack.isEmpty()) {
         return true;
       }
-      if (stack.getLast() != SENTINEL) {
+      if (verticeStack.getLast() != SENTINEL) {
         // Found a non-sentinel.
         return false;
       }
@@ -135,40 +109,25 @@ public class AllDirectedPathsDFS<V, E>
       // and then loop to check the rest of the stack.
 
       // Pop null we peeked at above.
-      stack.removeLast();
+      verticeStack.removeLast();
+      edgeStack.removeLast();
 
       // This will pop corresponding vertex to be recorded as finished.
       recordFinish();
     }
   }
 
-  private GraphPath<V, E> pathTo(V vertex, E edge) {
-    if (stack.size() == 0)
-      return null;
-    var vertexList = stack.stream()
-        .sequential() //redundant, but just for case...
-        .filter(o -> o != SENTINEL)
-        .map(TypeUtil::<V>uncheckedCast)
-        .filter(v -> getSeenData(v).color == VisitColor.GRAY).collect(Collectors.toList());
-    vertexList.add(vertex);
-    var edgeList = new ArrayList<>(edgeStack);
-    if (edge != null)
-      edgeList.add(edge);
-    return new GraphWalk<>(graph, TypeUtil.uncheckedCast(stack.getFirst()), vertex, vertexList, edgeList, 0);
-  }
-
   @Override
   protected void encounterVertex(V vertex, E edge) {
-    var data = new DfsVertexData<>(pathTo(vertex, edge));
-    putSeenData(vertex, data);
-    stack.addLast(vertex);
+    putSeenData(vertex, VisitColor.WHITE);
+    if (edge != null)
+      edgeStack.addLast(edge);
+    verticeStack.addLast(vertex);
   }
 
   @Override
   protected void encounterVertexAgain(V vertex, E edge) {
-    var data = getSeenData(vertex);
-    data.addPath(pathTo(vertex, edge));
-    VisitColor color = data.color;
+    VisitColor color = getSeenData(vertex);
     if (color != VisitColor.WHITE) {
       // We've already visited this vertex; no need to mess with the
       // stack (either it's BLACK and not there at all, or it's GRAY
@@ -181,47 +140,51 @@ public class AllDirectedPathsDFS<V, E>
     // assumption that for typical topologies and traversals,
     // it's likely to be nearer the top of the stack than
     // the bottom of the stack.
-    boolean found = stack.removeLastOccurrence(vertex);
-    assert (found);
-    stack.addLast(vertex);
+//    boolean found = verticeStack.removeLastOccurrence(vertex);
+//    assert (found);
+    verticeStack.addLast(vertex);
+    edgeStack.addLast(edge);
   }
 
   @Override
   protected V provideNextVertex() {
     V v;
+    E e;
     for (; ; ) {
-      Object o = stack.removeLast();
-      if (o == SENTINEL) {
+      Object ov = verticeStack.removeLast();
+      Object oe = edgeStack.isEmpty() ? null : edgeStack.removeLast();
+      if (ov == SENTINEL) {
         // This is a finish-time sentinel we previously pushed.
         recordFinish();
         // Now carry on with another pop until we find a non-sentinel
       } else {
         // Got a real vertex to start working on
-        v = TypeUtil.uncheckedCast(o);
+        v = TypeUtil.uncheckedCast(ov);
+        e = oe == null ? null : TypeUtil.uncheckedCast(oe);
         break;
       }
     }
 
     // Push a sentinel for v onto the stack so that we'll know
     // when we're done with it.
-    stack.addLast(v);
-    stack.addLast(SENTINEL);
-    var data = getSeenData(v);
-    var lastEvent = data.getLastEvent();
-    if (lastEvent != null)
-      edgeStack.add(lastEvent);
-    data.color = VisitColor.GRAY;
-//    putSeenData(v, VisitColor.GRAY);
+    verticeStack.addLast(v);
+    if (e != null)
+      edgeStack.addLast(e);
+    verticeStack.addLast(SENTINEL);
+    edgeStack.addLast(SENTINEL);
+    putSeenData(v, VisitColor.GRAY);
     return v;
   }
 
   private void recordFinish() {
-    V v = TypeUtil.uncheckedCast(stack.removeLast());
+    makePath();
+    V v = TypeUtil.uncheckedCast(verticeStack.removeLast());
     if (!edgeStack.isEmpty())
       edgeStack.removeLast();
-    var data = getSeenData(v);
-    data.color = VisitColor.BLACK;
-//    putSeenData(v, VisitColor.BLACK);
+    //turn it back to white for other paths
+    putSeenData(v, VisitColor.WHITE);
+    // putSeenData(v, VisitColor.BLACK);
+
     finishVertex(v);
   }
 
@@ -233,7 +196,24 @@ public class AllDirectedPathsDFS<V, E>
    *
    * @return stack
    */
-  public Deque<Object> getStack() {
-    return stack;
+  public Deque<Object> getVerticeStack() {
+    return verticeStack;
+  }
+
+  private void makePath() {
+    assert verticeStack.size() == edgeStack.size() + 1;
+    var vList = new ArrayList<>(verticeStack);
+    var eList = new ArrayList<>(edgeStack);
+    var vertexList = new ArrayList<V>();
+    var edgeList = new ArrayList<E>();
+    for (int i = 0; i < vList.size(); i++) {
+      if (vList.get(i) != SENTINEL && getSeenData(TypeUtil.uncheckedCast(vList.get(i))) == VisitColor.GRAY) {
+        vertexList.add(TypeUtil.uncheckedCast(vList.get(i)));
+        if (i > 0)
+          edgeList.add(TypeUtil.uncheckedCast(eList.get(i - 1)));
+      }
+    }
+    double weight = edgeList.stream().mapToDouble(graph::getEdgeWeight).sum();
+    paths.add(new GraphWalk<>(graph, vertexList.get(0), vertexList.get(vertexList.size() - 1), vertexList, edgeList, weight));
   }
 }
