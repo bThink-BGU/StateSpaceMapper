@@ -213,7 +213,9 @@ public class AllDirectedPathsDFS<V, E>
           edgeList.add(TypeUtil.uncheckedCast(eList.get(i - 1)));
       }
     }
-    double weight = edgeList.stream().mapToDouble(graph::getEdgeWeight).sum();
-    paths.add(new GraphWalk<>(graph, vertexList.get(0), vertexList.get(vertexList.size() - 1), vertexList, edgeList, weight));
+    if(edgeList.size()>0) {
+      double weight = edgeList.stream().mapToDouble(graph::getEdgeWeight).sum();
+      paths.add(new GraphWalk<>(graph, vertexList.get(0), vertexList.get(vertexList.size() - 1), vertexList, edgeList, weight));
+    }
   }
 }
