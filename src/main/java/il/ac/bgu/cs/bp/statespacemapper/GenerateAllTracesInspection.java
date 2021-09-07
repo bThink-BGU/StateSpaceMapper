@@ -6,7 +6,7 @@ import il.ac.bgu.cs.bp.bpjs.analysis.ExecutionTraceInspections;
 import il.ac.bgu.cs.bp.bpjs.analysis.violations.Violation;
 import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
-import il.ac.bgu.cs.bp.statespacemapper.jgrapht.AllDirectedPathsDFS;
+import il.ac.bgu.cs.bp.statespacemapper.jgrapht.BPAllDirectedPaths;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.MapperEdge;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.MapperVertex;
 import org.jgrapht.Graph;
@@ -84,7 +84,8 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
     }
 
     public List<List<BEvent>> generatePaths(Comparator<List<BEvent>> traceComparator) {
-      return new AllDirectedPathsDFS<>(graph, startNode, acceptingStates).getAllPaths()
+//      return new AllDirectedPathsDFS<>(graph, startNode, acceptingStates).getAllPaths()
+      return new BPAllDirectedPaths<>(graph).getAllPaths(startNode, acceptingStates, true, null)
           .stream()
           .map(GraphPath::getEdgeList)
           .map(l -> l.stream().map(MapperEdge::getEvent).collect(Collectors.toUnmodifiableList()))
