@@ -65,10 +65,7 @@ The ```AcceptingState.Stopping()``` will cause the StateMapper to stop the mappi
 The ```AcceptingState.Continuing()``` will mark the state as accepting, without stopping the mapping for this branch.
 This type of accepting state is useful for Büchi automata, that accepts an input iff there is a run of the automaton over the input that begins at an initial state and  at least one of the infinitely often occurring states is an accepting state.
 
-## Configuration
-You can generate a set of all possible traces, by calling ```mpr.setGenerateTraces(true);``` (default=true)
-
-## Output formats
+## Export formats
 Currently, the supported formats are:
 * [JSON](https://jgrapht.org/javadoc/org.jgrapht.io/org/jgrapht/nio/json/JSONExporter.html)
 * [Noam](https://github.com/izuzak/noam) (allows for translating the automaton into a regular expression)
@@ -79,7 +76,7 @@ Currently, the supported formats are:
 
 [comment]: <> (* [Neo4J]&#40;https://neo4j.com/&#41; &#40;requires an installation of Neo4J and configuring the driver ```mpr.setNeo4jDriver&#40;driver&#41;;```&#41;)
 
-## Manipulating current exporter
+### Manipulating current exporter
 Current exporter can be easily manipulated without extending them. See the setters of the [Exporter](src/main/java/il/ac/bgu/cs/bp/statespacemapper/jgrapht/exports/Exporter.java) class.
 These setters allow for manipulating the vertex, edge, and graph attributes. 
 Additionally, they allow for changing the String sanitizer, to replace special exporter characters. 
@@ -90,3 +87,9 @@ If jgrapht support this format - you can follow the example of [DotExporter](src
 Otherwise, you can follow the example of [GOALExporter](src/main/java/il/ac/bgu/cs/bp/statespacemapper/jgrapht/exports/GOALExporter.java).
 
 The writers can configure the format/text of each node and edge, and to define the overall format of the output file. 
+
+## Getting all possible traces
+You can generate a set of all possible traces, see [SpaceMapperCliRunner.java](src/main/java/il/ac/bgu/cs/bp/statespacemapper/SpaceMapperCliRunner.java). 
+
+**Warning:** the list of all possible traces may grow exponentially in the graph depth. Consider limiting the maximum traces length.
+
