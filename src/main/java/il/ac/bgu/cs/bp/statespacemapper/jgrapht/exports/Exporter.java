@@ -5,7 +5,7 @@ import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
 import il.ac.bgu.cs.bp.bpjs.model.BThreadSyncSnapshot;
 import il.ac.bgu.cs.bp.bpjs.model.SyncStatement;
-import il.ac.bgu.cs.bp.statespacemapper.GenerateAllTracesInspection;
+import il.ac.bgu.cs.bp.statespacemapper.MapperResult;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.MapperEdge;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.MapperVertex;
 import org.jgrapht.nio.Attribute;
@@ -28,7 +28,7 @@ import java.util.function.Supplier;
 import static java.util.stream.Collectors.joining;
 
 public class Exporter {
-  protected final GenerateAllTracesInspection.MapperResult res;
+  protected final MapperResult res;
   protected final String path;
   protected final String runName;
   protected final BaseExporter<MapperVertex, MapperEdge> exporter;
@@ -37,8 +37,8 @@ public class Exporter {
   private Supplier<Map<String, Attribute>> graphAttributeProvider;
   private Function<String, String> sanitizerProvider;
 
-  public Exporter(GenerateAllTracesInspection.MapperResult res, String path, String runName,
-                     BaseExporter<MapperVertex, MapperEdge> exporter) {
+  public Exporter(MapperResult res, String path, String runName,
+                  BaseExporter<MapperVertex, MapperEdge> exporter) {
     this.res = res;
     this.path = path;
     this.runName = runName;

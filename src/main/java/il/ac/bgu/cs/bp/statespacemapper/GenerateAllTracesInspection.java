@@ -6,17 +6,12 @@ import il.ac.bgu.cs.bp.bpjs.analysis.ExecutionTraceInspections;
 import il.ac.bgu.cs.bp.bpjs.analysis.violations.Violation;
 import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
-import il.ac.bgu.cs.bp.statespacemapper.jgrapht.BPAllDirectedPaths;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.MapperEdge;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.MapperVertex;
 import org.jgrapht.Graph;
-import org.jgrapht.GraphPath;
 import org.jgrapht.graph.DirectedPseudograph;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class GenerateAllTracesInspection implements ExecutionTraceInspection {
   private final Graph<MapperVertex, MapperEdge> graph = new DirectedPseudograph<>(MapperEdge.class);
@@ -67,63 +62,5 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
 
   public MapperResult getResult() {
     return new MapperResult(graph, startNode, acceptingStates);
-  }
-
-  public static class MapperResult {
-    public final Graph<MapperVertex, MapperEdge> graph;
-    public final MapperVertex startNode;
-    public final Set<MapperVertex> acceptingStates;
-    public final Map<BEvent, Integer> events;
-
-    protected MapperResult(Graph<MapperVertex, MapperEdge> graph, MapperVertex startNode, Set<MapperVertex> acceptingStates) {
-      this.graph = graph;
-      AtomicInteger counter = new AtomicInteger();
-      events = graph.edgeSet().stream().map(MapperEdge::getEvent).distinct().collect(Collectors.toMap(Function.identity(), e -> counter.getAndIncrement()));
-      this.acceptingStates = acceptingStates;
-      this.startNode = startNode;
-    }
-
-    public List<List<BEvent>> generatePaths(Comparator<List<BEvent>> traceComparator) {
-//      return new AllDirectedPathsDFS<>(graph, startNode, acceptingStates).getAllPaths()
-      return new BPAllDirectedPaths<>(graph).getAllPaths(startNode, acceptingStates, true, null)
-//      return new AllDirectedPaths<>(graph).getAllPaths(Set.of(startNode), acceptingStates, true, null)
-          .stream()
-          .map(GraphPath::getEdgeList)
-          .map(l -> l.stream().map(MapperEdge::getEvent).collect(Collectors.toUnmodifiableList()))
-          .sorted(traceComparator)
-          .collect(Collectors.toUnmodifiableList());
-    }
-
-    public List<List<BEvent>> generatePaths() {
-      return generatePaths((o1, o2) -> {
-        for (int i = 0; i < o1.size(); i++) {
-          if (i == o2.size()) return 1;
-          var c = o1.get(i).toString().compareTo(o2.get(i).toString());
-          if (c != 0) return c;
-        }
-        if (o2.size() > o1.size()) return -1;
-        return 0;
-      });
-    }
-
-    public Set<MapperVertex> states() {
-      return graph.vertexSet();
-    }
-
-    public Set<MapperEdge> edges() {
-      return graph.edgeSet();
-    }
-
-    @Override
-    public String toString() {
-      return
-          "StateMapper stats:\n" +
-              "======================\n" +
-              "# States: " + states().size() + "\n" +
-              "# Events: " + events.size() + "\n" +
-              "# Transition: " + graph.edgeSet().size() + "\n" +
-              "# Accepting States: " + acceptingStates.size() + "\n" +
-              "======================\n";
-    }
   }
 }

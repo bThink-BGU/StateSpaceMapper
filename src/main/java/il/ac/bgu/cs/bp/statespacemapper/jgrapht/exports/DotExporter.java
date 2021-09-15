@@ -1,6 +1,6 @@
 package il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports;
 
-import il.ac.bgu.cs.bp.statespacemapper.GenerateAllTracesInspection;
+import il.ac.bgu.cs.bp.statespacemapper.MapperResult;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.MapperVertex;
 import org.jgrapht.nio.Attribute;
 import org.jgrapht.nio.DefaultAttribute;
@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class DotExporter extends Exporter {
-  public DotExporter(GenerateAllTracesInspection.MapperResult res, String path, String runName) {
+  public DotExporter(MapperResult res, String path, String runName) {
     super(res, path, runName, new DOTExporter<>());
   }
 

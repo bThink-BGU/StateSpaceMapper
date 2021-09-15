@@ -16,7 +16,7 @@ public class StateSpaceMapper {
     this.iterationCountGap = iterationCountGap;
   }
 
-  public GenerateAllTracesInspection.MapperResult mapSpace(BProgram bprog) throws Exception {
+  public MapperResult mapSpace(BProgram bprog) throws Exception {
     initGlobalScope(bprog);
     var tracesInspection = new GenerateAllTracesInspection();
     var vfr = new DfsForStateMapper();

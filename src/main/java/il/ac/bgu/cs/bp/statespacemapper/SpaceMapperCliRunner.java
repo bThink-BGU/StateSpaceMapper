@@ -1,5 +1,6 @@
 package il.ac.bgu.cs.bp.statespacemapper;
 
+import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgram;
 import il.ac.bgu.cs.bp.bpjs.model.ResourceBProgram;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.DotExporter;
@@ -12,6 +13,9 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class SpaceMapperCliRunner {
 
@@ -102,10 +106,77 @@ public class SpaceMapperCliRunner {
     return bprog;
   }
 
-  public static void printAllPaths(GenerateAllTracesInspection.MapperResult res) {
+  /**
+   * Generate all paths. See {@link il.ac.bgu.cs.bp.statespacemapper.jgrapht.AllDirectedPaths} for all the possible algorithm configurations.
+   */
+  public static void printAllPaths(MapperResult res) {
     System.out.println("// Generated paths:");
-    // The resulted paths are sorted according to BEvent.toString(). Other Comparator<List<BEvent>> can be passed to res.generatePaths(comparator)
-    var paths = res.generatePaths();
-    System.out.println(paths);
+
+    var allDirectedPathsAlgorithm = res.createAllDirectedPathsBuilder()
+        .setSimplePathsOnly(true)
+        .setIncludeReturningEdgesInSimplePaths(true)
+        .setLongestPathsOnly(false)
+        .build();
+    var graphPaths = allDirectedPathsAlgorithm.getAllPaths();
+    var eventPaths = MapperResult.GraphPaths2BEventPaths(graphPaths)
+        .stream()
+        .map(l -> l.stream()
+            .map(BEvent::toString)
+            .map(s -> s.replaceAll("\\[BEvent name:([^]]+)\\]", "$1"))
+            .collect(Collectors.joining(", ")))
+        .distinct()
+        .sorted()
+        .collect(Collectors.joining("\n"));
+    System.out.println(eventPaths);
+  }
+
+  /*
+   * TODO: should be moved to test...
+   */
+  private static void testAllPaths(MapperResult res) {
+    System.out.println("// Generated paths:");
+
+    var allDirectedPathsAlgorithm1 = res.createAllDirectedPathsBuilder()
+        .setSimplePathsOnly(true)
+        .setIncludeReturningEdgesInSimplePaths(true)
+        .setLongestPathsOnly(false)
+        .build();
+    var allDirectedPathsAlgorithm2 = res.createAllDirectedPathsBuilder()
+        .setSimplePathsOnly(true)
+        .setIncludeReturningEdgesInSimplePaths(true)
+        .setLongestPathsOnly(true)
+        .build();
+    var graphPaths1 = allDirectedPathsAlgorithm1.getAllPaths();
+    var graphPaths2 = allDirectedPathsAlgorithm2.getAllPaths();
+    var eventPaths1 = MapperResult.GraphPaths2BEventPaths(graphPaths1)
+        .stream()
+        .map(l -> l.stream()
+            .map(BEvent::toString)
+            .map(s -> s.replaceAll("\\[BEvent name:([^]]+)\\]", "$1"))
+            .collect(Collectors.joining(", ")))
+        .distinct()
+        .sorted()
+        .collect(Collectors.joining("\n"));
+    var eventPaths2longest = MapperResult.GraphPaths2BEventPaths(graphPaths2);
+    var eventPaths2All = new ArrayList<List<BEvent>>();
+    for (var l : eventPaths2longest) {
+      for (int i = 0; i <= l.size(); i++) {
+        eventPaths2All.add(l.subList(0, i));
+      }
+    }
+    var eventPaths2 = eventPaths2All.stream()
+        .map(l -> l.stream()
+            .map(BEvent::toString)
+            .map(s -> s.replaceAll("\\[BEvent name:([^]]+)\\]", "$1"))
+            .collect(Collectors.joining(", ")))
+        .distinct()
+        .sorted()
+        .collect(Collectors.joining("\n"));
+
+    System.out.println("EventPath1 = " + eventPaths1);
+    System.out.println("EventPath2 = " + eventPaths2);
+
+    System.out.println("ep1==ep2: " + (eventPaths1.equals(eventPaths2)));
   }
 }
+
