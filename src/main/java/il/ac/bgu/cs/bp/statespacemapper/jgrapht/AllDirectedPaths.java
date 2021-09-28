@@ -24,6 +24,8 @@ import org.jgrapht.alg.shortestpath.PathValidator;
 import org.jgrapht.graph.GraphWalk;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiPredicate;
 
 /**
@@ -264,8 +266,8 @@ public class AllDirectedPaths<V, E> {
      * We walk forwards through the network from the source vertices, exploring all outgoing
      * edges whose minimum distances is small enough.
      */
-    List<GraphPath<V, E>> completePaths = new ArrayList<>();
-    Deque<List<E>> incompletePaths = new LinkedList<>();
+    var completePaths = new ConcurrentLinkedQueue<GraphPath<V, E>>();
+    final var incompletePaths = new ConcurrentLinkedQueue<List<E>>();
 
     // Input sanity checking
     if (maxPathLength != null && maxPathLength < 0) {
@@ -289,7 +291,7 @@ public class AllDirectedPaths<V, E> {
     }
 
     // Walk through the queue of incomplete paths
-    for (List<E> incompletePath; (incompletePath = incompletePaths.poll()) != null; ) {
+    for (List<E> incompletePath; (incompletePath = incompletePaths.poll()) != null; ) { //TODO make it parallel
       Integer lengthSoFar = incompletePath.size();
       assert (maxPathLength == null) || (lengthSoFar < maxPathLength);
 
@@ -302,17 +304,18 @@ public class AllDirectedPaths<V, E> {
         pathVertices.add(graph.getEdgeTarget(pathEdge));
       }
 
-      boolean newPathFound = false;
-      for (E outEdge : graph.outgoingEdgesOf(leafNode)) {
+      var newPathFound = new AtomicBoolean(false);
+      var finalIncompletePath = incompletePath;
+      graph.outgoingEdgesOf(leafNode).parallelStream().forEach(outEdge -> {
         // Proceed if the outgoing edge is marked and the mark is sufficiently small
         if (edgeMinDistancesFromTargets.containsKey(outEdge) && ((maxPathLength == null)
             || ((edgeMinDistancesFromTargets.get(outEdge) + lengthSoFar) <= maxPathLength))) {
-          List<E> newPath = new ArrayList<>(incompletePath);
+          List<E> newPath = new ArrayList<>(finalIncompletePath);
           newPath.add(outEdge);
 
           // If requested, validate the path
-          if (pathValidator != null && !pathValidator.isValidPath(makePath(incompletePath), outEdge)) {
-            continue;
+          if (pathValidator != null && !pathValidator.isValidPath(makePath(finalIncompletePath), outEdge)) {
+            return;
           }
 
           // If requested, make sure this path isn't self-intersecting
@@ -324,7 +327,7 @@ public class AllDirectedPaths<V, E> {
               assert maxPathLength == null || completePath.getLength() <= maxPathLength;
               completePaths.add(completePath);
             }
-            continue;
+            return;
           }
 
           // If this path reaches a target, add it to completePaths
@@ -339,13 +342,13 @@ public class AllDirectedPaths<V, E> {
 
           // If this path is short enough, consider further extensions of it
           if ((maxPathLength == null) || (newPath.size() <= maxPathLength)) {
-            newPathFound = true;
-            incompletePaths.addFirst(newPath);
+            newPathFound.set(true);
+            incompletePaths.add(newPath);
             // We use incompletePaths in FIFO mode to avoid memory blowup
           }
         }
-      }
-      if (!newPathFound) {
+      });
+      if (!newPathFound.get()) {
         // End of strong component or depth limit reached, add the incompletePath to Complete.
         makePath(incompletePath);
       }
@@ -356,10 +359,11 @@ public class AllDirectedPaths<V, E> {
       // pathValidator intentionally not invoked here
       completePaths.add(GraphWalk.singletonWalk(graph, sourceVertex, 0d));
     }
+    List<GraphPath<V, E>> res = new ArrayList<>(completePaths);
     if (longestPathsOnly && targetVertices.size() < graph.vertexSet().size()) {
-      completePaths = removeAfterTargetEdges(completePaths, targetVertices);
+      res = removeAfterTargetEdges(res, targetVertices);
     }
-    return completePaths;
+    return res;
   }
 
   /**

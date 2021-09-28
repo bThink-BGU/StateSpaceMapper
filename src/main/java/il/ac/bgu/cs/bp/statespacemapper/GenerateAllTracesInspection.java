@@ -36,7 +36,7 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
       addEdge(aTrace.getLastState(), aTrace.getFinalCycle().get(0).getState(), aTrace.getLastEvent().get());
     } else {
       if (stateCount == 1) {
-        startNode = new MapperVertex(aTrace.getNodes().get(0).getState());
+        startNode = lastNodeVertex;
       } else {
         var src = aTrace.getNodes().get(stateCount - 2);
         addEdge(new MapperVertex(src.getState()), lastNodeVertex, src.getEvent().get());
