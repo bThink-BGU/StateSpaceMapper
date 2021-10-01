@@ -47,7 +47,10 @@ Create a Maven project and add the followings to your pom.xml:
 ```
 
 ## Usage
-See [SpaceMapperCliRunner.java](src/main/java/il/ac/bgu/cs/bp/statespacemapper/SpaceMapperCliRunner.java) for usage examples.
+There are several usage examples, in: 
+* [SpaceMapperCliRunner.java](src/main/java/il/ac/bgu/cs/bp/statespacemapper/SpaceMapperCliRunner.java)
+* [LevelCrossingMain.java](src/test/java/il/ac/bgu/cs/bp/statespacemapper/levelCrossing/LevelCrossingMain.java)
+
 Once the run is completed, a new directory, called "exports", will be created, with the output files inside.
 
 ## Accepting states
@@ -68,9 +71,10 @@ This type of accepting state is useful for Büchi automata, that accepts an inpu
 ## Export formats
 Currently, the supported formats are:
 * [JSON](https://jgrapht.org/javadoc/org.jgrapht.io/org/jgrapht/nio/json/JSONExporter.html)
-* [Noam](https://github.com/izuzak/noam) (allows for translating the automaton into a regular expression)
-* [GraphViz](https://graphviz.org/) (default)
+* [DOT (GraphViz)](https://graphviz.org/) (default)
 * [GOAL](http://goal.im.ntu.edu.tw) - a graphical interactive tool for defining and manipulating Büchi automata and temporal logic formulae.
+
+[comment]: <> (* [Noam]&#40;https://github.com/izuzak/noam&#41; &#40;allows for translating the automaton into a regular expression&#41;)
 
 [comment]: <> (* [Regular Expression]&#40;http://goal.im.ntu.edu.tw&#41; - Uses GOAl to translate the automaton into a regular expression&#41;)
 
@@ -84,7 +88,7 @@ Additionally, they allow for changing the String sanitizer, to replace special e
 ### Adding and extending the Output formats
 You can create your own output format by extending the [Exporter](src/main/java/il/ac/bgu/cs/bp/statespacemapper/jgrapht/exports/Exporter.java) class. 
 If jgrapht support this format - you can follow the example of [DotExporter](src/main/java/il/ac/bgu/cs/bp/statespacemapper/jgrapht/exports/DotExporter.java). 
-Otherwise, you can follow the example of [GOALExporter](src/main/java/il/ac/bgu/cs/bp/statespacemapper/jgrapht/exports/GOALExporter.java).
+Otherwise, you can follow the example of [GoalExporter](src/main/java/il/ac/bgu/cs/bp/statespacemapper/jgrapht/exports/GoalExporter.java).
 
 The writers can configure the format/text of each node and edge, and to define the overall format of the output file. 
 
