@@ -1,4 +1,4 @@
-package events;
+package il.ac.bgu.cs.bp.statespacemapper.levelCrossing;
 
 import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 
@@ -6,7 +6,7 @@ import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 public class FaultRaise extends BEvent{
 
     public FaultRaise() {
-        super("FaultRaise");
+        super("FR");
     }
 }
 

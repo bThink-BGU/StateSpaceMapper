@@ -5,18 +5,23 @@ import il.ac.bgu.cs.bp.bpjs.model.BProgram;
 import il.ac.bgu.cs.bp.bpjs.model.ResourceBProgram;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.DotExporter;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.GoalExporter;
+import org.jgrapht.GraphPath;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.EvaluatorException;
 import org.mozilla.javascript.Scriptable;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public class SpaceMapperCliRunner {
 
@@ -24,6 +29,7 @@ public class SpaceMapperCliRunner {
     System.out.println("// start");
     if (args.length == 0) {
       System.err.println("Missing input files");
+      System.err.println("Sample execution argument: \"hot-cold.js\"");
       System.exit(1);
     }
     BProgram bprog = getBProgram(args);
@@ -34,13 +40,16 @@ public class SpaceMapperCliRunner {
     /* var ess = new PrioritizedBSyncEventSelectionStrategy();
     bprog.setEventSelectionStrategy(ess); */
 
-    var mpr = new StateSpaceMapper();
-    // the maximal trace length can be limited: mpr.setMaxTraceLength(50);
-    var res = mpr.mapSpace(bprog);
+    MapperResult res = mapSpace(bprog);
 
-    System.out.println("// completed mapping the states graph");
-    System.out.println(res.toString());
+    exportSpace(runName, res);
 
+    writeCompressedPaths(runName+".csv", null, res, "exports");
+
+    System.out.println("// done");
+  }
+
+  private static void exportSpace(String runName, MapperResult res) throws IOException {
     System.out.println("// Export to GraphViz...");
     var outputDir = "exports";
     var path = Paths.get(outputDir, runName + ".dot").toString();
@@ -57,12 +66,20 @@ public class SpaceMapperCliRunner {
     path = Paths.get(outputDir, runName + ".gff").toString();
     var goalExporter = new GoalExporter(res, path, runName, simplifyTransitions);
     goalExporter.export();
-    printAllPaths(res);
-
-    System.out.println("// done");
   }
 
-  private static BProgram getBProgram(String[] args) {
+  public static MapperResult mapSpace(BProgram bprog) throws Exception {
+    System.out.println("// Start mapping space");
+    var mpr = new StateSpaceMapper();
+    // the maximal trace length can be limited: mpr.setMaxTraceLength(50);
+    var res = mpr.mapSpace(bprog);
+
+    System.out.println("// completed mapping the states graph");
+    System.out.println(res.toString());
+    return res;
+  }
+
+  public static BProgram getBProgram(String[] args) {
     BProgram bprog = null;
     try {
       bprog = new ResourceBProgram(args);
@@ -109,30 +126,6 @@ public class SpaceMapperCliRunner {
       };
     }
     return bprog;
-  }
-
-  /**
-   * Generate all paths. See {@link il.ac.bgu.cs.bp.statespacemapper.jgrapht.AllDirectedPaths} for all the possible algorithm configurations.
-   */
-  public static void printAllPaths(MapperResult res) {
-    System.out.println("// Generated paths:");
-
-    var allDirectedPathsAlgorithm = res.createAllDirectedPathsBuilder()
-        .setSimplePathsOnly(true)
-        .setIncludeReturningEdgesInSimplePaths(true)
-        .setLongestPathsOnly(false)
-        .build();
-    var graphPaths = allDirectedPathsAlgorithm.getAllPaths();
-    var eventPaths = MapperResult.GraphPaths2BEventPaths(graphPaths)
-        .stream()
-        .map(l -> l.stream()
-            .map(BEvent::toString)
-            .map(s -> s.replaceAll("\\[BEvent name:([^]]+)\\]", "$1"))
-            .collect(Collectors.joining(", ")))
-        .distinct()
-        .sorted()
-        .collect(Collectors.joining("\n"));
-    System.out.println(eventPaths);
   }
 
   /*
@@ -182,6 +175,48 @@ public class SpaceMapperCliRunner {
     System.out.println("EventPath2 = " + eventPaths2);
 
     System.out.println("ep1==ep2: " + (eventPaths1.equals(eventPaths2)));
+  }
+
+  /**
+   * Generate all paths and write them to a zip file containing a csv file with the paths.
+   * See {@link il.ac.bgu.cs.bp.statespacemapper.jgrapht.AllDirectedPaths} for all the possible algorithm configurations.
+   */
+  private static void writeCompressedPaths(String csvFileName, Integer maxPathLength, MapperResult res, String outputDir) throws IOException {
+    System.out.println("// Generating paths...");
+    var allDirectedPathsAlgorithm = res.createAllDirectedPathsBuilder()
+        .setSimplePathsOnly(maxPathLength == null)
+        .setIncludeReturningEdgesInSimplePaths(maxPathLength == null)
+        .setLongestPathsOnly(false)
+        .setMaxPathLength(maxPathLength)
+        .build();
+    var graphPaths = allDirectedPathsAlgorithm.getAllPaths();
+
+    int maxLength = graphPaths.parallelStream().map(GraphPath::getLength).max(Integer::compareTo).orElse(0);
+    System.out.println("// Number of paths = " + graphPaths.size());
+    System.out.println("// Max path length = " + maxLength);
+
+    System.out.println("// Writing paths...");
+    try (var fos = new FileOutputStream(Paths.get(outputDir, csvFileName) + ".zip");
+         var zipOut = new ZipOutputStream(fos)) {
+      var zipEntry = new ZipEntry(csvFileName);
+      zipOut.putNextEntry(zipEntry);
+      zipOut.setLevel(9);
+      MapperResult.GraphPaths2BEventPaths(graphPaths)
+          .parallelStream()
+          .map(l -> l.stream()
+              .map(BEvent::getName)
+//            .filter(s -> !List.of("KeepDown", "ClosingRequest", "OpeningRequest").contains(s))
+              .collect(Collectors.joining(",", "", "\n")))
+          .distinct()
+          .sorted()
+          .forEachOrdered(s -> {
+            try {
+              zipOut.write(s.getBytes(StandardCharsets.UTF_8));
+            } catch (IOException e) {
+              e.printStackTrace();
+            }
+          });
+    }
   }
 }
 

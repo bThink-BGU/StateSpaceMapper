@@ -1,21 +1,22 @@
-package events;
+package il.ac.bgu.cs.bp.statespacemapper.levelCrossing;
 
 import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 
 @SuppressWarnings("serial")
-public class Entering extends BEvent{
+public class Leaving extends BEvent{
 
     public int i;
 
-    public Entering(int i){
-        super("Entering"+i);
+    public Leaving(int i){
+        super("Le"+i);
         this.i = i;
     }
 
-    public Entering(){
-        super("Entering");
+    public Leaving(){
+        super("Le");
         this.i = -1;
     }
+
 
     @Override
     public boolean equals(Object obj) {
@@ -31,7 +32,7 @@ public class Entering extends BEvent{
         if (i == -1) {
             return true;
         }
-        Entering other = (Entering) obj;
+        Leaving other = (Leaving) obj;
         if (other.i == -1) {
             return true;
         }
@@ -45,7 +46,7 @@ public class Entering extends BEvent{
 
     @Override
     public int hashCode() {
-        String s = "Entering";
+        String s = "Leaving";
         return s.hashCode();
     }
 }

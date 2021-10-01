@@ -1,4 +1,4 @@
-package events;
+package il.ac.bgu.cs.bp.statespacemapper.levelCrossing;
 
 import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 

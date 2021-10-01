@@ -1,20 +1,21 @@
-package events;
+package il.ac.bgu.cs.bp.statespacemapper.levelCrossing;
 
 import il.ac.bgu.cs.bp.bpjs.model.BEvent;
+
 @SuppressWarnings("serial")
-public class Marking extends BEvent {
+public class KeepDown extends BEvent{
+
     public int i;
 
-    public Marking(int i){
-        super("Marking"+i);
+    public KeepDown(int i){
+        super("KD"+i);
         this.i = i;
     }
 
-    public Marking(){
-        super("Marking");
+    public KeepDown(){
+        super("KD");
         this.i = -1;
     }
-
 
     @Override
     public boolean equals(Object obj) {
@@ -30,7 +31,7 @@ public class Marking extends BEvent {
         if (i == -1) {
             return true;
         }
-        Marking other = (Marking) obj;
+        KeepDown other = (KeepDown) obj;
         if (other.i == -1) {
             return true;
         }
@@ -44,7 +45,7 @@ public class Marking extends BEvent {
 
     @Override
     public int hashCode() {
-        String s = "Marking";
+        String s = "KeepDown";
         return s.hashCode();
     }
 }

@@ -1,19 +1,19 @@
-package events;
+package il.ac.bgu.cs.bp.statespacemapper.levelCrossing;
 
 import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 
 @SuppressWarnings("serial")
-public class ClosingRequest extends BEvent{
+public class FaultEntering extends BEvent{
 
     public int i;
 
-    public ClosingRequest(int i){
-        super("ClosingRequest"+i);
+    public FaultEntering(int i){
+        super("FE"+i);
         this.i = i;
     }
 
-    public ClosingRequest(){
-        super("ClosingRequest");
+    public FaultEntering(){
+        super("FE");
         this.i = -1;
     }
 
@@ -31,7 +31,7 @@ public class ClosingRequest extends BEvent{
         if (i == -1) {
             return true;
         }
-        ClosingRequest other = (ClosingRequest) obj;
+        FaultEntering other = (FaultEntering) obj;
         if (other.i == -1) {
             return true;
         }
@@ -45,7 +45,8 @@ public class ClosingRequest extends BEvent{
 
     @Override
     public int hashCode() {
-        String s = "ClosingRequest";
+        String s = "FaultEntering";
         return s.hashCode();
     }
 }
+

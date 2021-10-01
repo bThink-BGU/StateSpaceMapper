@@ -1,19 +1,19 @@
-package events;
+package il.ac.bgu.cs.bp.statespacemapper.levelCrossing;
 
 import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 
 @SuppressWarnings("serial")
-public class FaultEntering extends BEvent{
+public class Entering extends BEvent{
 
     public int i;
 
-    public FaultEntering(int i){
-        super("FaultEntering"+i);
+    public Entering(int i){
+        super("E"+i);
         this.i = i;
     }
 
-    public FaultEntering(){
-        super("FaultEntering");
+    public Entering(){
+        super("E");
         this.i = -1;
     }
 
@@ -31,7 +31,7 @@ public class FaultEntering extends BEvent{
         if (i == -1) {
             return true;
         }
-        FaultEntering other = (FaultEntering) obj;
+        Entering other = (Entering) obj;
         if (other.i == -1) {
             return true;
         }
@@ -45,8 +45,7 @@ public class FaultEntering extends BEvent{
 
     @Override
     public int hashCode() {
-        String s = "FaultEntering";
+        String s = "Entering";
         return s.hashCode();
     }
 }
-
