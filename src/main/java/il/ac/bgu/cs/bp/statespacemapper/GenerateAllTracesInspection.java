@@ -15,8 +15,6 @@ import java.util.*;
 
 public class GenerateAllTracesInspection implements ExecutionTraceInspection {
   private final Graph<MapperVertex, MapperEdge> graph = new DirectedPseudograph<>(MapperEdge.class);
-  private final Set<MapperVertex> acceptingStates = new HashSet<>();
-  private MapperVertex startNode;
 
   @Override
   public String title() {
@@ -28,18 +26,23 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
     Optional<Violation> inspection = ExecutionTraceInspections.FAILED_ASSERTIONS.inspectTrace(aTrace);
     int stateCount = aTrace.getStateCount();
     var lastNode = aTrace.getNodes().get(stateCount - 1);
-    var lastNodeVertex = new MapperVertex(lastNode.getState());
+    var accepting = false;
+    var startVertex = false;
     if (inspection.isPresent()) {
-      acceptingStates.add(lastNodeVertex);
+      accepting = true;
+    }
+    if(stateCount == 1) {
+      startVertex = true;
     }
     if (aTrace.isCyclic()) {
       addEdge(aTrace.getLastState(), aTrace.getFinalCycle().get(0).getState(), aTrace.getLastEvent().get());
     } else {
-      if (stateCount == 1) {
-        startNode = lastNodeVertex;
-      } else {
+
+      var lastNodeVertex = new MapperVertex(lastNode.getState(), startVertex, accepting);
+      graph.addVertex(lastNodeVertex);
+      if (stateCount != 1) {
         var src = aTrace.getNodes().get(stateCount - 2);
-        addEdge(new MapperVertex(src.getState()), lastNodeVertex, src.getEvent().get());
+        addEdge(new MapperVertex(src.getState(), startVertex, accepting), lastNodeVertex, src.getEvent().get());
       }
     }
     if (inspection.isPresent()) {
@@ -61,6 +64,6 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
   }
 
   public MapperResult getResult() {
-    return new MapperResult(graph, startNode, acceptingStates);
+    return new MapperResult(graph);
   }
 }

@@ -5,11 +5,18 @@ import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
 import java.util.Objects;
 
 public class MapperVertex {
-  private static final long serialVersionUID = 2565436616076859325L;
   public final BProgramSyncSnapshot bpss;
+  public final boolean startVertex;
+  public final boolean accepting;
 
   public MapperVertex(BProgramSyncSnapshot bpss) {
+    this(bpss, false, false);
+  }
+
+  public MapperVertex(BProgramSyncSnapshot bpss, boolean startVertex, boolean accepting) {
     this.bpss = bpss;
+    this.startVertex = startVertex;
+    this.accepting = accepting;
   }
 
   @Override

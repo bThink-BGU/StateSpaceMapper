@@ -4,6 +4,7 @@ import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgram;
 import il.ac.bgu.cs.bp.bpjs.model.ResourceBProgram;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.DotExporter;
+import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.GoalExporter;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.EvaluatorException;
 import org.mozilla.javascript.Scriptable;
@@ -44,14 +45,17 @@ public class SpaceMapperCliRunner {
     var outputDir = "exports";
     var path = Paths.get(outputDir, runName + ".dot").toString();
 
-    var exporter = new DotExporter(res, path, runName);
+    var dotExporter = new DotExporter(res, path, runName);
     // exporter parameters can be changed. For example:
     /*exporter.setVertexAttributeProvider(v ->
         Map.of("hash", DefaultAttribute.createAttribute(v.hashCode()))
     );*/
     // See DotExporter for another option that uses the base provider.
-    exporter.export();
-
+    dotExporter.export();
+    System.out.println("// Export to GOAL...");
+    path = Paths.get(outputDir, runName + ".gff").toString();
+    var goalExporter = new GoalExporter(res, path, runName);
+    goalExporter.export();
     printAllPaths(res);
 
     System.out.println("// done");

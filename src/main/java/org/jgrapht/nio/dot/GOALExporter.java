@@ -1,4 +1,4 @@
-package il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports;
+package org.jgrapht.nio.dot;
 
 
 import org.jgrapht.Graph;
@@ -11,13 +11,14 @@ import org.svvrl.goal.core.aut.fsa.FSA;
 import org.svvrl.goal.core.io.FileHandler;
 import org.svvrl.goal.core.io.GFFCodec;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
+import java.util.stream.Stream;
 
 /**
  * Exports a graph into a GOAL (gff) file.
@@ -35,25 +36,33 @@ public class GOALExporter<V, E> extends
    * Default graph id used by the exporter.
    */
   public static final String DEFAULT_GRAPH_ID = "G";
-
-  private static final String INDENT = "  ";
+  private Predicate<V> isStartingVertex;
+  private Predicate<V> isAcceptingVertex;
 
   /**
-   * Constructs a new DOTExporter object with an integer id provider.
+   * Constructs a new GOALExporter object with an integer id provider.
    */
   public GOALExporter() {
-    this(new IntegerIdProvider<>(), new IntegerIdProvider<>());
+    this(V -> false, V -> false);
   }
 
-  /**
-   * Constructs a new DOTExporter object with the given id provider. Additional providers such as
-   * attributes can be given using the appropriate setter methods.
-   *
-   * @param vertexIdProvider for generating vertex IDs. Must not be null.
-   */
-  public GOALExporter(Function<V, String> vertexIdProvider, Function<E, String> edgeIdProvider) {
+  public GOALExporter(Predicate<V> isStartingVertex, Predicate<V> isAcceptingVertex) {
+    this(new IntegerIdProvider<>(), new IntegerIdProvider<>(), isStartingVertex, isAcceptingVertex);
+  }
+
+  public GOALExporter(Function<V, String> vertexIdProvider, Function<E, String> edgeIdProvider, Predicate<V> isStartingVertex, Predicate<V> isAcceptingVertex) {
     super(vertexIdProvider);
     setEdgeIdProvider(edgeIdProvider);
+    this.isStartingVertex = isStartingVertex;
+    this.isAcceptingVertex = isAcceptingVertex;
+  }
+
+  public void setIsStartingVertex(Predicate<V> isStartingVertex) {
+    this.isStartingVertex = isStartingVertex;
+  }
+
+  public void setIsAcceptingVertex(Predicate<V> isAcceptingVertex) {
+    this.isAcceptingVertex = isAcceptingVertex;
   }
 
   /**
@@ -64,27 +73,53 @@ public class GOALExporter<V, E> extends
    */
   @Override
   public void exportGraph(Graph<V, E> g, Writer writer) {
-    var attributesNames = new HashSet<String>();
+    FSA fsa = createFSA(g);
 
+    try (var baos = new ByteArrayOutputStream()) {
+      FileHandler.save(fsa, baos, new GFFCodec());
+      writer.write(baos.toString(StandardCharsets.UTF_8));
+      writer.flush();
+    } catch (Exception e) {
+      throw new ExportException("Failed to write " + e.getMessage());
+    }
+  }
+
+  public FSA createFSA(Graph<V, E> g) {
     FSA fsa = new FSA(AlphabetType.CLASSICAL, Position.OnTransition);
     fsa.setName(getGraphId().orElse(DEFAULT_GRAPH_ID));
 
-    // graph attributes
-    for (Map.Entry<String, Attribute> attr : graphAttributeProvider
-        .orElse(Collections::emptyMap).get().entrySet()) {
-      attributesNames.add(attr.getKey());
-    }
+
+    // Add user attributes
+    Stream.concat(
+        Stream.concat(
+            graphAttributeProvider.orElse(Collections::emptyMap).get().keySet().stream(),
+            g.vertexSet().stream().flatMap(v -> getVertexAttributes(v).orElse(Collections.emptyMap()).keySet().stream())
+        ),
+        g.edgeSet().stream().flatMap(e -> getEdgeAttributes(e).orElse(Collections.emptyMap()).keySet().stream())
+    ).distinct().forEach(Preference::addUserPropertyName);
+
+    // add graph attributes
+    graphAttributeProvider.orElse(Collections::emptyMap).get().forEach((key, value) -> fsa.getProperties().setProperty(key, value.getValue()));
+
+    var acc = new ClassicAcc();
 
     // vertex set
     for (V v : g.vertexSet()) {
-      var state = fsa.newState(getVertexID(v));
+      int id = getVertexID(v);
+      var state = fsa.newState(id);
       getVertexAttributes(v).ifPresent(m -> {
         for (var entry : m.entrySet()) {
           state.getProperties().setProperty(entry.getKey(), renderAttribute(entry.getValue()));
-          attributesNames.add(entry.getKey());
         }
       });
       fsa.addState(state);
+      if (isStartingVertex.test(v)) {
+        fsa.addInitialState(state);
+      }
+
+      if (isAcceptingVertex.test(v)) {
+        acc.add(state);
+      }
     }
 
     // edge set
@@ -97,26 +132,13 @@ public class GOALExporter<V, E> extends
       getEdgeAttributes(e).ifPresent(m -> {
         for (var entry : m.entrySet()) {
           transition.getProperties().setProperty(entry.getKey(), renderAttribute(entry.getValue()));
-          attributesNames.add(entry.getKey());
         }
       });
       fsa.addTransition(transition);
     }
 
-    attributesNames.forEach(Preference::addUserPropertyName);
-
-//    fsa.setInitialState(fsa.getStateByID(g.));
-    var acc = new ClassicAcc();
-//    acc.addAll(result.acceptingStates.keySet().stream().map(fsa::getStateByID).collect(Collectors.toList()));
     fsa.setAcc(acc);
-
-    var baos = new ByteArrayOutputStream();
-    try {
-      FileHandler.save(fsa, baos, new GFFCodec());
-      writer.write(baos.toString(StandardCharsets.UTF_8));
-    } catch (Exception e) {
-      throw new ExportException("Failed to write " + e.getMessage());
-    }
+    return fsa;
   }
 
   private int getVertexID(V v) {

@@ -93,15 +93,13 @@ public class Exporter {
 
   protected Function<MapperVertex, Map<String, Attribute>> vertexAttributeProvider() {
     return v -> {
-      boolean startVertex = v.equals(res.startNode);
-      boolean acceptingVertex = res.acceptingStates.contains(v);
       return new HashMap<>(Map.of(
           "hash", DefaultAttribute.createAttribute(v.hashCode()),
           "store", DefaultAttribute.createAttribute(sanitizerProvider.apply(getStore(v.bpss))),
           "statements", DefaultAttribute.createAttribute(sanitizerProvider.apply(getStatments(v.bpss))),
           "bthreads", DefaultAttribute.createAttribute(sanitizerProvider.apply(getBThreads(v.bpss))),
-          "start", DefaultAttribute.createAttribute(startVertex),
-          "accepting", DefaultAttribute.createAttribute(acceptingVertex)
+          "start", DefaultAttribute.createAttribute(v.startVertex),
+          "accepting", DefaultAttribute.createAttribute(v.accepting)
       ));
     };
   }

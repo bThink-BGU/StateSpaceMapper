@@ -17,16 +17,16 @@ import java.util.stream.Collectors;
 
 public class MapperResult {
   public final Graph<MapperVertex, MapperEdge> graph;
-  public final MapperVertex startNode;
-  public final Set<MapperVertex> acceptingStates;
   public final Map<BEvent, Integer> events;
+
+  protected MapperResult(Graph<MapperVertex, MapperEdge> graph) {
+    this(graph, null, null);
+  }
 
   protected MapperResult(Graph<MapperVertex, MapperEdge> graph, MapperVertex startNode, Set<MapperVertex> acceptingStates) {
     this.graph = graph;
     AtomicInteger counter = new AtomicInteger();
     events = graph.edgeSet().stream().map(MapperEdge::getEvent).distinct().collect(Collectors.toMap(Function.identity(), e -> counter.getAndIncrement()));
-    this.acceptingStates = acceptingStates;
-    this.startNode = startNode;
   }
 
   public static List<List<BEvent>> GraphPaths2BEventPaths(List<GraphPath<MapperVertex, MapperEdge>> paths) {
@@ -43,7 +43,7 @@ public class MapperResult {
    * By default, the {@link AllDirectedPathsBuilder#setPathComparator(Comparator)} is set to compare the paths lexicographic according to the event's name.
    */
   public AllDirectedPathsBuilder<MapperVertex, MapperEdge> createAllDirectedPathsBuilder() {
-    return new AllDirectedPathsBuilder<>(graph, startNode, acceptingStates).setPathComparator((p1, p2) -> {
+    return new AllDirectedPathsBuilder<>(graph, startVertex(), acceptingVertices()).setPathComparator((p1, p2) -> {
       var o1 = p1.getEdgeList();
       var o2 = p2.getEdgeList();
       for (int i = 0; i < o1.size(); i++) {
@@ -64,6 +64,16 @@ public class MapperResult {
     return graph.edgeSet();
   }
 
+  public Set<MapperVertex> acceptingVertices() {
+    return graph.vertexSet().stream().filter(v->v.accepting).collect(Collectors.toSet());
+  }
+
+  public MapperVertex startVertex() {
+    var res = graph.vertexSet().stream().filter(v->v.startVertex).findFirst();
+    if(!res.isPresent()) throw new IllegalArgumentException("There is no start vertex");
+    return res.get();
+  }
+
   @Override
   public String toString() {
     return
@@ -71,12 +81,8 @@ public class MapperResult {
             "======================\n" +
             "# States: " + states().size() + "\n" +
             "# Events: " + events.size() + "\n" +
-            "# Transition: " + graph.edgeSet().size() + "\n" +
-            "# Accepting States: " + acceptingStates.size() + "\n" +
+            "# Transition: " + edges().size() + "\n" +
+            "# Accepting States: " + acceptingVertices().size() + "\n" +
             "======================\n";
-  }
-
-  public enum TraceGeneratorAlgorithm {
-    SourceToFewTargets, SourceToManyTargets, AUTO
   }
 }

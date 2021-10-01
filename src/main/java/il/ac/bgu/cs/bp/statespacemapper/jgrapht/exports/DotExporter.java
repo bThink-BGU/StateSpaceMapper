@@ -19,9 +19,7 @@ public class DotExporter extends Exporter {
     var provider = super.vertexAttributeProvider();
     return v -> {
       var map = provider.apply(v);
-      var start = Boolean.getBoolean(map.get("start").getValue());
-      var accepting = Boolean.getBoolean(map.get("accepting").getValue());
-      map.put("shape", DefaultAttribute.createAttribute(start ? "none " : accepting ? "doublecircle" : "circle"));
+      map.put("shape", DefaultAttribute.createAttribute(v.startVertex ? "none " : v.accepting ? "doublecircle" : "circle"));
       return map;
     };
   }
