@@ -53,8 +53,9 @@ public class SpaceMapperCliRunner {
     // See DotExporter for another option that uses the base provider.
     dotExporter.export();
     System.out.println("// Export to GOAL...");
+    boolean simplifyTransitions = true;
     path = Paths.get(outputDir, runName + ".gff").toString();
-    var goalExporter = new GoalExporter(res, path, runName);
+    var goalExporter = new GoalExporter(res, path, runName, simplifyTransitions);
     goalExporter.export();
     printAllPaths(res);
 

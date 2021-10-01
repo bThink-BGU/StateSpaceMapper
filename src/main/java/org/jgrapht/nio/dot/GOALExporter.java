@@ -17,7 +17,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.regex.Matcher;
 import java.util.stream.Stream;
 
 /**
@@ -38,23 +37,25 @@ public class GOALExporter<V, E> extends
   public static final String DEFAULT_GRAPH_ID = "G";
   private Predicate<V> isStartingVertex;
   private Predicate<V> isAcceptingVertex;
+  private final boolean simplifyTransitions;
 
   /**
    * Constructs a new GOALExporter object with an integer id provider.
    */
   public GOALExporter() {
-    this(V -> false, V -> false);
+    this(V -> false, V -> false, false);
   }
 
-  public GOALExporter(Predicate<V> isStartingVertex, Predicate<V> isAcceptingVertex) {
-    this(new IntegerIdProvider<>(), new IntegerIdProvider<>(), isStartingVertex, isAcceptingVertex);
+  public GOALExporter(Predicate<V> isStartingVertex, Predicate<V> isAcceptingVertex, boolean simplifyTransitions) {
+    this(new IntegerIdProvider<>(), new IntegerIdProvider<>(), isStartingVertex, isAcceptingVertex, simplifyTransitions);
   }
 
-  public GOALExporter(Function<V, String> vertexIdProvider, Function<E, String> edgeIdProvider, Predicate<V> isStartingVertex, Predicate<V> isAcceptingVertex) {
+  public GOALExporter(Function<V, String> vertexIdProvider, Function<E, String> edgeIdProvider, Predicate<V> isStartingVertex, Predicate<V> isAcceptingVertex, boolean simplifyTransitions) {
     super(vertexIdProvider);
     setEdgeIdProvider(edgeIdProvider);
     this.isStartingVertex = isStartingVertex;
     this.isAcceptingVertex = isAcceptingVertex;
+    this.simplifyTransitions = simplifyTransitions;
   }
 
   public void setIsStartingVertex(Predicate<V> isStartingVertex) {
@@ -99,7 +100,8 @@ public class GOALExporter<V, E> extends
     ).distinct().forEach(Preference::addUserPropertyName);
 
     // add graph attributes
-    graphAttributeProvider.orElse(Collections::emptyMap).get().forEach((key, value) -> fsa.getProperties().setProperty(key, value.getValue()));
+    graphAttributeProvider.orElse(Collections::emptyMap).get()
+        .forEach((key, value) -> fsa.getProperties().setProperty(key, sanitizeAttributeValue(value)));
 
     var acc = new ClassicAcc();
 
@@ -109,7 +111,7 @@ public class GOALExporter<V, E> extends
       var state = fsa.newState(id);
       getVertexAttributes(v).ifPresent(m -> {
         for (var entry : m.entrySet()) {
-          state.getProperties().setProperty(entry.getKey(), renderAttribute(entry.getValue()));
+          state.getProperties().setProperty(entry.getKey(), sanitizeAttributeValue(entry.getValue()));
         }
       });
       fsa.addState(state);
@@ -131,13 +133,14 @@ public class GOALExporter<V, E> extends
       transition.setDescription(id);
       getEdgeAttributes(e).ifPresent(m -> {
         for (var entry : m.entrySet()) {
-          transition.getProperties().setProperty(entry.getKey(), renderAttribute(entry.getValue()));
+          transition.getProperties().setProperty(entry.getKey(), sanitizeAttributeValue(entry.getValue()));
         }
       });
       fsa.addTransition(transition);
     }
 
     fsa.setAcc(acc);
+    if (simplifyTransitions) fsa.simplifyTransitions();
     return fsa;
   }
 
@@ -145,18 +148,14 @@ public class GOALExporter<V, E> extends
     return Integer.parseInt(getVertexId(v));
   }
 
-  private String renderAttribute(Attribute attribute) {
+  private String sanitizeAttributeValue(Attribute attribute) {
     final String attrValue = attribute.getValue();
     if (AttributeType.HTML.equals(attribute.getType())) {
-      return "<" + attrValue + ">";
-    } else if (AttributeType.IDENTIFIER.equals(attribute.getType())) {
       return attrValue;
     } else {
-      return "\"" + escapeDoubleQuotes(attrValue) + "\"";
+      return attrValue
+          .replace("<", "&lt;")
+          .replace(">", "&gt;");
     }
-  }
-
-  private static String escapeDoubleQuotes(String labelName) {
-    return labelName.replaceAll("\"", Matcher.quoteReplacement("\\\""));
   }
 }

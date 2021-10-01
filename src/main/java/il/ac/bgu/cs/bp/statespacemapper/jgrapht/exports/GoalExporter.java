@@ -12,7 +12,11 @@ import java.util.function.Supplier;
 
 public class GoalExporter extends Exporter {
   public GoalExporter(MapperResult res, String path, String runName) {
-    super(res, path, runName, new GOALExporter<>(v -> v.startVertex, v -> v.accepting));
+    this(res, path, runName, false);
+  }
+
+  public GoalExporter(MapperResult res, String path, String runName, boolean simplifyTransitions) {
+    super(res, path, runName, new GOALExporter<>(v -> v.startVertex, v -> v.accepting, simplifyTransitions));
   }
 
   @Override
