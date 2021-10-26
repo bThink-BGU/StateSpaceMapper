@@ -5,5 +5,8 @@
   <groupId>com.github.bthink-bgu</groupId>
   <artifactId>BPjs</artifactId>
   <version>0.12.1-modified-0.2</version>
-  <description>A BPjs version with Michael's old equals</description>
+  <description>A BPjs version with the following modifications:
+    (1) Brought back Michael's old equals;
+    (2) added values function to MapProxy
+  </description>
 </project>
