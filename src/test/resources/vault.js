@@ -15,7 +15,7 @@ bp.registerBThread('try', function() {
 bp.registerBThread('correct code', function() {
   for(let i=0; i < code.length; i++) {
     if (code[i] != bp.sync({waitFor: bp.all}).name) {
-      if(use_accepting_states) {
+      if (typeof use_accepting_states !== 'undefined') {
         // AcceptingState.Continuing()
         AcceptingState.Stopping()
       }

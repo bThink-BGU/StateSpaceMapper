@@ -47,7 +47,7 @@ bp.registerBThread('Lower the barrier when a train is approaching and then raise
 
 bp.registerBThread('mark state as accepting', function () {
   while (true) {
-    if (use_accepting_states) {
+    if (typeof use_accepting_states !== 'undefined') {
       AcceptingState.Continuing()
       // AcceptingState.Stopping()
     }

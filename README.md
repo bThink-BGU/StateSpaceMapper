@@ -56,12 +56,12 @@ Once the run is completed, a new directory, called "exports", will be created, w
 ## Accepting states
 In your js code, you may mark certain states as accepting by using the following code:
 ```javascript
-if(use_accepting_states) {
+if(typeof use_accepting_states !== 'undefined') {
   AcceptingState.Stopping() // or AcceptingState.Continuing()
 }
 ```
 
-The ```if(use_accepting_states)``` condition will allow you to use the same code both in BProgramRunner and in StateSpaceMapper.
+The ```if(typeof use_accepting_states !== 'undefined')``` condition will allow you to use the same code both in BProgramRunner and in StateSpaceMapper.
 
 The ```AcceptingState.Stopping()``` will cause the StateMapper to stop the mapping for this branch and mark the state as accepting. The StateMapper **will** continue the state mapping in other branches.
 
