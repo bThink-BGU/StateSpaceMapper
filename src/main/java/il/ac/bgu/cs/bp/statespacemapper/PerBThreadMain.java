@@ -1,11 +1,11 @@
 package il.ac.bgu.cs.bp.statespacemapper;
 
-import il.ac.bgu.cs.bp.bpjs.model.BEvent;
-import il.ac.bgu.cs.bp.bpjs.model.BProgram;
-import il.ac.bgu.cs.bp.bpjs.model.ResourceBProgram;
+import il.ac.bgu.cs.bp.bpjs.model.*;
+import il.ac.bgu.cs.bp.statespacemapper.jgrapht.MapperVertex;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.DotExporter;
-import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.GoalExporter;
 import org.jgrapht.GraphPath;
+import org.jgrapht.nio.Attribute;
+import org.jgrapht.nio.DefaultAttribute;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.EvaluatorException;
 import org.mozilla.javascript.Scriptable;
@@ -17,13 +17,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-public class SpaceMapperCliRunner {
+import static java.util.stream.Collectors.joining;
+
+public class PerBThreadMain {
 
   public static void main(String[] args) throws Exception {
     System.out.println("// start");
@@ -33,39 +34,56 @@ public class SpaceMapperCliRunner {
       System.exit(1);
     }
     BProgram bprog = getBProgram(args);
+    var runName = bprog.getName().replace(".js+","");
+    var state0 = bprog.setup();
+    final List<String> names =
+        new ArrayList<>(((Map<String, Object>) bprog.getFromGlobalScope("bthreads", Map.class).get()).keySet());
+    for (var bt : names) {
+      String name = runName + "." + bt;
+      System.out.println("// start " + name);
 
-    var runName = bprog.getName();
-
-    // You can use a different EventSelectionStrategy, for example:
+      var btBProg = getBProgram(args);
+      btBProg.appendSource("bp.registerBThread('"+bt+"',bthreads['"+bt+"'])");
+      // You can use a different EventSelectionStrategy, for example:
     /* var ess = new PrioritizedBSyncEventSelectionStrategy();
     bprog.setEventSelectionStrategy(ess); */
+      btBProg.setEventSelectionStrategy(new EssForPerBThread());
+      MapperResult res = mapSpace(btBProg);
 
-    MapperResult res = mapSpace(bprog);
+      exportSpace(name, bt, res);
 
-    exportSpace(runName, res);
-
-    writeCompressedPaths(runName+".csv", null, res, "exports");
-
+//      writeCompressedPaths(runName + ".csv", null, res, "exports");
+    }
     System.out.println("// done");
   }
 
-  public static void exportSpace(String runName, MapperResult res) throws IOException {
+  public static void exportSpace(String runName, String bt, MapperResult res) throws IOException {
     System.out.println("// Export to GraphViz...");
     var outputDir = "exports";
     var path = Paths.get(outputDir, runName + ".dot").toString();
 
     var dotExporter = new DotExporter(res, path, runName);
     // exporter parameters can be changed. For example:
-    /*exporter.setVertexAttributeProvider(v ->
-        Map.of("hash", DefaultAttribute.createAttribute(v.hashCode()))
-    );*/
+    dotExporter.setVertexAttributeProvider(v -> provideVertexAttributes(bt, v));
     // See DotExporter for another option that uses the base provider.
     dotExporter.export();
-    System.out.println("// Export to GOAL...");
-    boolean simplifyTransitions = true;
-    path = Paths.get(outputDir, runName + ".gff").toString();
-    var goalExporter = new GoalExporter(res, path, runName, simplifyTransitions);
-    goalExporter.export();
+  }
+
+  public static Map<String, Attribute> provideVertexAttributes(String btName, MapperVertex v) {
+    var syst = v.bpss.getBThreadSnapshots().stream()
+        .filter(btss -> btss.getName().equals(btName))
+        .findFirst()
+        .get().getSyncStatement();
+
+    return Map.of(
+        "isHot", DefaultAttribute.createAttribute(syst.isHot()),
+        "request", DefaultAttribute.createAttribute(syst.getRequest().stream().map(BEvent::toString).collect(joining(","))),
+        "waitFor", DefaultAttribute.createAttribute(new AnyOf(syst.getWaitFor()).events.stream().map(BEvent::toString).collect(joining(","))),
+        "block", DefaultAttribute.createAttribute(new AnyOf(syst.getBlock()).events.stream().map(BEvent::toString).collect(joining(","))),
+        "interrupt", DefaultAttribute.createAttribute(new AnyOf(syst.getInterrupt()).events.stream().map(BEvent::toString).collect(joining(","))),
+        "start", DefaultAttribute.createAttribute(v.startVertex),
+        "accepting", DefaultAttribute.createAttribute(v.accepting)
+    );
   }
 
   public static MapperResult mapSpace(BProgram bprog) throws Exception {
