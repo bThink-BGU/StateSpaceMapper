@@ -1,11 +1,11 @@
 package il.ac.bgu.cs.bp.statespacemapper;
 
-public class RunDemo {
+public class RunPerBThreadDemo {
   public static void main(String[] args) throws Exception {
     if (args.length == 0) {
-      SpaceMapperCliRunner.main(new String[]{"elevator.js"});
+      PerBThreadMain.main(new String[]{"PerBThreadSample.js"});
     } else {
-      SpaceMapperCliRunner.main(args);
+      PerBThreadMain.main(args);
     }
   }
 }
