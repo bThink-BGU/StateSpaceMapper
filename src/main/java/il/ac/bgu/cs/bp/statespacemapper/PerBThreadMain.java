@@ -1,9 +1,13 @@
 package il.ac.bgu.cs.bp.statespacemapper;
 
 import il.ac.bgu.cs.bp.bpjs.model.*;
+import il.ac.bgu.cs.bp.statespacemapper.jgrapht.MapperEdge;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.MapperVertex;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.DotExporter;
+import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
+import org.jgrapht.Graphs;
+import org.jgrapht.graph.AbstractBaseGraph;
 import org.jgrapht.nio.Attribute;
 import org.jgrapht.nio.DefaultAttribute;
 import org.mozilla.javascript.Context;
@@ -33,45 +37,53 @@ public class PerBThreadMain {
       System.err.println("Sample execution argument: \"hot-cold.js\"");
       System.exit(1);
     }
-    BProgram bprog = getBProgram(args);
-    var runName = bprog.getName().replace(".js+","");
-    var state0 = bprog.setup();
-    final List<String> names =
-        new ArrayList<>(((Map<String, Object>) bprog.getFromGlobalScope("bthreads", Map.class).get()).keySet());
-    for (var bt : names) {
-      String name = runName + "." + bt;
-      System.out.println("// start " + name);
-
-      var btBProg = getBProgram(args);
-      btBProg.appendSource("bp.registerBThread('"+bt+"',bthreads['"+bt+"'])");
-      // You can use a different EventSelectionStrategy, for example:
-    /* var ess = new PrioritizedBSyncEventSelectionStrategy();
-    bprog.setEventSelectionStrategy(ess); */
-      btBProg.setEventSelectionStrategy(new EssForPerBThread());
-      MapperResult res = mapSpace(btBProg);
-
-      exportSpace(name, bt, res);
-
-//      writeCompressedPaths(runName + ".csv", null, res, "exports");
+    var bprog = getBProgram(args);
+    var runName = bprog.getName().replace(".js+", "");
+    bprog.setup();
+    var mapperResults =
+        ((Map<String, Object>) bprog.getFromGlobalScope("bthreads", Map.class).get()).keySet().stream()
+            .collect(Collectors.toMap(
+                name -> name,
+                bt -> {
+                  var btBProg = getBProgram(args);
+                  btBProg.appendSource("bp.registerBThread('" + bt + "',bthreads['" + bt + "'])");
+                  btBProg.setEventSelectionStrategy(new EssForPerBThread());
+                  try {
+                    var res = mapSpace(btBProg);
+                    res.states().forEach(v -> v.bthreadName = Optional.of(bt));
+                    return res;
+                  } catch (Exception e) {
+                    throw new RuntimeException(e);
+                  }
+                }));
+    Graph<MapperVertex, MapperEdge> union = null;
+    for (var res : mapperResults.values()) {
+      if (union == null) {
+        union = (Graph<MapperVertex, MapperEdge>) ((AbstractBaseGraph) res.graph).clone();
+      } else {
+        Graphs.addGraph(union, res.graph);
+      }
     }
-    System.out.println("// done");
+    exportSpace(runName, new MapperResult(union));
   }
 
-  public static void exportSpace(String runName, String bt, MapperResult res) throws IOException {
+  public static void exportSpace(String runName, MapperResult res) throws IOException {
     System.out.println("// Export to GraphViz...");
     var outputDir = "exports";
     var path = Paths.get(outputDir, runName + ".dot").toString();
 
     var dotExporter = new DotExporter(res, path, runName);
     // exporter parameters can be changed. For example:
-    dotExporter.setVertexAttributeProvider(v -> provideVertexAttributes(bt, v));
+    dotExporter.setVertexAttributeProvider(PerBThreadMain::provideVertexAttributes);
+    var oldGraphProvider = dotExporter.getGraphAttributeProvider().get();
+    oldGraphProvider.put("edges", DefaultAttribute.createAttribute(res.edges().stream().map(MapperEdge::getEvent).map(BEvent::toString).collect(joining(",", "\"[", "]\""))));
+    dotExporter.setGraphAttributeProvider(() -> oldGraphProvider);
     // See DotExporter for another option that uses the base provider.
     dotExporter.export();
   }
 
-  public static Map<String, Attribute> provideVertexAttributes(String btName, MapperVertex v) {
+  public static Map<String, Attribute> provideVertexAttributes(MapperVertex v) {
     var syst = v.bpss.getBThreadSnapshots().stream()
-        .filter(btss -> btss.getName().equals(btName))
         .findFirst()
         .get().getSyncStatement();
 

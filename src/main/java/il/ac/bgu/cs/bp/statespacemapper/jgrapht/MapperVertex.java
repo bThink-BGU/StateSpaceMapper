@@ -3,11 +3,13 @@ package il.ac.bgu.cs.bp.statespacemapper.jgrapht;
 import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public class MapperVertex {
   public final BProgramSyncSnapshot bpss;
   public final boolean startVertex;
   public final boolean accepting;
+  public Optional<String> bthreadName = Optional.empty();
 
   public MapperVertex(BProgramSyncSnapshot bpss) {
     this(bpss, false, false);
