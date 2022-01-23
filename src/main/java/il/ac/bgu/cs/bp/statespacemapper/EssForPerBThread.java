@@ -49,7 +49,15 @@ public class EssForPerBThread extends AbstractEventSelectionStrategy {
         .flatMap(es -> new AnyOf(es).events.stream())
         .collect(toSet());
 
+    var interrupt = statements.stream()
+        .filter(Objects::nonNull)
+        .map(SyncStatement::getInterrupt)
+        .filter(r -> r != EventSets.none)
+        .flatMap(es -> new AnyOf(es).events.stream())
+        .collect(toSet());
+
     requested.addAll(waitFor);
+    requested.addAll(interrupt);
 
     // Let's see what internal events are requested and not blocked (if any).
     try {

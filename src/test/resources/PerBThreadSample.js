@@ -2,7 +2,7 @@ const bthreads = {}
 
 bthreads['bt1'] = function () {
   while (true) {
-    bp.sync({request: [bp.Event('a',9)]})
+    bp.sync({request: [bp.Event('a',9)], interrupt:bp.Event('c')})
     bp.sync({request: [bp.Event('a',8)]})
     bp.sync({waitFor: [bp.Event('b')]})
   }

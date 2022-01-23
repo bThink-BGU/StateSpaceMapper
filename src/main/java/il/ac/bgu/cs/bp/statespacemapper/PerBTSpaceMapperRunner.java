@@ -96,19 +96,22 @@ public class PerBTSpaceMapperRunner {
   }
 
   public static Map<String, Attribute> provideVertexAttributes(MapperVertex v) {
-    var syst = v.bpss.getBThreadSnapshots().stream()
-        .findFirst()
-        .get().getSyncStatement();
-
-    return Map.of(
-        "isHot", DefaultAttribute.createAttribute(syst.isHot()),
-        "request", DefaultAttribute.createAttribute(syst.getRequest().stream().map(BEvent::toString).collect(joining(","))),
-        "waitFor", DefaultAttribute.createAttribute(new AnyOf(syst.getWaitFor()).events.stream().map(BEvent::toString).collect(joining(","))),
-        "block", DefaultAttribute.createAttribute(new AnyOf(syst.getBlock()).events.stream().map(BEvent::toString).collect(joining(","))),
-        "interrupt", DefaultAttribute.createAttribute(new AnyOf(syst.getInterrupt()).events.stream().map(BEvent::toString).collect(joining(","))),
-        "start", DefaultAttribute.createAttribute(v.startVertex),
-        "accepting", DefaultAttribute.createAttribute(v.accepting)
-    );
+    var snapshot = v.bpss.getBThreadSnapshots().stream()
+        .findFirst();
+    if (snapshot.isPresent()) {
+      var syst = snapshot.get().getSyncStatement();
+      return Map.of(
+          "isHot", DefaultAttribute.createAttribute(syst.isHot()),
+          "request", DefaultAttribute.createAttribute(syst.getRequest().stream().map(BEvent::toString).collect(joining(","))),
+          "waitFor", DefaultAttribute.createAttribute(new AnyOf(syst.getWaitFor()).events.stream().map(BEvent::toString).collect(joining(","))),
+          "block", DefaultAttribute.createAttribute(new AnyOf(syst.getBlock()).events.stream().map(BEvent::toString).collect(joining(","))),
+          "interrupt", DefaultAttribute.createAttribute(new AnyOf(syst.getInterrupt()).events.stream().map(BEvent::toString).collect(joining(","))),
+          "start", DefaultAttribute.createAttribute(v.startVertex),
+          "accepting", DefaultAttribute.createAttribute(v.accepting)
+      );
+    } else {
+      return Map.of();
+    }
   }
 
   public static MapperResult mapSpace(BProgram bprog) throws Exception {
