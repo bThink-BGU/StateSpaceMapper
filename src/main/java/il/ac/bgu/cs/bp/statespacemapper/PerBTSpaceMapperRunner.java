@@ -4,6 +4,8 @@ import il.ac.bgu.cs.bp.bpjs.model.*;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.MapperEdge;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.MapperVertex;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.DotExporter;
+import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.Exporter;
+import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.JsonExporter;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
 import org.jgrapht.Graphs;
@@ -28,10 +30,9 @@ import java.util.zip.ZipOutputStream;
 
 import static java.util.stream.Collectors.joining;
 
-public class PerBThreadMain {
+public class PerBTSpaceMapperRunner {
 
   public static void main(String[] args) throws Exception {
-    System.out.println("// start");
     if (args.length == 0) {
       System.err.println("Missing input files");
       System.err.println("Sample execution argument: \"hot-cold.js\"");
@@ -39,6 +40,9 @@ public class PerBThreadMain {
     }
     var bprog = getBProgram(args);
     var runName = bprog.getName().replace(".js+", "");
+
+    System.out.println("// start");
+
     bprog.setup();
     var mapperResults =
         ((Map<String, Object>) bprog.getFromGlobalScope("bthreads", Map.class).get()).keySet().stream()
@@ -68,18 +72,27 @@ public class PerBThreadMain {
   }
 
   public static void exportSpace(String runName, MapperResult res) throws IOException {
-    System.out.println("// Export to GraphViz...");
     var outputDir = "exports";
-    var path = Paths.get(outputDir, runName + ".dot").toString();
 
+    System.out.println("// Export to JSON...");
+    var path = Paths.get(outputDir, runName + ".json").toString();
+    var jsonExporter = new JsonExporter(res, path, runName);
+    setExporterProviders(res, jsonExporter);
+    jsonExporter.export();
+
+
+    System.out.println("// Export to GraphViz...");
+    path = Paths.get(outputDir, runName + ".dot").toString();
     var dotExporter = new DotExporter(res, path, runName);
-    // exporter parameters can be changed. For example:
-    dotExporter.setVertexAttributeProvider(PerBThreadMain::provideVertexAttributes);
-    var oldGraphProvider = dotExporter.getGraphAttributeProvider().get();
-    oldGraphProvider.put("edges", DefaultAttribute.createAttribute(res.edges().stream().map(MapperEdge::getEvent).map(BEvent::toString).collect(joining(",", "\"[", "]\""))));
-    dotExporter.setGraphAttributeProvider(() -> oldGraphProvider);
-    // See DotExporter for another option that uses the base provider.
+    setExporterProviders(res, dotExporter);
     dotExporter.export();
+  }
+
+  public static void setExporterProviders(MapperResult res, Exporter exporter) {
+    exporter.setVertexAttributeProvider(PerBTSpaceMapperRunner::provideVertexAttributes);
+    var oldJsonGraphProvider = exporter.getGraphAttributeProvider().get();
+    oldJsonGraphProvider.put("edges", DefaultAttribute.createAttribute(res.edges().stream().map(MapperEdge::getEvent).map(BEvent::toString).collect(joining(",", "\"[", "]\""))));
+    exporter.setGraphAttributeProvider(() -> oldJsonGraphProvider);
   }
 
   public static Map<String, Attribute> provideVertexAttributes(MapperVertex v) {

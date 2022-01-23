@@ -3,9 +3,13 @@ package il.ac.bgu.cs.bp.statespacemapper;
 import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgram;
 import il.ac.bgu.cs.bp.bpjs.model.ResourceBProgram;
+import il.ac.bgu.cs.bp.statespacemapper.jgrapht.MapperEdge;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.DotExporter;
+import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.Exporter;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.GoalExporter;
+import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.JsonExporter;
 import org.jgrapht.GraphPath;
+import org.jgrapht.nio.DefaultAttribute;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.EvaluatorException;
 import org.mozilla.javascript.Scriptable;
@@ -23,18 +27,20 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-public class SpaceMapperCliRunner {
+import static java.util.stream.Collectors.joining;
 
-  public static void main(String[] args) throws Exception {
-    System.out.println("// start");
+public class SpaceMapperCliRunner {
+  public void run(String[] args) throws Exception {
     if (args.length == 0) {
       System.err.println("Missing input files");
       System.err.println("Sample execution argument: \"hot-cold.js\"");
       System.exit(1);
     }
-    BProgram bprog = getBProgram(args);
 
+    BProgram bprog = getBProgram(args);
     var runName = bprog.getName();
+
+    System.out.println("// start");
 
     // You can use a different EventSelectionStrategy, for example:
     /* var ess = new PrioritizedBSyncEventSelectionStrategy();
@@ -44,31 +50,48 @@ public class SpaceMapperCliRunner {
 
     exportSpace(runName, res);
 
-    writeCompressedPaths(runName+".csv", null, res, "exports");
+//    WARNING: May take extremely long time and may generate extremely large files
+//    writeCompressedPaths(runName + ".csv", null, res, "exports");
 
     System.out.println("// done");
   }
 
-  public static void exportSpace(String runName, MapperResult res) throws IOException {
-    System.out.println("// Export to GraphViz...");
-    var outputDir = "exports";
-    var path = Paths.get(outputDir, runName + ".dot").toString();
+  public static void main(String[] args) throws Exception {
+    new SpaceMapperCliRunner().run(args);
+  }
 
-    var dotExporter = new DotExporter(res, path, runName);
+  protected void setExporterProviders(Exporter exporter, String runName, MapperResult res) {
     // exporter parameters can be changed. For example:
     /*exporter.setVertexAttributeProvider(v ->
         Map.of("hash", DefaultAttribute.createAttribute(v.hashCode()))
     );*/
     // See DotExporter for another option that uses the base provider.
+  }
+
+  public void exportSpace(String runName, MapperResult res) throws IOException {
+    var outputDir = "exports";
+
+    System.out.println("// Export to GraphViz...");
+    var path = Paths.get(outputDir, runName + ".dot").toString();
+    var dotExporter = new DotExporter(res, path, runName);
+    setExporterProviders(dotExporter, runName, res);
     dotExporter.export();
+
+    System.out.println("// Export to JSON...");
+    path = Paths.get(outputDir, runName + ".json").toString();
+    var jsonExporter = new JsonExporter(res, path, runName);
+    setExporterProviders(jsonExporter, runName, res);
+    jsonExporter.export();
+
     System.out.println("// Export to GOAL...");
     boolean simplifyTransitions = true;
     path = Paths.get(outputDir, runName + ".gff").toString();
     var goalExporter = new GoalExporter(res, path, runName, simplifyTransitions);
+    setExporterProviders(goalExporter, runName, res);
     goalExporter.export();
   }
 
-  public static MapperResult mapSpace(BProgram bprog) throws Exception {
+  public MapperResult mapSpace(BProgram bprog) throws Exception {
     System.out.println("// Start mapping space");
     var mpr = new StateSpaceMapper();
     // the maximal trace length can be limited: mpr.setMaxTraceLength(50);
@@ -131,7 +154,7 @@ public class SpaceMapperCliRunner {
   /*
    * TODO: should be moved to test...
    */
-  private static void testAllPaths(MapperResult res) {
+  public void testAllPaths(MapperResult res) {
     System.out.println("// Generated paths:");
 
     var allDirectedPathsAlgorithm1 = res.createAllDirectedPathsBuilder()
@@ -181,7 +204,7 @@ public class SpaceMapperCliRunner {
    * Generate all paths and write them to a zip file containing a csv file with the paths.
    * See {@link il.ac.bgu.cs.bp.statespacemapper.jgrapht.AllDirectedPaths} for all the possible algorithm configurations.
    */
-  private static void writeCompressedPaths(String csvFileName, Integer maxPathLength, MapperResult res, String outputDir) throws IOException {
+  public void writeCompressedPaths(String csvFileName, Integer maxPathLength, MapperResult res, String outputDir) throws IOException {
     System.out.println("// Generating paths...");
     var allDirectedPathsAlgorithm = res.createAllDirectedPathsBuilder()
         .setSimplePathsOnly(maxPathLength == null)

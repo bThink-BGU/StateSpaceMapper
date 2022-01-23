@@ -97,3 +97,24 @@ You can generate a set of all possible traces, see [SpaceMapperCliRunner.java](s
 
 **Warning:** the list of all possible traces may grow exponentially in the graph depth. Consider limiting the maximum traces length.
 
+## Per-BThread StateSpaceMapper
+Since version 0.4.0, it is possible to generate a forest of b-threads state-spaces (i.e., one state-space for each b-thread).
+
+:exclamation: To use this feature, the following conditions must be met:  
+
+1. The b-program must follow the following structure:
+```javascript
+const bthreads = {}
+bthreads['<first b-thread name>'] = function () { /** b-thread body **/}
+bthreads['<second b-thread name>'] = function () { /** b-thread body **/}
+// [other bthreads...]
+
+// Do not start these b-threads, they are started externaly.
+// No additional code except for const variables.
+```
+2. `waitFor`, `block`, and `interrupt`, may accept only a `BEvent` or an array of `BEvent`.
+
+The trick behind this execution is the conversion of `waitFor` events to `request` events at the `EventSelectionStrategy`.
+
+### Running the Per-BThread StateSpaceMapper
+* [PerBTSpaceMapperRunner.java](src/main/java/il/ac/bgu/cs/bp/statespacemapper/PerBTSpaceMapperRunner.java)
