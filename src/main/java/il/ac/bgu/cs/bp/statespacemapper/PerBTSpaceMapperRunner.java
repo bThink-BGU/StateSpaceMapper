@@ -53,9 +53,7 @@ public class PerBTSpaceMapperRunner {
                   btBProg.appendSource("bp.registerBThread('" + bt + "',bthreads['" + bt + "'])");
                   btBProg.setEventSelectionStrategy(new EssForPerBThread());
                   try {
-                    var res = mapSpace(btBProg);
-                    res.states().forEach(v -> v.bthreadName = Optional.of(bt));
-                    return res;
+                    return mapSpace(btBProg);
                   } catch (Exception e) {
                     throw new RuntimeException(e);
                   }
@@ -89,29 +87,32 @@ public class PerBTSpaceMapperRunner {
   }
 
   public static void setExporterProviders(MapperResult res, Exporter exporter) {
-    exporter.setVertexAttributeProvider(PerBTSpaceMapperRunner::provideVertexAttributes);
-    var oldJsonGraphProvider = exporter.getGraphAttributeProvider().get();
-    oldJsonGraphProvider.put("edges", DefaultAttribute.createAttribute(res.edges().stream().map(MapperEdge::getEvent).map(BEvent::toString).collect(joining(",", "\"[", "]\""))));
-    exporter.setGraphAttributeProvider(() -> oldJsonGraphProvider);
+    exporter.setVertexAttributeProvider(v -> {
+      var snapshot = v.bpss.getBThreadSnapshots().stream()
+          .findFirst();
+      if (snapshot.isPresent()) {
+        var syst = snapshot.get().getSyncStatement();
+        return Map.of(
+            "isHot", DefaultAttribute.createAttribute(syst.isHot()),
+            "request", DefaultAttribute.createAttribute(syst.getRequest().stream().map(BEvent::toString).collect(joining(","))),
+            "waitFor", DefaultAttribute.createAttribute(new AnyOf(syst.getWaitFor()).events.stream().map(BEvent::toString).collect(joining(","))),
+            "block", DefaultAttribute.createAttribute(new AnyOf(syst.getBlock()).events.stream().map(BEvent::toString).collect(joining(","))),
+            "interrupt", DefaultAttribute.createAttribute(new AnyOf(syst.getInterrupt()).events.stream().map(BEvent::toString).collect(joining(","))),
+            "start", DefaultAttribute.createAttribute(v.startVertex),
+            "accepting", DefaultAttribute.createAttribute(v.accepting),
+            "bthread", DefaultAttribute.createAttribute(exporter.getSanitizerProvider().apply(getBThreads(v.bpss))));
+      } else {
+        return Map.of();
+      }
+    });
+    var oldGraphProvider = exporter.getGraphAttributeProvider().get();
+    oldGraphProvider.put("edges", DefaultAttribute.createAttribute(res.edges().stream().map(MapperEdge::getEvent).map(BEvent::toString).collect(joining(",", "\"[", "]\""))));
+    oldGraphProvider.put("bthreads", DefaultAttribute.createAttribute(res.states().stream().flatMap(v->v.bpss.getBThreadSnapshots().stream()).map(BThreadSyncSnapshot::getName).distinct().sorted().collect(joining(",","\"[","]\""))));
+    exporter.setGraphAttributeProvider(() -> oldGraphProvider);
   }
 
-  public static Map<String, Attribute> provideVertexAttributes(MapperVertex v) {
-    var snapshot = v.bpss.getBThreadSnapshots().stream()
-        .findFirst();
-    if (snapshot.isPresent()) {
-      var syst = snapshot.get().getSyncStatement();
-      return Map.of(
-          "isHot", DefaultAttribute.createAttribute(syst.isHot()),
-          "request", DefaultAttribute.createAttribute(syst.getRequest().stream().map(BEvent::toString).collect(joining(","))),
-          "waitFor", DefaultAttribute.createAttribute(new AnyOf(syst.getWaitFor()).events.stream().map(BEvent::toString).collect(joining(","))),
-          "block", DefaultAttribute.createAttribute(new AnyOf(syst.getBlock()).events.stream().map(BEvent::toString).collect(joining(","))),
-          "interrupt", DefaultAttribute.createAttribute(new AnyOf(syst.getInterrupt()).events.stream().map(BEvent::toString).collect(joining(","))),
-          "start", DefaultAttribute.createAttribute(v.startVertex),
-          "accepting", DefaultAttribute.createAttribute(v.accepting)
-      );
-    } else {
-      return Map.of();
-    }
+  public static String getBThreads(BProgramSyncSnapshot bpss) {
+    return bpss.getBThreadSnapshots().stream().map(BThreadSyncSnapshot::getName).collect(joining(","));
   }
 
   public static MapperResult mapSpace(BProgram bprog) throws Exception {

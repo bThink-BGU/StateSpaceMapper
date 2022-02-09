@@ -9,7 +9,6 @@ public class MapperVertex {
   public final BProgramSyncSnapshot bpss;
   public final boolean startVertex;
   public final boolean accepting;
-  public Optional<String> bthreadName = Optional.empty();
 
   public MapperVertex(BProgramSyncSnapshot bpss) {
     this(bpss, false, false);
