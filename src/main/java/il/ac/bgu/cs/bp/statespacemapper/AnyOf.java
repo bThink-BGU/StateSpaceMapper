@@ -1,13 +1,11 @@
 package il.ac.bgu.cs.bp.statespacemapper;
 
 import il.ac.bgu.cs.bp.bpjs.model.BEvent;
+import il.ac.bgu.cs.bp.bpjs.model.eventsets.ComposableEventSet;
 import il.ac.bgu.cs.bp.bpjs.model.eventsets.EventSet;
 import il.ac.bgu.cs.bp.bpjs.model.eventsets.EventSets;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class AnyOf implements EventSet {
@@ -33,6 +31,9 @@ public class AnyOf implements EventSet {
     } else if(es instanceof Collection) {
       this.events = new HashSet<>();
       events.addAll((Collection<BEvent>) es);
+    } else if(es instanceof ComposableEventSet.AnyOf) {
+      this.events = new HashSet<>();
+      events.addAll(((ComposableEventSet.AnyOf) es).events.stream().map(e->(BEvent)e).collect(Collectors.toList()));
     } else if(es.equals(EventSets.none)){
       this.events = Set.of();
     } else {
