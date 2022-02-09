@@ -37,7 +37,7 @@ public class AnyOf implements EventSet {
     } else if(es.equals(EventSets.none)){
       this.events = Set.of();
     } else {
-      throw new IllegalArgumentException("EventSet is not a BEvent or a Collecion<BEvent>");
+      throw new IllegalArgumentException("EventSet is not a BEvent or a Collection<BEvent>");
     }
   }
 
