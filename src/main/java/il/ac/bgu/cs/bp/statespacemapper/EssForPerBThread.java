@@ -8,15 +8,11 @@ import il.ac.bgu.cs.bp.bpjs.model.eventselection.AbstractEventSelectionStrategy;
 import il.ac.bgu.cs.bp.bpjs.model.eventsets.EventSets;
 import org.mozilla.javascript.Context;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toSet;
-import static java.util.stream.Collectors.toList;
 
 public class EssForPerBThread extends AbstractEventSelectionStrategy {
   @Override
@@ -33,7 +29,7 @@ public class EssForPerBThread extends AbstractEventSelectionStrategy {
         .filter(Objects::nonNull)
         .map(SyncStatement::getBlock)
         .filter(r -> r != EventSets.none)
-        .flatMap(es -> new AnyOf(es).events.stream())
+        .flatMap(es -> Utils.eventSetToList(es).stream())
         .collect(toSet());
 
     var requested = statements.stream()
@@ -46,14 +42,14 @@ public class EssForPerBThread extends AbstractEventSelectionStrategy {
         .filter(Objects::nonNull)
         .map(SyncStatement::getWaitFor)
         .filter(r -> r != EventSets.none)
-        .flatMap(es -> new AnyOf(es).events.stream())
+        .flatMap(es -> Utils.eventSetToList(es).stream())
         .collect(toSet());
 
     var interrupt = statements.stream()
         .filter(Objects::nonNull)
         .map(SyncStatement::getInterrupt)
         .filter(r -> r != EventSets.none)
-        .flatMap(es -> new AnyOf(es).events.stream())
+        .flatMap(es -> Utils.eventSetToList(es).stream())
         .collect(toSet());
 
     requested.addAll(waitFor);
@@ -68,7 +64,7 @@ public class EssForPerBThread extends AbstractEventSelectionStrategy {
 
       return requestedAndNotBlocked.isEmpty() ?
           externalEvents.stream().filter(e -> !blocked.contains(e)) // No internal events requested, defer to externals.
-              .findFirst().map(e -> singleton(e)).orElse(emptySet())
+              .findFirst().map(Collections::singleton).orElse(emptySet())
           : requestedAndNotBlocked;
     } finally {
       Context.exit();
