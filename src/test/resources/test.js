@@ -48,12 +48,17 @@ function Any(filterData) {
   throw 'Any: Unsupported filterData type: ' + filterType + ' (' + filterData + ')'
 }
 
+function whenHelper(data,f) {
+  bp.registerBThread('when helper', function () {
+    f(data)
+  })
+}
+
 function when(eventSet, f) {
   while (true) {
-    let e = bp.sync({ waitFor: eventSet }).data
-    bp.registerBThread('when helper', function () {
-      f(e)
-    })
+    let data = bp.sync({ waitFor: eventSet }).data;
+    whenHelper(data,f);
+    delete data
   }
 }
 
@@ -85,12 +90,11 @@ bp.registerBThread('Add women jacket story', function () {
   })
 })
 
-/*
 bp.registerBThread('C2 Login story', function () {
-  bp.sync({waitFor:Any("CheckOut")})
-  bp.sync({waitFor:Any("CheckOut")})
+  bp.sync({waitFor:Any("Login"), interrupt: Any("AddToCart")})
+  bp.sync({waitFor:Any("Login"), interrupt: Any("AddToCart")})
   if (typeof use_accepting_states !== 'undefined') {
     // AcceptingState.Continuing()
     AcceptingState.Stopping()
   }
-})*/
+})

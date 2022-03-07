@@ -35,41 +35,24 @@ public class MapperResult {
 
   public void findBug() {
     var vertexMapping = Graphs.getVertexToIntegerMapping(graph).getVertexMap();
-    var states = states().stream().filter(v -> !Graphs.vertexHasSuccessors(graph,v)).collect(Collectors.toList());
+    var states = states().stream().filter(v -> v.accepting).collect(Collectors.toList());
     System.out.println("Finish states = " + states.stream().map(vertexMapping::get).collect(Collectors.toList()));
-    if(states.size()!=3)
+    if (states.size() != 2)
       return;
-    for (int i = 0; i < states.size(); i++) {
-      for (int j = i + 1; j < states.size(); j++) {
-        var asi = states.get(i);
-        var asj = states.get(j);
-        var bssi = asi.bpss;
-        var bssj = asj.bpss;
-        BProgramSyncSnapshot bpssTrue;
-        BProgramSyncSnapshot bpssFalse;
-        if(bssi.equals(bssj) != bssj.equals(bssi)) {
-          if(bssi.equals(bssj)) {
-            bpssTrue = bssi;
-            bpssFalse = bssj;
-          } else {
-            bpssTrue = bssj;
-            bpssFalse = bssi;
-          }
-          System.out.println("bssTrue.equals(bssFalse) = " + bpssTrue.equals(bpssFalse));
-          System.out.println("bssFalse.equals(bssTrue) = " + bpssFalse.equals(bpssTrue));
-          for (var btTrue : bpssTrue.getBThreadSnapshots()) {
-            if(!bpssFalse.getBThreadSnapshots().contains(btTrue)){
-              var btName = btTrue.getName();
-              var btFalse = bpssFalse.getBThreadSnapshots().stream().filter(snapshot->snapshot.getName().equals(btName)).findFirst().get();
-              System.out.println("Name of conflicting b-thread: "+btName);
-              System.out.println("NativeContinuation.equalImplementations(btTrue.getContinuation(),btFalse.getContinuation()) = " + NativeContinuation.equalImplementations(btTrue.getContinuation(),btFalse.getContinuation()));
-              System.out.println("NativeContinuation.equalImplementations(btFalse.getContinuation(),btTrue.getContinuation()) = " + NativeContinuation.equalImplementations(btFalse.getContinuation(),btTrue.getContinuation()));
-            }
-          }
-        }
+    var asi = states.get(0);
+    var asj = states.get(1);
+    var bpssi = asi.bpss;
+    var bpssj = asj.bpss;
+    System.out.println("bpssi.equals(bpssj) = " + bpssi.equals(bpssj));
+    for (var bti : bpssi.getBThreadSnapshots()) {
+      if (!bpssj.getBThreadSnapshots().contains(bti)) {
+        var btName = bti.getName();
+        var btj = bpssj.getBThreadSnapshots().stream().filter(snapshot -> snapshot.getName().equals(btName)).findFirst().get();
+        System.out.println("Name of conflicting b-thread: " + btName);
+        System.out.println("NativeContinuation.equalImplementations(bti.getContinuation(),btj.getContinuation()) = " + NativeContinuation.equalImplementations(bti.getContinuation(), btj.getContinuation()));
       }
     }
-//    System.exit(1);
+    //    System.exit(1);
   }
 
   public static List<List<BEvent>> GraphPaths2BEventPaths(List<GraphPath<MapperVertex, MapperEdge>> paths) {
@@ -108,12 +91,12 @@ public class MapperResult {
   }
 
   public Set<MapperVertex> acceptingVertices() {
-    return graph.vertexSet().stream().filter(v->v.accepting).collect(Collectors.toSet());
+    return graph.vertexSet().stream().filter(v -> v.accepting).collect(Collectors.toSet());
   }
 
   public MapperVertex startVertex() {
-    var res = graph.vertexSet().stream().filter(v->v.startVertex).findFirst();
-    if(!res.isPresent()) throw new IllegalArgumentException("There is no start vertex");
+    var res = graph.vertexSet().stream().filter(v -> v.startVertex).findFirst();
+    if (!res.isPresent()) throw new IllegalArgumentException("There is no start vertex");
     return res.get();
   }
 
