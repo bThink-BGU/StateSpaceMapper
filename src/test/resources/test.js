@@ -80,15 +80,17 @@ bp.registerBThread('C2 Login story', function () {
 
 bp.registerBThread('Add women jacket story', function () {
   when(Any('Login'), function (e) {
-    // addToCart({ s: e.s })
+    addToCart({ s: e.s })
     checkOut({ s: e.s })
   })
 })
 
+/*
 bp.registerBThread('C2 Login story', function () {
-  bp.sync({request:bp.Event("end")},-5)
+  bp.sync({waitFor:Any("CheckOut")})
+  bp.sync({waitFor:Any("CheckOut")})
   if (typeof use_accepting_states !== 'undefined') {
     // AcceptingState.Continuing()
     AcceptingState.Stopping()
   }
-})
+})*/

@@ -1,18 +1,18 @@
 package il.ac.bgu.cs.bp.statespacemapper;
 
 import il.ac.bgu.cs.bp.bpjs.model.BEvent;
+import il.ac.bgu.cs.bp.bpjs.model.BProgramSyncSnapshot;
 import il.ac.bgu.cs.bp.bpjs.model.BThreadSyncSnapshot;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.AllDirectedPathsBuilder;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.MapperEdge;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.MapperVertex;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
+import org.jgrapht.Graphs;
+import org.jgrapht.util.VertexToIntegerMapping;
 import org.mozilla.javascript.NativeContinuation;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 public class MapperResult {
   public final Graph<MapperVertex, MapperEdge> graph;
   public final Map<BEvent, Integer> events;
+  public final Map<MapperVertex, Integer> vertexMapper;
 
   protected MapperResult(Graph<MapperVertex, MapperEdge> graph) {
     this(graph, null, null);
@@ -29,54 +30,46 @@ public class MapperResult {
     this.graph = graph;
     AtomicInteger counter = new AtomicInteger();
     events = graph.edgeSet().stream().map(MapperEdge::getEvent).distinct().collect(Collectors.toMap(Function.identity(), e -> counter.getAndIncrement()));
-    findBug();
+    vertexMapper = new VertexToIntegerMapping<>(graph.vertexSet()).getVertexMap();
   }
 
-  private void findBug() {
-    var acceptingStates = acceptingVertices();
-    if(acceptingStates.size()!=3)
+  public void findBug() {
+    var vertexMapping = Graphs.getVertexToIntegerMapping(graph).getVertexMap();
+    var states = states().stream().filter(v -> !Graphs.vertexHasSuccessors(graph,v)).collect(Collectors.toList());
+    System.out.println("Finish states = " + states.stream().map(vertexMapping::get).collect(Collectors.toList()));
+    if(states.size()!=3)
       return;
-    for (var ss1 : acceptingStates) {
-      for (var ss2 : acceptingStates) {
-        if (ss1 != ss2 &&
-            indexedStates.get(ss1).equals(indexedStates.get(ss2)) &&
-            !ss1.equals(ss2) &&
-            states.stream().filter(s -> s.equals(ss1)).count() > 1
-        ) {
-          var listSS1 = states.stream().filter(s -> s.equals(ss1)).collect(Collectors.toList());
-          System.out.println("listSS1.get(0).equals(listSS1.get(1)) = " + listSS1.get(0).equals(listSS1.get(1)));
-          System.out.println("listSS1.get(1).equals(listSS1.get(0)) = " + listSS1.get(1).equals(listSS1.get(0)));
-          BThreadSyncSnapshot list0bt=null;
-          BThreadSyncSnapshot list1bt=null;
-          BThreadSyncSnapshot ss1bt=null;
-          BThreadSyncSnapshot ss2bt=null;
-          for (var bt : listSS1.get(0).getBThreadSnapshots()) {
-            if(!listSS1.get(1).getBThreadSnapshots().contains(bt)){
-              list0bt = bt;
-              list1bt = listSS1.get(1).getBThreadSnapshots().stream().filter(snapshot->snapshot.getName().equals(bt.getName())).findFirst().get();
-              ss1bt = ss1.getBThreadSnapshots().stream().filter(snapshot->snapshot.getName().equals(bt.getName())).findFirst().get();
-              ss2bt = ss2.getBThreadSnapshots().stream().filter(snapshot->snapshot.getName().equals(bt.getName())).findFirst().get();
+    for (int i = 0; i < states.size(); i++) {
+      for (int j = i + 1; j < states.size(); j++) {
+        var asi = states.get(i);
+        var asj = states.get(j);
+        var bssi = asi.bpss;
+        var bssj = asj.bpss;
+        BProgramSyncSnapshot bpssTrue;
+        BProgramSyncSnapshot bpssFalse;
+        if(bssi.equals(bssj) != bssj.equals(bssi)) {
+          if(bssi.equals(bssj)) {
+            bpssTrue = bssi;
+            bpssFalse = bssj;
+          } else {
+            bpssTrue = bssj;
+            bpssFalse = bssi;
+          }
+          System.out.println("bssTrue.equals(bssFalse) = " + bpssTrue.equals(bpssFalse));
+          System.out.println("bssFalse.equals(bssTrue) = " + bpssFalse.equals(bpssTrue));
+          for (var btTrue : bpssTrue.getBThreadSnapshots()) {
+            if(!bpssFalse.getBThreadSnapshots().contains(btTrue)){
+              var btName = btTrue.getName();
+              var btFalse = bpssFalse.getBThreadSnapshots().stream().filter(snapshot->snapshot.getName().equals(btName)).findFirst().get();
+              System.out.println("Name of conflicting b-thread: "+btName);
+              System.out.println("NativeContinuation.equalImplementations(btTrue.getContinuation(),btFalse.getContinuation()) = " + NativeContinuation.equalImplementations(btTrue.getContinuation(),btFalse.getContinuation()));
+              System.out.println("NativeContinuation.equalImplementations(btFalse.getContinuation(),btTrue.getContinuation()) = " + NativeContinuation.equalImplementations(btFalse.getContinuation(),btTrue.getContinuation()));
             }
           }
-          System.out.println("Name of conflicting b-thread: "+ss1bt.getName());
-          System.out.println("NativeContinuation.equalImplementations(list0bt.getContinuation(),list1bt.getContinuation()) = " + NativeContinuation.equalImplementations(list0bt.getContinuation(),list1bt.getContinuation()));
-          System.out.println("NativeContinuation.equalImplementations(ss1bt.getContinuation(),list0bt.getContinuation()) = " + NativeContinuation.equalImplementations(ss1bt.getContinuation(),list0bt.getContinuation()));
-          System.out.println("NativeContinuation.equalImplementations(ss1bt.getContinuation(),list1bt.getContinuation()) = " + NativeContinuation.equalImplementations(ss1bt.getContinuation(),list1bt.getContinuation()));
-          System.out.println("NativeContinuation.equalImplementations(ss2bt.getContinuation(),list0bt.getContinuation()) = " + NativeContinuation.equalImplementations(ss2bt.getContinuation(),list0bt.getContinuation()));
-          System.out.println("NativeContinuation.equalImplementations(ss2bt.getContinuation(),list1bt.getContinuation()) = " + NativeContinuation.equalImplementations(ss2bt.getContinuation(),list1bt.getContinuation()));
-          System.out.println("listSS1.get(0).equals(ss1) = " + listSS1.get(0).equals(ss1));
-          System.out.println("ss1.equals(listSS1.get(0)) = " + ss1.equals(listSS1.get(0)));
-          System.out.println("listSS1.get(1).equals(ss1) = " + listSS1.get(1).equals(ss1));
-          System.out.println("ss1.equals(listSS1.get(1)) = " + ss1.equals(listSS1.get(1)));
-          System.out.println("listSS1.get(0).equals(ss2) = " + listSS1.get(0).equals(ss2));
-          System.out.println("ss2.equals(listSS1.get(0)) = " + ss2.equals(listSS1.get(0)));
-          System.out.println("listSS1.get(1).equals(ss2) = " + listSS1.get(1).equals(ss2));
-          System.out.println("ss2.equals(listSS1.get(1)) = " + ss2.equals(listSS1.get(1)));
-          System.exit(1);
-//          }
         }
       }
     }
+//    System.exit(1);
   }
 
   public static List<List<BEvent>> GraphPaths2BEventPaths(List<GraphPath<MapperVertex, MapperEdge>> paths) {

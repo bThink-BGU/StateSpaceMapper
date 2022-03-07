@@ -47,6 +47,7 @@ public class Exporter {
     this.edgeAttributeProvider = edgeAttributeProvider();
     this.graphAttributeProvider = graphAttributeProvider();
     this.sanitizerProvider = sanitizerProvider();
+    exporter.setVertexIdProvider(v -> String.valueOf(res.vertexMapper.get(v)));
   }
 
   public void setVertexAttributeProvider(Function<MapperVertex, Map<String, Attribute>> vertexAttributeProvider) {
@@ -87,13 +88,14 @@ public class Exporter {
     exporter.setGraphAttributeProvider(this.graphAttributeProvider);
     Files.createDirectories(Paths.get(path).getParent());
     try (var out = new PrintStream(path)) {
-      ((GraphExporter<MapperVertex, MapperEdge>)exporter).exportGraph(res.graph, out);
+      ((GraphExporter<MapperVertex, MapperEdge>) exporter).exportGraph(res.graph, out);
     }
   }
 
   protected Function<MapperVertex, Map<String, Attribute>> vertexAttributeProvider() {
     return v -> {
       return new HashMap<>(Map.of(
+          "id", DefaultAttribute.createAttribute(res.vertexMapper.get(v)),
           "hash", DefaultAttribute.createAttribute(v.hashCode()),
           "store", DefaultAttribute.createAttribute(sanitizerProvider.apply(getStore(v.bpss))),
           "statements", DefaultAttribute.createAttribute(sanitizerProvider.apply(getStatments(v.bpss))),

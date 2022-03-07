@@ -10,7 +10,9 @@ import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.Exporter;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.GoalExporter;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.JsonExporter;
 import org.jgrapht.GraphPath;
+import org.jgrapht.nio.Attribute;
 import org.jgrapht.nio.DefaultAttribute;
+import org.jgrapht.util.VertexToIntegerMapping;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.EvaluatorException;
 import org.mozilla.javascript.Scriptable;
@@ -23,7 +25,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -44,13 +48,13 @@ public class SpaceMapperCliRunner {
     System.out.println("// start");
 
     // You can use a different EventSelectionStrategy, for example:
-    var ess = new PrioritizedBSyncEventSelectionStrategy();
-    ess.setDefaultPriority(0);
-    bprog.setEventSelectionStrategy(ess);
+//    var ess = new PrioritizedBSyncEventSelectionStrategy();
+//    ess.setDefaultPriority(0);
+//    bprog.setEventSelectionStrategy(ess);
 
     MapperResult res = mapSpace(bprog);
-
     exportSpace(runName, res);
+    res.findBug();
 
 //    WARNING: May take extremely long time and may generate extremely large files
 //    writeCompressedPaths(runName + ".csv", null, res, "exports");
@@ -64,10 +68,14 @@ public class SpaceMapperCliRunner {
 
   protected void setExporterProviders(Exporter exporter, String runName, MapperResult res) {
     // exporter parameters can be changed. For example:
-    /*exporter.setVertexAttributeProvider(v ->
-        Map.of("hash", DefaultAttribute.createAttribute(v.hashCode()))
-    );*/
+    var superGraphProvider = exporter.getGraphAttributeProvider().get();
+    exporter.setGraphAttributeProvider(() -> {
+      var m = new HashMap<>(superGraphProvider);
+      m.put("rankdir", DefaultAttribute.createAttribute("LR"));
+      return m;
+    });
     // See DotExporter for another option that uses the base provider.
+
   }
 
   public void exportSpace(String runName, MapperResult res) throws IOException {
@@ -79,7 +87,7 @@ public class SpaceMapperCliRunner {
     setExporterProviders(dotExporter, runName, res);
     dotExporter.export();
 
-    System.out.println("// Export to JSON...");
+    /*System.out.println("// Export to JSON...");
     path = Paths.get(outputDir, runName + ".json").toString();
     var jsonExporter = new JsonExporter(res, path, runName);
     setExporterProviders(jsonExporter, runName, res);
@@ -90,7 +98,7 @@ public class SpaceMapperCliRunner {
     path = Paths.get(outputDir, runName + ".gff").toString();
     var goalExporter = new GoalExporter(res, path, runName, simplifyTransitions);
     setExporterProviders(goalExporter, runName, res);
-    goalExporter.export();
+    goalExporter.export();*/
   }
 
   public MapperResult mapSpace(BProgram bprog) throws Exception {
