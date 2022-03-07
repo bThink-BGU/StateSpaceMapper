@@ -6,11 +6,9 @@ import il.ac.bgu.cs.bp.statespacemapper.jgrapht.MapperEdge;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.MapperVertex;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
+import org.jgrapht.util.VertexToIntegerMapping;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -18,15 +16,13 @@ import java.util.stream.Collectors;
 public class MapperResult {
   public final Graph<MapperVertex, MapperEdge> graph;
   public final Map<BEvent, Integer> events;
+  public final Map<MapperVertex, Integer> vertexMapper;
 
   protected MapperResult(Graph<MapperVertex, MapperEdge> graph) {
-    this(graph, null, null);
-  }
-
-  protected MapperResult(Graph<MapperVertex, MapperEdge> graph, MapperVertex startNode, Set<MapperVertex> acceptingStates) {
     this.graph = graph;
     AtomicInteger counter = new AtomicInteger();
     events = graph.edgeSet().stream().map(MapperEdge::getEvent).distinct().collect(Collectors.toMap(Function.identity(), e -> counter.getAndIncrement()));
+    vertexMapper = Collections.unmodifiableMap(new VertexToIntegerMapping<>(graph.vertexSet()).getVertexMap());
   }
 
   public static List<List<BEvent>> GraphPaths2BEventPaths(List<GraphPath<MapperVertex, MapperEdge>> paths) {

@@ -47,6 +47,7 @@ public class Exporter {
     this.edgeAttributeProvider = edgeAttributeProvider();
     this.graphAttributeProvider = graphAttributeProvider();
     this.sanitizerProvider = sanitizerProvider();
+    this.exporter.setVertexIdProvider(v-> String.valueOf(res.vertexMapper.get(v)));
   }
 
   public void setVertexAttributeProvider(Function<MapperVertex, Map<String, Attribute>> vertexAttributeProvider) {
@@ -92,16 +93,15 @@ public class Exporter {
   }
 
   protected Function<MapperVertex, Map<String, Attribute>> vertexAttributeProvider() {
-    return v -> {
-      return new HashMap<>(Map.of(
-          "hash", DefaultAttribute.createAttribute(v.hashCode()),
-          "store", DefaultAttribute.createAttribute(sanitizerProvider.apply(getStore(v.bpss))),
-          "statements", DefaultAttribute.createAttribute(sanitizerProvider.apply(getStatments(v.bpss))),
-          "bthreads", DefaultAttribute.createAttribute(sanitizerProvider.apply(getBThreads(v.bpss))),
-          "start", DefaultAttribute.createAttribute(v.startVertex),
-          "accepting", DefaultAttribute.createAttribute(v.accepting)
-      ));
-    };
+    return v -> new HashMap<>(Map.of(
+        "id", DefaultAttribute.createAttribute(res.vertexMapper.get(v)),
+        "hash", DefaultAttribute.createAttribute(v.hashCode()),
+        "store", DefaultAttribute.createAttribute(sanitizerProvider.apply(getStore(v.bpss))),
+        "statements", DefaultAttribute.createAttribute(sanitizerProvider.apply(getStatments(v.bpss))),
+        "bthreads", DefaultAttribute.createAttribute(sanitizerProvider.apply(getBThreads(v.bpss))),
+        "start", DefaultAttribute.createAttribute(v.startVertex),
+        "accepting", DefaultAttribute.createAttribute(v.accepting)
+    ));
   }
 
   protected Supplier<Map<String, Attribute>> graphAttributeProvider() {
