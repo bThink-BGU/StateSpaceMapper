@@ -3,6 +3,7 @@ package il.ac.bgu.cs.bp.statespacemapper;
 import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgram;
 import il.ac.bgu.cs.bp.bpjs.model.ResourceBProgram;
+import il.ac.bgu.cs.bp.bpjs.model.eventselection.PrioritizedBSyncEventSelectionStrategy;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.MapperEdge;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.DotExporter;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.Exporter;
@@ -43,8 +44,9 @@ public class SpaceMapperCliRunner {
     System.out.println("// start");
 
     // You can use a different EventSelectionStrategy, for example:
-    /* var ess = new PrioritizedBSyncEventSelectionStrategy();
-    bprog.setEventSelectionStrategy(ess); */
+    var ess = new PrioritizedBSyncEventSelectionStrategy();
+    ess.setDefaultPriority(0);
+    bprog.setEventSelectionStrategy(ess);
 
     MapperResult res = mapSpace(bprog);
 

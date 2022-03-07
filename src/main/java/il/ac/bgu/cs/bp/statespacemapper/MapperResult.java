@@ -33,7 +33,9 @@ public class MapperResult {
   }
 
   private void findBug() {
-    /*var acceptingStates = acceptingVertices();
+    var acceptingStates = acceptingVertices();
+    if(acceptingStates.size()!=3)
+      return;
     for (var ss1 : acceptingStates) {
       for (var ss2 : acceptingStates) {
         if (ss1 != ss2 &&
@@ -74,7 +76,7 @@ public class MapperResult {
 //          }
         }
       }
-    }*/
+    }
   }
 
   public static List<List<BEvent>> GraphPaths2BEventPaths(List<GraphPath<MapperVertex, MapperEdge>> paths) {

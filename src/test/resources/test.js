@@ -84,3 +84,11 @@ bp.registerBThread('Add women jacket story', function () {
     checkOut({ s: e.s })
   })
 })
+
+bp.registerBThread('C2 Login story', function () {
+  bp.sync({request:bp.Event("end")},-5)
+  if (typeof use_accepting_states !== 'undefined') {
+    // AcceptingState.Continuing()
+    AcceptingState.Stopping()
+  }
+})
