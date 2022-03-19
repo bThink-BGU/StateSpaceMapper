@@ -1,66 +1,75 @@
 /* global bp, Packages, EventSets , Set, java*/ // <-- Turn off warnings
-importPackage(Packages.il.ac.bgu.cs.bp.bpjs.model.eventsets)
+importPackage(Packages.il.ac.bgu.cs.bp.statespacemapper);
 
-// importPackage(Packages.il.ac.bgu.cs.bp.bpjs.model.eventsets);
-
-/**
- * Generate an event set based on the filter data.
- * If `filterData` is a String, this is a by-name filter.
- * If `filterData` is a RegExp, this is a by-name filter, but with a regular expression.
- * If `filterData` is an object, we filter by the existing fields of the event's data object.
- *
- * @param {String/Object/RegExp} filterData
- * @returns {EventSet}
- */
-function Any(filterData) {
-  const filterType = (typeof filterData)
-  switch (filterType) {
-    case 'string':
-      return AnyNamed(filterData)
-      break
-
-    case 'object':
-      if (filterData instanceof RegExp) {
-        return bp.EventSet('AnyNamedRegEx ' + filterData, function (e) {
-          return filterData.test(e.name)
-        })
-
-      } else {
-        let keys = Object.keys(filterData)
-        let str = ''
-        for (let idx in keys) {
-          str = str + ' ' + keys[idx] + ':' + filterData[keys[idx]]
-        }
-        return bp.EventSet('AnyWithData' + str, function (e) {
-          if (!e.data) return false
-
-          for (let key of keys) {
-            if (filterData[key] != e.data[key]) {
-              return false
-            }
-          }
-          return true
-
-        })
-      }
-      break
-  }
-  throw 'Any: Unsupported filterData type: ' + filterType + ' (' + filterData + ')'
-}
-
-function whenHelper(data,f) {
-  bp.registerBThread('when helper', function () {
-    f(data)
+function Any(name) {
+  return bp.EventSet('Any(' + name + ')', function (e) {
+    return e.name.equals(name)
   })
 }
 
-function when(eventSet, f) {
+function whenHelper(d, f) {
+  bp.registerBThread('when helper', function () {
+    f(d)
+  })
+}
+
+function when1(eventSet, f) {
+  var data = null
   while (true) {
-    let data = bp.sync({ waitFor: eventSet }).data;
-    whenHelper(data,f);
-    delete data
+    data = bp.sync({ waitFor: eventSet }).data
+    whenHelper(data, f)
+    data = null
   }
 }
+
+function when2(eventSet, f) {
+  let data = null
+  while (true) {
+    data = bp.sync({ waitFor: eventSet }).data
+    whenHelper(data, f)
+    data = null
+  }
+}
+
+function when3(eventSet, f) { // the winner
+  var data = null
+  while (true) {
+    data = bp.sync({ waitFor: eventSet }).data;
+    ((data) => bp.registerBThread('when helper', function () {
+      f(data)
+    }))(data)
+    data = null
+  }
+}
+
+function when4(eventSet, f) {
+  const helper = function(d, f) {
+    bp.registerBThread('when helper', function () {
+      f(d)
+    })
+  }
+
+  var data = null
+  while (true) {
+    data = bp.sync({ waitFor: eventSet }).data
+    helper(data, f)
+    data = null
+  }
+}
+
+function when5(eventSet, f) {
+  const helper = function(d, f) {
+    bp.registerBThread('when helper', function () {
+      f(d)
+    })
+  }
+  while (true) {
+    helper(bp.sync({ waitFor: eventSet }).data, f)
+  }
+}
+
+
+const when = when2
 
 function login(data) {
   bp.sync({ request: bp.Event('Login', data) })
@@ -83,13 +92,21 @@ bp.registerBThread('C2 Login story', function () {
   login({ s: 'C2' })
 })
 
+const func = function (e) {
+  addToCart({ s: e.s })
+  SpaceMapperCliRunner.removeParent.accept(this);
+  checkOut({ s: e.s })
+  SpaceMapperCliRunner.removeParent.accept(this);
+}
+
 bp.registerBThread('Add women jacket story', function () {
-  when(Any('Login'), function (e) {
+  when(Any('Login'), func)
+  /*when(Any('Login'), function (e) {
     addToCart({ s: e.s })
     checkOut({ s: e.s })
-  })
+  })*/
 })
-
+/*
 bp.registerBThread('C2 Login story', function () {
   bp.sync({waitFor:Any("Login"), interrupt: Any("AddToCart")})
   bp.sync({waitFor:Any("Login"), interrupt: Any("AddToCart")})
@@ -97,4 +114,4 @@ bp.registerBThread('C2 Login story', function () {
     // AcceptingState.Continuing()
     AcceptingState.Stopping()
   }
-})
+})*/

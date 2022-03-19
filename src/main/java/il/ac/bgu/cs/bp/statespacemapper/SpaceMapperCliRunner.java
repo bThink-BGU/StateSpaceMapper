@@ -1,5 +1,6 @@
 package il.ac.bgu.cs.bp.statespacemapper;
 
+import il.ac.bgu.cs.bp.bpjs.BPjs;
 import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgram;
 import il.ac.bgu.cs.bp.bpjs.model.ResourceBProgram;
@@ -10,6 +11,7 @@ import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.Exporter;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.GoalExporter;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.JsonExporter;
 import org.jgrapht.GraphPath;
+import org.jgrapht.Graphs;
 import org.jgrapht.nio.Attribute;
 import org.jgrapht.nio.DefaultAttribute;
 import org.jgrapht.util.VertexToIntegerMapping;
@@ -28,6 +30,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -35,6 +39,14 @@ import java.util.zip.ZipOutputStream;
 import static java.util.stream.Collectors.joining;
 
 public class SpaceMapperCliRunner {
+  public static Consumer<Scriptable> removeParent = SpaceMapperCliRunner::removeParentFunc;
+  public static void removeParentFunc(Scriptable scriptable){
+    /*BPjs.withContext(cx->{
+//      scriptable.setParentScope(null);
+//      scriptable.setPrototype(BPjs.getBPjsScope());
+    });*/
+  }
+
   public void run(String[] args) throws Exception {
     if (args.length == 0) {
       System.err.println("Missing input files");
@@ -43,6 +55,7 @@ public class SpaceMapperCliRunner {
     }
 
     BProgram bprog = getBProgram(args);
+//    bprog.putInGlobalScope("removeParent", removeParent);
     var runName = bprog.getName();
 
     System.out.println("// start");
@@ -54,7 +67,7 @@ public class SpaceMapperCliRunner {
 
     MapperResult res = mapSpace(bprog);
     exportSpace(runName, res);
-    res.findBug();
+//    res.findBug();
 
 //    WARNING: May take extremely long time and may generate extremely large files
 //    writeCompressedPaths(runName + ".csv", null, res, "exports");
@@ -75,7 +88,21 @@ public class SpaceMapperCliRunner {
       return m;
     });
     // See DotExporter for another option that uses the base provider.
-
+    var vE = exporter.getEdgeAttributeProvider();
+    exporter.setEdgeAttributeProvider(mapperEdge -> {
+      var map = vE.apply(mapperEdge);
+      map.put("label",DefaultAttribute.createAttribute(""));
+      return map;
+    });
+    var vA = exporter.getVertexAttributeProvider();
+    exporter.setVertexAttributeProvider(vertex -> {
+       var map = vA.apply(vertex);
+       boolean accepting = !Graphs.vertexHasSuccessors(res.graph,vertex);
+      map.put("accepting", DefaultAttribute.createAttribute(accepting));
+      map.put("shape", DefaultAttribute.createAttribute(vertex.startVertex ? "plaintext" : accepting ? "doublecircle" : "circle"));
+       map.put("label", DefaultAttribute.createAttribute(""));
+       return map;
+    });
   }
 
   public void exportSpace(String runName, MapperResult res) throws IOException {
@@ -91,14 +118,14 @@ public class SpaceMapperCliRunner {
     path = Paths.get(outputDir, runName + ".json").toString();
     var jsonExporter = new JsonExporter(res, path, runName);
     setExporterProviders(jsonExporter, runName, res);
-    jsonExporter.export();
+    jsonExporter.export();*/
 
     System.out.println("// Export to GOAL...");
     boolean simplifyTransitions = true;
     path = Paths.get(outputDir, runName + ".gff").toString();
     var goalExporter = new GoalExporter(res, path, runName, simplifyTransitions);
     setExporterProviders(goalExporter, runName, res);
-    goalExporter.export();*/
+    goalExporter.export();
   }
 
   public MapperResult mapSpace(BProgram bprog) throws Exception {
