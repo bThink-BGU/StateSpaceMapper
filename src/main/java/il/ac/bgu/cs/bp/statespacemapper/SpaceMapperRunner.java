@@ -21,6 +21,7 @@ public class SpaceMapperRunner {
   private static final boolean useNeo4j = false;
 
   public static void main(String[] args) throws Exception {
+    System.out.println("//start");
     var bprog = new ContextBProgram("HotCold/dal.js","HotCold/bl.js");
     var runName = bprog.getName();
     StateSpaceMapper mpr = new StateSpaceMapper(runName);
