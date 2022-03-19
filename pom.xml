@@ -32,11 +32,11 @@
     </repositories>
     <dependencies>
              <!-- A patched BPjs version to overcome the equals bug -->
-        <dependency>
+        <!--<dependency>
             <groupId>com.github.bthink-bgu</groupId>
             <artifactId>BPjs</artifactId>
             <version>0.12.1-modified-quals</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>com.github.bthink-bgu</groupId>
             <artifactId>BPjs-Context</artifactId>

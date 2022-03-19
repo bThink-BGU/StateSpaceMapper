@@ -23,7 +23,7 @@ public class SpaceMapperRunner {
   public static void main(String[] args) throws Exception {
     System.out.println("//start");
     var bprog = new ContextBProgram("HotCold/dal.js","HotCold/bl.js");
-    var runName = bprog.getName();
+    var runName = "hotcold";
     StateSpaceMapper mpr = new StateSpaceMapper(runName);
     mpr.setGenerateTraces(true); // Generates a set of all possible traces.
     mpr.setOutputPath("graphs");

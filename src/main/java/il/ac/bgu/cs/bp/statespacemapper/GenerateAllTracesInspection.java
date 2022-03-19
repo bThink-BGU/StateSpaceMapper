@@ -172,7 +172,7 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
         }
       }
     }
-    System.exit(1);
+//    System.exit(1);
     var acceptingStatesMap = Stream.concat(this.acceptingStates.stream(), tmpEndStates.stream())
         .distinct()
         .collect(Collectors.toUnmodifiableMap(indexedStates::get, Function.identity()));
@@ -255,8 +255,8 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
               "# Events: " + events.size() + "\n" +
               "# Transition: " + edges.size() + "\n" +
               (traces == null ? "" : "# Traces: " + traces.size() + "\n") +
-              "=================\n" +
-              (traces == null ? "" : "# Traces: " + traces + "\n");
+              "=================\n";
+//              (traces == null ? "" : "# Traces: " + traces + "\n");
     }
   }
 }

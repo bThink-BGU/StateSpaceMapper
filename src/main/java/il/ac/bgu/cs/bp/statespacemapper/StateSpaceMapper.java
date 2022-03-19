@@ -40,10 +40,10 @@ public class StateSpaceMapper {
   }
 
   protected void addDefaultWriters() {
-    writers.add(new TraceResultJsonWriter(name));
+//    writers.add(new TraceResultJsonWriter(name));
     writers.add(new TraceResultGVWriter(name));
 //    writers.add(new TraceResultNoamWriter(name)); // Not required as GOAL tool is integrated in StateSpaceMapper.
-    writers.add(new TraceResultGoalWriter(name));
+//    writers.add(new TraceResultGoalWriter(name));
   }
 
   public boolean isGenerateTraces() {
