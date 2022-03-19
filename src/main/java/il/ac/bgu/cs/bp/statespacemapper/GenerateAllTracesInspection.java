@@ -172,7 +172,7 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
         }
       }
     }
-//    System.exit(1);
+    System.exit(1);
     var acceptingStatesMap = Stream.concat(this.acceptingStates.stream(), tmpEndStates.stream())
         .distinct()
         .collect(Collectors.toUnmodifiableMap(indexedStates::get, Function.identity()));
