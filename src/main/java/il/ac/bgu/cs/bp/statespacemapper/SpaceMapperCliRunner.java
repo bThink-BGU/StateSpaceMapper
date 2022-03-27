@@ -80,7 +80,7 @@ public class SpaceMapperCliRunner {
   }
 
   protected void setExporterProviders(Exporter exporter, String runName, MapperResult res) {
-    // exporter parameters can be changed. For example:
+   /* // exporter parameters can be changed. For example:
     var superGraphProvider = exporter.getGraphAttributeProvider().get();
     exporter.setGraphAttributeProvider(() -> {
       var m = new HashMap<>(superGraphProvider);
@@ -102,7 +102,7 @@ public class SpaceMapperCliRunner {
       map.put("shape", DefaultAttribute.createAttribute(vertex.startVertex ? "plaintext" : accepting ? "doublecircle" : "circle"));
        map.put("label", DefaultAttribute.createAttribute(""));
        return map;
-    });
+    });*/
   }
 
   public void exportSpace(String runName, MapperResult res) throws IOException {
@@ -120,12 +120,12 @@ public class SpaceMapperCliRunner {
     setExporterProviders(jsonExporter, runName, res);
     jsonExporter.export();*/
 
-    System.out.println("// Export to GOAL...");
+    /*System.out.println("// Export to GOAL...");
     boolean simplifyTransitions = true;
     path = Paths.get(outputDir, runName + ".gff").toString();
     var goalExporter = new GoalExporter(res, path, runName, simplifyTransitions);
     setExporterProviders(goalExporter, runName, res);
-    goalExporter.export();
+    goalExporter.export();*/
   }
 
   public MapperResult mapSpace(BProgram bprog) throws Exception {

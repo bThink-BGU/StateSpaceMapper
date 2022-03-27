@@ -1,5 +1,5 @@
 /* global bp, Packages, EventSets , Set, java*/ // <-- Turn off warnings
-importPackage(Packages.il.ac.bgu.cs.bp.statespacemapper);
+importPackage(Packages.il.ac.bgu.cs.bp.statespacemapper)
 
 function Any(name) {
   return bp.EventSet('Any(' + name + ')', function (e) {
@@ -7,69 +7,120 @@ function Any(name) {
   })
 }
 
-function whenHelper(d, f) {
+function globalWhenHelper(d, f) {
   bp.registerBThread('when helper', function () {
     f(d)
   })
 }
 
-function when1(eventSet, f) {
-  var data = null
-  while (true) {
-    data = bp.sync({ waitFor: eventSet }).data
-    whenHelper(data, f)
-    data = null
-  }
-}
+const btFuncBody = [
+  '\taddToCart({ s: e.s });\n' +
+  '\tcheckOut({ s: e.s });\n',
 
-function when2(eventSet, f) {
-  let data = null
-  while (true) {
-    data = bp.sync({ waitFor: eventSet }).data
-    whenHelper(data, f)
-    data = null
-  }
-}
+  '\taddToCart({ s: e.s });\n' +
+  '\tSpaceMapperCliRunner.removeParent.accept(this);\n' +
+  '\tcheckOut({ s: e.s });\n',
 
-function when3(eventSet, f) { // the winner
-  var data = null
-  while (true) {
-    data = bp.sync({ waitFor: eventSet }).data;
-    ((data) => bp.registerBThread('when helper', function () {
-      f(data)
-    }))(data)
-    data = null
-  }
-}
+  '\taddToCart({ s: e.s });\n',
 
-function when4(eventSet, f) {
-  const helper = function(d, f) {
-    bp.registerBThread('when helper', function () {
-      f(d)
-    })
+  '\taddToCart({ s: e.s });\n' +
+  '\tSpaceMapperCliRunner.removeParent.accept(this);\n'
+]
+
+const btFuncOptions = [
+  'func',
+  'function(e) {\n' +
+  '\t%%btFuncBody%%' +
+  '\t}'
+]
+
+const btTemplate = '' +
+  'bp.registerBThread(\'Add women jacket story\', function () {\n' +
+  '  when(Any(\'Login\'), %%btFuncOptions%%);\n' +
+  '});\n\n'
+
+const whenTemplate = '' +
+  'const when = function (eventSet, f) {\n' +
+  '%%before-while%%' +
+  '  while (true) {\n' +
+  '%%before-sync%%' +
+  '%%sync%%' +
+  '%%after-sync%%' +
+  '%%helper-call%%' +
+  '%%before-end-while%%' +
+  '  }' +
+  '  %%after-while%%\n' +
+  '};\n\n'
+
+const helperCallOptions = [
+  'globalWhenHelper(%%data-variable%%, f);\n',
+
+  'bp.registerBThread(\'when helper\', function () {\n' +
+  '    f(%%data-variable%%);\n' +
+  '  });\n',
+
+  '((d) => bp.registerBThread(\'when helper\', function () {\n' +
+  ' f(d);\n' +
+  '}))(%%data-variable%%);\n'
+]
+
+const dataTypes = ['var', 'let']
+
+const whenOptions = [
+  {
+    '%%before-while%%': '%%dataTypes%% data = null;\n',
+    '%%before-sync%%': 'data = ',
+    '%%sync%%': 'bp.sync({ waitFor: eventSet }).data',
+    '%%after-sync%%': ';\n',
+    '%%before-end-while%%': 'data = null;\n',
+    '%%data-variable%%': 'data'
+  },
+
+  {
+    '%%before-while%%': '',
+    '%%before-sync%%': '%%dataTypes%% data = ',
+    '%%sync%%': 'bp.sync({ waitFor: eventSet }).data',
+    '%%after-sync%%': ';\n',
+    '%%before-end-while%%': 'data = null;\n',
+    '%%data-variable%%': 'data'
+  },
+
+  {
+    '%%before-while%%': '',
+    '%%before-sync%%': '',
+    '%%sync%%': '',
+    '%%after-sync%%': '',
+    '%%before-end-while%%': '',
+    '%%data-variable%%': 'bp.sync({ waitFor: eventSet }).data'
   }
 
-  var data = null
-  while (true) {
-    data = bp.sync({ waitFor: eventSet }).data
-    helper(data, f)
-    data = null
-  }
-}
+  /*{
+    '%%before-while%%': 'const helper = function (d, f) {\n' +
+      '    bp.registerBThread(\'when helper\', function () {\n' +
+      '      f(d);\n' +
+      '    });\n' +
+      '  };',
+    '%%before-sync%%': '%%data-type%% data = ',
+    '%%after-sync%%': ';\n',
+    '%%before-end-while%%': ''
+  },
 
-function when5(eventSet, f) {
-  const helper = function(d, f) {
-    bp.registerBThread('when helper', function () {
-      f(d)
-    })
-  }
-  while (true) {
-    helper(bp.sync({ waitFor: eventSet }).data, f)
-  }
-}
+  {
+    '%%before-while%%': '',
+    '%%before-sync%%': '',
+    '%%after-sync%%': '',
+    '%%helper-call%%': '',
+    '%%before-end-while%%': ''
+  }*/
+]
 
+const template = '' +
+  'const func = function(e) {\n' +
+  '  %%btFuncBody%%' +
+  '};\n\n' +
+  whenTemplate +
+  btTemplate
 
-const when = when2
 
 function login(data) {
   bp.sync({ request: bp.Event('Login', data) })
@@ -92,20 +143,14 @@ bp.registerBThread('C2 Login story', function () {
   login({ s: 'C2' })
 })
 
-const func = function (e) {
-  addToCart({ s: e.s })
-  SpaceMapperCliRunner.removeParent.accept(this);
-  checkOut({ s: e.s })
-  SpaceMapperCliRunner.removeParent.accept(this);
-}
 
-bp.registerBThread('Add women jacket story', function () {
+/*bp.registerBThread('Add women jacket story', function () {
   when(Any('Login'), func)
-  /*when(Any('Login'), function (e) {
+  /!*when(Any('Login'), function (e) {
     addToCart({ s: e.s })
     checkOut({ s: e.s })
-  })*/
-})
+  })*!/
+})*/
 /*
 bp.registerBThread('C2 Login story', function () {
   bp.sync({waitFor:Any("Login"), interrupt: Any("AddToCart")})
