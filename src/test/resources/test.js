@@ -29,8 +29,7 @@ function checkOut(data) {
 }
 
 const func = function(e) {
-%%bt-func-body%%
-};
+%%bt-func-body%%};
 
 const when = function (eventSet, f) {
   const innerWhenHelper = function(d) {
