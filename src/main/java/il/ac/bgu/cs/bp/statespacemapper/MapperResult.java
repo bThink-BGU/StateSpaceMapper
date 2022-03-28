@@ -34,7 +34,7 @@ public class MapperResult {
   }
 
   public void findBug() {
-    var vertexMapping = Graphs.getVertexToIntegerMapping(graph).getVertexMap();
+   var vertexMapping = Graphs.getVertexToIntegerMapping(graph).getVertexMap();
     var states = states().stream().filter(v -> v.accepting).collect(Collectors.toList());
     System.out.println("Finish states = " + states.stream().map(vertexMapping::get).collect(Collectors.toList()));
     if (states.size() != 2)
