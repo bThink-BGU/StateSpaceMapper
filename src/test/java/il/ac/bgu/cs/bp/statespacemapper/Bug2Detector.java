@@ -198,10 +198,7 @@ public class Bug2Detector extends SpaceMapperCliRunner {
   enum HelperType {
     global("globalWhenHelper(%%data-variable-name%%, f);\n"),
     inner("innerWhenHelper(%%data-variable-name%%, f);\n"),
-    inline("bp.registerBThread('when helper', function () {\n" +
-        "    f(%%data-variable-name%%);\n" +
-        "  });\n"),
-    inlineGuarded("(function(d) {\n" +
+    inline("(function(d) {\n" +
         "  bp.registerBThread('when helper', function () {\n" +
         "    f(d);\n" +
         "  });\n" +
@@ -331,22 +328,6 @@ public class Bug2Detector extends SpaceMapperCliRunner {
       return code.replace("%%sync-foo%%\n", Bug2Detector.format(value ? "bp.sync({ request: bp.Event('foo') });" : "", 2));
     }
   }
-
-  private static final String whenTemplate =
-      "const when = function (eventSet, f) {\n" +
-          "  const innerWhenHelper = function(d) {\n" +
-          "    bp.registerBThread('when helper', function () {\n" +
-          "      f(d);\n" +
-          "    });\n" +
-          "  };\n" +
-          "%%declare-data%%" +
-          "  while (true) {\n" +
-          "%%sync-foo%%" +
-          "%%sync-data%%" +
-          "%%helper%%" +
-          "%%reset-data%%" +
-          "  }" +
-          "};\n\n";
 
   public static void run2() throws Exception {
     String template = getResourceFileAsString("test.js");
