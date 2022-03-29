@@ -6,6 +6,8 @@ import org.jgrapht.Graphs;
 import org.jgrapht.nio.DefaultAttribute;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashMap;
@@ -16,6 +18,7 @@ public class Bug2Detector extends SpaceMapperCliRunner {
   private String code = "";
 
   public static void main(String[] args) throws Exception {
+    Files.createDirectories(Path.of("exports"));
     run2();
   }
 
@@ -115,7 +118,7 @@ public class Bug2Detector extends SpaceMapperCliRunner {
     }
 
     public static String header() {
-      return "Iteration,Round,States,Events,Transitions,Accepting,FuncName,FuncBody,RemoveObjectParent,HelperType,DataDeclaration,ResetData,Code";
+      return "Iteration,Round,States,Events,Transitions,Accepting,FuncName,FuncBody,RemoveObjectParent,HelperType,DataDeclaration,ResetData,DataType,Code";
     }
 
     @Override
