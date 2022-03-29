@@ -91,6 +91,7 @@ public class Bug2Detector extends SpaceMapperCliRunner {
     private final FuncName funcName;
     private final FuncBody funcBody;
     private final RemoveObjectParent removeObjectParent;
+    private final SyncFoo syncFoo;
     private final HelperType helperType;
     private final DataDeclaration dataDeclaration;
     private final ResetData resetData;
@@ -98,7 +99,7 @@ public class Bug2Detector extends SpaceMapperCliRunner {
     public final String code;
 
     private Stats(int iteration, int round, int states, int events, int transitions, int accepting,
-                  FuncName funcName, FuncBody funcBody, RemoveObjectParent removeObjectParent,
+                  FuncName funcName, FuncBody funcBody, RemoveObjectParent removeObjectParent, SyncFoo syncFoo,
                   HelperType helperType, DataDeclaration dataDeclaration, ResetData resetData, DataType dataType,
                   String code) {
       this.iteration = iteration;
@@ -110,6 +111,7 @@ public class Bug2Detector extends SpaceMapperCliRunner {
       this.funcName = funcName;
       this.funcBody = funcBody;
       this.removeObjectParent = removeObjectParent;
+      this.syncFoo = syncFoo;
       this.helperType = helperType;
       this.dataDeclaration = dataDeclaration;
       this.resetData = resetData;
@@ -118,16 +120,16 @@ public class Bug2Detector extends SpaceMapperCliRunner {
     }
 
     public static String header() {
-      return "Iteration,Round,States,Events,Transitions,Accepting,FuncName,FuncBody,RemoveObjectParent,HelperType,DataDeclaration,ResetData,DataType,Code";
+      return "Iteration,Round,States,Events,Transitions,Accepting,FuncName,FuncBody,RemoveObjectParent,SyncFoo,HelperType,DataDeclaration,ResetData,DataType,Code";
     }
 
     @Override
     public String toString() {
-      return MessageFormat.format("{0},{1},{2},{3},{4},{5},\"{6}\",\"{7}\",\"{8}\",\"{9}\",\"{10}\",\"{11}\",\"{12}\"",
+      return MessageFormat.format("{0},{1},{2},{3},{4},{5},\"{6}\",\"{7}\",\"{8}\",\"{9}\",\"{10}\",\"{11}\",\"{12}\",\"{13}\",\"{14}\"",
           iteration, round, states, events, transitions, accepting,
           funcName.name(), funcBody.name(),
-          removeObjectParent.name(),
-          helperType.name(), dataDeclaration.name(), resetData.name(),
+          removeObjectParent.name(), syncFoo.name(),
+          helperType.name(), dataDeclaration.name(), resetData.name(),dataType.name(),
           code);
     }
   }
@@ -313,7 +315,7 @@ public class Bug2Detector extends SpaceMapperCliRunner {
                         out.println(new Stats(iteration, round, res.states().size(), res.events.size(), res.edges().size(),
                             (int) res.states().stream().map(vertex -> !Graphs.vertexHasSuccessors(res.graph, vertex)).filter(v -> v).count(),
                             funcName, funcBody,
-                            removeObjectParent,
+                            removeObjectParent, syncFoo,
                             helperType, dataDeclaration, resetData, dataType,
                             runner.code));
                       }
