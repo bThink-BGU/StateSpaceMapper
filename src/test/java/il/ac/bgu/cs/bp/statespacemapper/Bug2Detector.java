@@ -91,11 +91,12 @@ public class Bug2Detector extends SpaceMapperCliRunner {
     private final HelperType helperType;
     private final DataDeclaration dataDeclaration;
     private final ResetData resetData;
+    private final DataType dataType;
     public final String code;
 
     private Stats(int iteration, int round, int states, int events, int transitions, int accepting,
                   FuncName funcName, FuncBody funcBody, RemoveObjectParent removeObjectParent,
-                  HelperType helperType, DataDeclaration dataDeclaration, ResetData resetData,
+                  HelperType helperType, DataDeclaration dataDeclaration, ResetData resetData, DataType dataType,
                   String code) {
       this.iteration = iteration;
       this.round = round;
@@ -109,6 +110,7 @@ public class Bug2Detector extends SpaceMapperCliRunner {
       this.helperType = helperType;
       this.dataDeclaration = dataDeclaration;
       this.resetData = resetData;
+      this.dataType = dataType;
       this.code = code;
     }
 
@@ -309,7 +311,7 @@ public class Bug2Detector extends SpaceMapperCliRunner {
                             (int) res.states().stream().map(vertex -> !Graphs.vertexHasSuccessors(res.graph, vertex)).filter(v -> v).count(),
                             funcName, funcBody,
                             removeObjectParent,
-                            helperType, dataDeclaration, resetData,
+                            helperType, dataDeclaration, resetData, dataType,
                             runner.code));
                       }
                       iteration++;
