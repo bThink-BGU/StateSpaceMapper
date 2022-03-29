@@ -41,10 +41,13 @@ import static java.util.stream.Collectors.joining;
 public class SpaceMapperCliRunner {
   public static Consumer<Scriptable> removeParent = SpaceMapperCliRunner::removeParentFunc;
   public static void removeParentFunc(Scriptable scriptable){
-    BPjs.withContext(cx->{
-      scriptable.setParentScope(null);
+    try{
+      Context.enter();
+        scriptable.setParentScope(null);
 //      scriptable.setPrototype(BPjs.getBPjsScope());
-    });
+    }finally {
+      Context.exit();
+    }
   }
 
   public void run(String[] args) throws Exception {
