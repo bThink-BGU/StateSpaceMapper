@@ -35,7 +35,8 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
       startVertex = true;
     }
     if (aTrace.isCyclic()) {
-      addEdge(aTrace.getLastState(), aTrace.getFinalCycle().get(0).getState(), aTrace.getLastEvent().get());
+      // If cycle length < 2 then the last event is the first event
+      addEdge(aTrace.getLastState(), aTrace.getFinalCycle().get(0).getState(), aTrace.getLastEvent().orElse(aTrace.getFinalCycle().get(0).getEvent().get()));
     } else {
 
       var lastNodeVertex = new MapperVertex(lastNode.getState(), startVertex, accepting);
