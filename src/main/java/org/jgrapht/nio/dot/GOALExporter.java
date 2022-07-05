@@ -5,6 +5,7 @@ import org.jgrapht.Graph;
 import org.jgrapht.nio.*;
 import org.svvrl.goal.core.Preference;
 import org.svvrl.goal.core.aut.AlphabetType;
+import org.svvrl.goal.core.aut.BuchiAcc;
 import org.svvrl.goal.core.aut.ClassicAcc;
 import org.svvrl.goal.core.aut.Position;
 import org.svvrl.goal.core.aut.fsa.FSA;
@@ -103,7 +104,7 @@ public class GOALExporter<V, E> extends
     graphAttributeProvider.orElse(Collections::emptyMap).get()
         .forEach((key, value) -> fsa.getProperties().setProperty(key, sanitizeAttributeValue(value)));
 
-    var acc = new ClassicAcc();
+    var acc = isBuchi(g) ? new BuchiAcc() : new ClassicAcc();
 
     // vertex set
     for (V v : g.vertexSet()) {
@@ -142,6 +143,10 @@ public class GOALExporter<V, E> extends
     fsa.setAcc(acc);
     if (simplifyTransitions) fsa.simplifyTransitions();
     return fsa;
+  }
+
+  private boolean isBuchi(Graph<V, E> g) {
+    return g.vertexSet().stream().anyMatch(v->isAcceptingVertex.test(v) && g.outDegreeOf(v)>0);
   }
 
   private int getVertexID(V v) {
