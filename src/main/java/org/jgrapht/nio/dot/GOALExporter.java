@@ -7,6 +7,7 @@ import org.svvrl.goal.core.Preference;
 import org.svvrl.goal.core.aut.AlphabetType;
 import org.svvrl.goal.core.aut.BuchiAcc;
 import org.svvrl.goal.core.aut.ClassicAcc;
+import org.svvrl.goal.core.aut.GraphicComponent;
 import org.svvrl.goal.core.aut.Position;
 import org.svvrl.goal.core.aut.fsa.FSA;
 import org.svvrl.goal.core.io.FileHandler;
@@ -15,6 +16,7 @@ import org.svvrl.goal.core.io.GFFCodec;
 import java.io.ByteArrayOutputStream;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -139,6 +141,9 @@ public class GOALExporter<V, E> extends
       });
       fsa.addTransition(transition);
     }
+//    System.out.println([0].getLabel());
+    String[] alphabet = Arrays.stream(fsa.getTransitions()).map(t -> t.getLabel()).distinct().toList().toArray(new String[0]);
+    fsa.expandAlphabet(alphabet);
 
     fsa.setAcc(acc);
     if (simplifyTransitions) fsa.simplifyTransitions();
