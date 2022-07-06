@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -142,7 +143,7 @@ public class GOALExporter<V, E> extends
       fsa.addTransition(transition);
     }
 //    System.out.println([0].getLabel());
-    String[] alphabet = Arrays.stream(fsa.getTransitions()).map(t -> t.getLabel()).distinct().toList().toArray(new String[0]);
+    String[] alphabet = Arrays.stream(fsa.getTransitions()).map(t -> t.getLabel()).distinct().toArray(String[]::new);
     fsa.expandAlphabet(alphabet);
 
     fsa.setAcc(acc);
