@@ -1,0 +1,16 @@
+listSS1.get(0).equals(listSS1.get(1)) = false
+listSS1.get(1).equals(listSS1.get(0)) = false
+Name of conflicting b-thread: ContextHandler
+NativeContinuation.equalImplementations(list0bt.getContinuation(),list1bt.getContinuation()) = false
+NativeContinuation.equalImplementations(ss1bt.getContinuation(),list0bt.getContinuation()) = true
+NativeContinuation.equalImplementations(ss1bt.getContinuation(),list1bt.getContinuation()) = true
+NativeContinuation.equalImplementations(ss2bt.getContinuation(),list0bt.getContinuation()) = true
+NativeContinuation.equalImplementations(ss2bt.getContinuation(),list1bt.getContinuation()) = false
+listSS1.get(0).equals(ss1) = true
+ss1.equals(listSS1.get(0)) = true
+listSS1.get(1).equals(ss1) = true
+ss1.equals(listSS1.get(1)) = true
+listSS1.get(0).equals(ss2) = true
+ss2.equals(listSS1.get(0)) = true
+listSS1.get(1).equals(ss2) = false
+ss2.equals(listSS1.get(1)) = false
