@@ -9,16 +9,16 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 
 public class LoadBug {
+  public static int id = 3;
+  public static String dir = "bug-run" + id;
 
   public static void main(String[] args) throws Exception {
-    var id = 3;
-    var dir = "bug-run" + id;
     System.out.println("//reading continuations from '" + dir + "'");
     var bprog = new ContextBProgram("HotCold/dal.js", "HotCold/bl.js").setup();
-    var ss1bt = (NativeContinuation) GenerateAllTracesInspection.deserializeContinuation(bprog, dir+"/ss1bt.bin");
-    var ss2bt = (NativeContinuation) GenerateAllTracesInspection.deserializeContinuation(bprog, dir+"/ss2bt.bin");
-    var list0bt = (NativeContinuation) GenerateAllTracesInspection.deserializeContinuation(bprog, dir+"/list0bt.bin");
-    var list1bt = (NativeContinuation) GenerateAllTracesInspection.deserializeContinuation(bprog, dir+"/list1bt.bin");
+    var ss1bt = (NativeContinuation) GenerateAllTracesInspection.deserializeContinuation(bprog, dir + "/ss1bt.bin");
+    var ss2bt = (NativeContinuation) GenerateAllTracesInspection.deserializeContinuation(bprog, dir + "/ss2bt.bin");
+    var list0bt = (NativeContinuation) GenerateAllTracesInspection.deserializeContinuation(bprog, dir + "/list0bt.bin");
+    var list1bt = (NativeContinuation) GenerateAllTracesInspection.deserializeContinuation(bprog, dir + "/list1bt.bin");
 
     try (FileWriter fileWriter = new FileWriter(dir + "/stdout.txt", true);
          PrintWriter out = new PrintWriter(fileWriter);) {

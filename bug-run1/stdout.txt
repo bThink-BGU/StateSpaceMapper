@@ -1,4 +1,6 @@
-Name of conflicting b-thread: Live copy: Add Hot Three Times r3
+listSS1.get(0).equals(listSS1.get(1)) = false
+listSS1.get(1).equals(listSS1.get(0)) = false
+Name of conflicting b-thread: ContextHandler
 NativeContinuation.equalImplementations(list0bt.getContinuation(),list1bt.getContinuation()) = false
 NativeContinuation.equalImplementations(ss1bt.getContinuation(),list0bt.getContinuation()) = true
 NativeContinuation.equalImplementations(ss1bt.getContinuation(),list1bt.getContinuation()) = true
@@ -20,5 +22,5 @@ now deserialize...
 NativeContinuation.equalImplementations(list0bt,list1bt) = false
 NativeContinuation.equalImplementations(ss1bt,list0bt) = false
 NativeContinuation.equalImplementations(ss1bt,list1bt) = true
-NativeContinuation.equalImplementations(ss2bt,list0bt) = false
+NativeContinuation.equalImplementations(ss2bt,list0bt) = true
 NativeContinuation.equalImplementations(ss2bt,list1bt) = false

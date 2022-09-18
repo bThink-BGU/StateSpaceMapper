@@ -117,7 +117,7 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
   }
 
   public MapperResult getResult() {
-    var dir = "bug-run" + 3;
+    var dir = LoadBug.dir;
     var states = Stream.concat(graph.keySet().stream(), graph.values().stream().flatMap(map -> map.keySet().stream())).distinct().collect(Collectors.toUnmodifiableList());
 
     var indexedStates = IntStream.range(0, states.size()).boxed().collect(Collectors.toUnmodifiableMap(states::get, Function.identity()));
@@ -148,23 +148,24 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
             !ss1.equals(ss2) &&
             states.stream().filter(s -> s.equals(ss1)).count() > 1
         ) {
-          var listSS1 = states.stream().filter(s -> s.equals(ss1)).collect(Collectors.toList());
-          System.out.println("listSS1.get(0).equals(listSS1.get(1)) = " + listSS1.get(0).equals(listSS1.get(1)));
-          System.out.println("listSS1.get(1).equals(listSS1.get(0)) = " + listSS1.get(1).equals(listSS1.get(0)));
-          BThreadSyncSnapshot list0bt = null;
-          BThreadSyncSnapshot list1bt = null;
-          BThreadSyncSnapshot ss1bt = null;
-          BThreadSyncSnapshot ss2bt = null;
-          for (var bt : listSS1.get(0).getBThreadSnapshots()) {
-            if (!listSS1.get(1).getBThreadSnapshots().contains(bt)) {
-              list0bt = bt;
-              list1bt = listSS1.get(1).getBThreadSnapshots().stream().filter(snapshot -> snapshot.getName().equals(bt.getName())).findFirst().get();
-              ss1bt = ss1.getBThreadSnapshots().stream().filter(snapshot -> snapshot.getName().equals(bt.getName())).findFirst().get();
-              ss2bt = ss2.getBThreadSnapshots().stream().filter(snapshot -> snapshot.getName().equals(bt.getName())).findFirst().get();
-            }
-          }
           try (FileWriter fileWriter = new FileWriter(dir + "/stdout.txt", false);
                PrintWriter out = new PrintWriter(fileWriter);) {
+            var listSS1 = states.stream().filter(s -> s.equals(ss1)).collect(Collectors.toList());
+            out.println("listSS1.get(0).equals(listSS1.get(1)) = " + listSS1.get(0).equals(listSS1.get(1)));
+            out.println("listSS1.get(1).equals(listSS1.get(0)) = " + listSS1.get(1).equals(listSS1.get(0)));
+            BThreadSyncSnapshot list0bt = null;
+            BThreadSyncSnapshot list1bt = null;
+            BThreadSyncSnapshot ss1bt = null;
+            BThreadSyncSnapshot ss2bt = null;
+            for (var bt : listSS1.get(0).getBThreadSnapshots()) {
+              if (!listSS1.get(1).getBThreadSnapshots().contains(bt)) {
+                list0bt = bt;
+                list1bt = listSS1.get(1).getBThreadSnapshots().stream().filter(snapshot -> snapshot.getName().equals(bt.getName())).findFirst().get();
+                ss1bt = ss1.getBThreadSnapshots().stream().filter(snapshot -> snapshot.getName().equals(bt.getName())).findFirst().get();
+                ss2bt = ss2.getBThreadSnapshots().stream().filter(snapshot -> snapshot.getName().equals(bt.getName())).findFirst().get();
+              }
+            }
+
             out.println("Name of conflicting b-thread: " + ss1bt.getName());
             out.println("NativeContinuation.equalImplementations(list0bt.getContinuation(),list1bt.getContinuation()) = " + NativeContinuation.equalImplementations(list0bt.getContinuation(), list1bt.getContinuation()));
             out.println("NativeContinuation.equalImplementations(ss1bt.getContinuation(),list0bt.getContinuation()) = " + NativeContinuation.equalImplementations(ss1bt.getContinuation(), list0bt.getContinuation()));
@@ -181,13 +182,12 @@ public class GenerateAllTracesInspection implements ExecutionTraceInspection {
             out.println("ss2.equals(listSS1.get(1)) = " + ss2.equals(listSS1.get(1)));
             out.flush();
             var bprog = ss1.getBProgram();
-            writeContinuation(bprog, ss1bt, dir+"/ss1bt.bin");
-            writeContinuation(bprog, ss2bt, dir+"/ss2bt.bin");
-            writeContinuation(bprog, list0bt, dir+"/list0bt.bin");
-            writeContinuation(bprog, list1bt, dir+"/list1bt.bin");
+            writeContinuation(bprog, ss1bt, dir + "/ss1bt.bin");
+            writeContinuation(bprog, ss2bt, dir + "/ss2bt.bin");
+            writeContinuation(bprog, list0bt, dir + "/list0bt.bin");
+            writeContinuation(bprog, list1bt, dir + "/list1bt.bin");
             System.out.println("found bug!");
             System.exit(1);
-//          }
           } catch (IOException e) {
             throw new RuntimeException(e);
           }

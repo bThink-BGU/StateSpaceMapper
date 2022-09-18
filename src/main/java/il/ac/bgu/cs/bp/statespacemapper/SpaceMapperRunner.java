@@ -23,10 +23,10 @@ public class SpaceMapperRunner {
   public static void main(String[] args) throws Exception {
     System.out.println("//start");
     var bprog = new ContextBProgram("HotCold/dal.js","HotCold/bl.js");
-    var runName = "hotcold";
+    var runName = "graph";
     StateSpaceMapper mpr = new StateSpaceMapper(runName);
     mpr.setGenerateTraces(true); // Generates a set of all possible traces.
-    mpr.setOutputPath("graphs");
+    mpr.setOutputPath(LoadBug.dir);
     if (useNeo4j) {
       try (var driver = GraphDatabase.driver("bolt://localhost:11002", AuthTokens.basic("neo4j", "StateMapper"))) {
         mpr.setNeo4jDriver(driver);
