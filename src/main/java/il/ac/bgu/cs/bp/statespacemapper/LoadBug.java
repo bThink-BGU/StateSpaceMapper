@@ -9,7 +9,7 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 
 public class LoadBug {
-  public static int id = 3;
+  public static int id = 4;
   public static String dir = "bug-run" + id;
 
   public static void main(String[] args) throws Exception {
