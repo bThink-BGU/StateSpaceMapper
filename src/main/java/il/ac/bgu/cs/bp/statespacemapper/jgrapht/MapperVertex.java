@@ -8,7 +8,7 @@ import java.util.Optional;
 public class MapperVertex {
   public final BProgramSyncSnapshot bpss;
   public final boolean startVertex;
-  public final boolean accepting;
+  public boolean accepting;
 
   public MapperVertex(BProgramSyncSnapshot bpss) {
     this(bpss, false, false);

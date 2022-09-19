@@ -4,17 +4,19 @@ import il.ac.bgu.cs.bp.bpjs.model.StringBProgram;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.Exporter;
 import org.jgrapht.Graphs;
 import org.jgrapht.nio.DefaultAttribute;
+import org.svvrl.goal.core.aut.fsa.Equivalence;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.stream.Collectors;
 
 public class Bug2Detector extends SpaceMapperCliRunner {
-  private static final int MAX_ROUNDS = 20;
+  private static final int MAX_ROUNDS = 1;
   private String code = "";
 
   public static void main(String[] args) throws Exception {
@@ -83,6 +85,7 @@ public class Bug2Detector extends SpaceMapperCliRunner {
     exporter.setVertexAttributeProvider(vertex -> {
       var map = vA.apply(vertex);
       boolean accepting = !Graphs.vertexHasSuccessors(res.graph, vertex);
+      vertex.accepting = accepting;
       map.put("accepting", DefaultAttribute.createAttribute(accepting));
       map.put("shape", DefaultAttribute.createAttribute(accepting ? "doublecircle" : "circle"));
       map.put("label", DefaultAttribute.createAttribute(""));
@@ -160,6 +163,15 @@ public class Bug2Detector extends SpaceMapperCliRunner {
           removeObjectParent.name(), syncFoo.name(),
           helperType.name(), dataDeclaration.name(), resetData.name(), dataType.name(),
           code);
+    }
+
+    public String toStringNoCode() {
+      return MessageFormat.format("{0},{1},{2},{3},{4},{5},\"{6}\",\"{7}\",\"{8}\",\"{9}\",\"{10}\",\"{11}\",\"{12}\",\"{13}\",",
+          iteration, round, states, events, transitions, accepting,
+          funcName.name(), funcBody.name(),
+          removeObjectParent.name(), syncFoo.name(),
+          helperType.name(), dataDeclaration.name(), resetData.name(), dataType.name()
+      );
     }
   }
 
@@ -264,8 +276,8 @@ public class Bug2Detector extends SpaceMapperCliRunner {
       this.value = value;
     }
 
-    public String replace(String code) {
-      return code.replace("%%reset-data%%\n", Bug2Detector.format(value ? "data = null;" : "", 2));
+    public String replace(String code, DataDeclaration dataDeclaration) {
+      return code.replace("%%reset-data%%\n", Bug2Detector.format(value ? dataDeclaration == DataDeclaration.insideWhile ? "delete data;" : "data = null;" : "", 2));
     }
   }
 
@@ -300,15 +312,21 @@ public class Bug2Detector extends SpaceMapperCliRunner {
   public static void run2() throws Exception {
     String template = getResourceFileAsString("test.js");
     var iteration = 0;
-    try (var out = new PrintStream("exports/test.csv")) {
-      out.println(Stats.header());
-      for (var funcName : FuncName.values()) {
-        for (var funcBody : FuncBody.values()) {
-          for (var syncFoo : SyncFoo.values()) {
+    try (var out1 = new PrintStream("exports/test.csv");
+         var out2 = new PrintStream("exports/test.txt")) {
+      out1.println(Stats.header());
+      for (var funcBody : FuncBody.values()) {
+        for (var syncFoo : SyncFoo.values()) {
+          var list = new ArrayList<Stats>();
+          for (var funcName : FuncName.values()) {
             for (var removeObjectParent : RemoveObjectParent.values()) {
               for (var helperType : HelperType.values()) {
                 for (var dataDeclaration : DataDeclaration.values()) {
                   for (var resetData : ResetData.values()) {
+                    if ((dataDeclaration == DataDeclaration.beforeWhile || dataDeclaration == DataDeclaration.insideWhile) && resetData == ResetData.False) {
+                      // When checking semantics - no need to check this combination because it makes no sense
+                      continue;
+                    }
                     if (dataDeclaration == DataDeclaration.none && resetData == ResetData.True) {
                       // We need only once since there is no data variable
                       continue;
@@ -327,12 +345,12 @@ public class Bug2Detector extends SpaceMapperCliRunner {
                       code = helperType.replace(code, dataDeclaration);
                       code = dataDeclaration.replace(code);
                       code = dataType.replace(code);
-                      code = resetData.replace(code);
+                      code = resetData.replace(code, dataDeclaration);
 
                       System.out.println("**** iteration: " + iteration + "****");
                       System.out.println("**** code ****\n" + code + "\n\n\n");
                       for (int round = 0; round < MAX_ROUNDS; round++) {
-                        runOnce(out, iteration, round, funcName, funcBody, syncFoo, removeObjectParent, helperType, dataDeclaration, resetData, dataType, code);
+                        list.add(runOnce(out1, iteration, round, funcName, funcBody, syncFoo, removeObjectParent, helperType, dataDeclaration, resetData, dataType, code));
                       }
                       iteration++;
                     }
@@ -341,22 +359,39 @@ public class Bug2Detector extends SpaceMapperCliRunner {
               }
             }
           }
+          for (int i = 1; i < list.size(); i++) {
+            var first = list.get(0);
+            var fsaFirst = GoalEqualCheck.getFSA(first.iteration, first.round);
+            var second = list.get(i);
+            var fsaSecond = GoalEqualCheck.getFSA(second.iteration, second.round);
+            var eq = new Equivalence();
+            boolean found = false;
+            if (first.states != second.states || first.transitions != second.transitions) {
+              out2.println("states/transitions:\n" + first.toStringNoCode() + "\n" + second.toStringNoCode());
+              found = true;
+            }
+            if (!eq.isEquivalent(fsaFirst, fsaSecond).isEquivalent()) {
+              out2.println("equivalence:\n" + first.toStringNoCode() + "\n" + second.toStringNoCode());
+              found = true;
+            }
+            if (found) out2.println();
+          }
         }
       }
     }
   }
 
-  private static void runOnce(PrintStream out, Stats stats) throws Exception {
-    runOnce(out, stats.iteration, stats.round,
+  private static Stats runOnce(PrintStream out, Stats stats) throws Exception {
+    return runOnce(out, stats.iteration, stats.round,
         stats.funcName, stats.funcBody, stats.syncFoo,
         stats.removeObjectParent, stats.helperType,
         stats.dataDeclaration, stats.resetData, stats.dataType, stats.code);
   }
 
-  private static void runOnce(PrintStream out, int iteration, int round,
-                              FuncName funcName, FuncBody funcBody, SyncFoo syncFoo,
-                              RemoveObjectParent removeObjectParent, HelperType helperType,
-                              DataDeclaration dataDeclaration, ResetData resetData, DataType dataType, String code) throws Exception {
+  private static Stats runOnce(PrintStream out, int iteration, int round,
+                               FuncName funcName, FuncBody funcBody, SyncFoo syncFoo,
+                               RemoveObjectParent removeObjectParent, HelperType helperType,
+                               DataDeclaration dataDeclaration, ResetData resetData, DataType dataType, String code) throws Exception {
     var runner = new Bug2Detector();
     runner.code = code;
     var bprog = new StringBProgram(code);
@@ -366,11 +401,13 @@ public class Bug2Detector extends SpaceMapperCliRunner {
 
     MapperResult res = runner.mapSpace(bprog);
     runner.exportSpace(runName, res);
-    out.println(new Stats(iteration, round, res.states().size(), res.events.size(), res.edges().size(),
+    var stats = new Stats(iteration, round, res.states().size(), res.events.size(), res.edges().size(),
         (int) res.states().stream().map(vertex -> !Graphs.vertexHasSuccessors(res.graph, vertex)).filter(v -> v).count(),
         funcName, funcBody,
         removeObjectParent, syncFoo,
         helperType, dataDeclaration, resetData, dataType,
-        runner.code));
+        runner.code);
+    out.println(stats);
+    return stats;
   }
 }
