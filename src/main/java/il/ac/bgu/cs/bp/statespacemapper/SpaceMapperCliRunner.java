@@ -109,10 +109,14 @@ public class SpaceMapperCliRunner {
     var outputDir = "exports";
 
     System.out.println("// Export to GraphViz...");
-    var path = Paths.get(outputDir, runName + ".dot").toString();
-    var dotExporter = new DotExporter(res, path, runName);
+    var pathD = Paths.get(outputDir, runName + ".dot").toString();
+    var pathG = Paths.get(outputDir, runName + ".gff").toString();
+    var dotExporter = new DotExporter(res, pathD, runName);
+    var goalExporter = new GoalExporter(res, pathG, runName);
     setExporterProviders(dotExporter, runName, res);
+    setExporterProviders(goalExporter, runName, res);
     dotExporter.export();
+    goalExporter.export();
 
     /*System.out.println("// Export to JSON...");
     path = Paths.get(outputDir, runName + ".json").toString();
