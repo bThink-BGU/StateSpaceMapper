@@ -19,7 +19,16 @@ public class Bug2Detector extends SpaceMapperCliRunner {
 
   public static void main(String[] args) throws Exception {
     Files.createDirectories(Path.of("exports"));
-    run2();
+    if (args.length == 0)
+      run2();
+    else {
+      String template = getResourceFileAsString(args[0]);
+      var stats = new Stats(template.substring(1, template.length() - 1).split("\\$"));
+      try (var out = new PrintStream("exports/test-eval.csv")) {
+        out.println(Stats.header());
+        runOnce(out, stats);
+      }
+    }
   }
 
   static String format(String str, int numberOfTabs) {
@@ -119,6 +128,26 @@ public class Bug2Detector extends SpaceMapperCliRunner {
       this.code = code;
     }
 
+    private Stats(String[] args) {
+      this(
+          Integer.parseInt(args[0]),
+          Integer.parseInt(args[1]),
+          Integer.parseInt(args[2]),
+          Integer.parseInt(args[3]),
+          Integer.parseInt(args[4]),
+          Integer.parseInt(args[5]),
+          FuncName.valueOf(args[6]),
+          FuncBody.valueOf(args[7]),
+          Boolean.parseBoolean(args[8]) ? RemoveObjectParent.True : RemoveObjectParent.False,
+          Boolean.parseBoolean(args[9]) ? SyncFoo.True : SyncFoo.False,
+          HelperType.valueOf(args[10]),
+          DataDeclaration.valueOf(args[11]),
+          Boolean.parseBoolean(args[12]) ? ResetData.True : ResetData.False,
+          DataType.valueOf(args[13]),
+          args[14]
+      );
+    }
+
     public static String header() {
       return "Iteration,Round,States,Events,Transitions,Accepting,FuncName,FuncBody,RemoveObjectParent,SyncFoo,HelperType,DataDeclaration,ResetData,DataType,Code";
     }
@@ -129,7 +158,7 @@ public class Bug2Detector extends SpaceMapperCliRunner {
           iteration, round, states, events, transitions, accepting,
           funcName.name(), funcBody.name(),
           removeObjectParent.name(), syncFoo.name(),
-          helperType.name(), dataDeclaration.name(), resetData.name(),dataType.name(),
+          helperType.name(), dataDeclaration.name(), resetData.name(), dataType.name(),
           code);
     }
   }
@@ -300,24 +329,10 @@ public class Bug2Detector extends SpaceMapperCliRunner {
                       code = dataType.replace(code);
                       code = resetData.replace(code);
 
-                      var runner = new Bug2Detector();
-                      runner.code = code;
                       System.out.println("**** iteration: " + iteration + "****");
-                      System.out.println("**** code ****\n" + runner.code + "\n\n\n");
+                      System.out.println("**** code ****\n" + code + "\n\n\n");
                       for (int round = 0; round < MAX_ROUNDS; round++) {
-                        var bprog = new StringBProgram(code);
-                        var runName = "test_" + iteration + "_" + round;
-                        bprog.setName(runName);
-                        System.out.println("// start");
-
-                        MapperResult res = runner.mapSpace(bprog);
-                        runner.exportSpace(runName, res);
-                        out.println(new Stats(iteration, round, res.states().size(), res.events.size(), res.edges().size(),
-                            (int) res.states().stream().map(vertex -> !Graphs.vertexHasSuccessors(res.graph, vertex)).filter(v -> v).count(),
-                            funcName, funcBody,
-                            removeObjectParent, syncFoo,
-                            helperType, dataDeclaration, resetData, dataType,
-                            runner.code));
+                        runOnce(out, iteration, round, funcName, funcBody, syncFoo, removeObjectParent, helperType, dataDeclaration, resetData, dataType, code);
                       }
                       iteration++;
                     }
@@ -329,5 +344,33 @@ public class Bug2Detector extends SpaceMapperCliRunner {
         }
       }
     }
+  }
+
+  private static void runOnce(PrintStream out, Stats stats) throws Exception {
+    runOnce(out, stats.iteration, stats.round,
+        stats.funcName, stats.funcBody, stats.syncFoo,
+        stats.removeObjectParent, stats.helperType,
+        stats.dataDeclaration, stats.resetData, stats.dataType, stats.code);
+  }
+
+  private static void runOnce(PrintStream out, int iteration, int round,
+                              FuncName funcName, FuncBody funcBody, SyncFoo syncFoo,
+                              RemoveObjectParent removeObjectParent, HelperType helperType,
+                              DataDeclaration dataDeclaration, ResetData resetData, DataType dataType, String code) throws Exception {
+    var runner = new Bug2Detector();
+    runner.code = code;
+    var bprog = new StringBProgram(code);
+    var runName = "test_" + iteration + "_" + round;
+    bprog.setName(runName);
+    System.out.println("// start");
+
+    MapperResult res = runner.mapSpace(bprog);
+    runner.exportSpace(runName, res);
+    out.println(new Stats(iteration, round, res.states().size(), res.events.size(), res.edges().size(),
+        (int) res.states().stream().map(vertex -> !Graphs.vertexHasSuccessors(res.graph, vertex)).filter(v -> v).count(),
+        funcName, funcBody,
+        removeObjectParent, syncFoo,
+        helperType, dataDeclaration, resetData, dataType,
+        runner.code));
   }
 }
