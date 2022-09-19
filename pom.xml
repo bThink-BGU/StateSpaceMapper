@@ -15,6 +15,10 @@
     </properties>
     <repositories>
         <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+        <repository>
             <id>StateMapperRepo</id>
             <url>https://github.com/bThink-BGU/StateSpaceMapper/raw/repository</url>
             <releases>
@@ -30,8 +34,20 @@
             <groupId>com.github.bthink-bgu</groupId>
             <artifactId>BPjs</artifactId>
 <!--            <version>0.12.1-modified-0.2</version>-->
-            <version>0.12.2</version>
+            <version>0.12.3</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.mozilla</groupId>
+                    <artifactId>rhino</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
+        <dependency>
+            <groupId>com.github.szegedi</groupId>
+            <artifactId>rhino</artifactId>
+            <version>equal-graphs-values-SNAPSHOT</version>
+        </dependency>
+
         <dependency>
             <groupId>org.jgrapht</groupId>
             <artifactId>jgrapht-core</artifactId>
