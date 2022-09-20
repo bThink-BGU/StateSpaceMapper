@@ -323,7 +323,7 @@ public class Bug2Detector extends SpaceMapperCliRunner {
               for (var helperType : HelperType.values()) {
                 for (var dataDeclaration : DataDeclaration.values()) {
                   for (var resetData : ResetData.values()) {
-                    if ((dataDeclaration == DataDeclaration.beforeWhile || dataDeclaration == DataDeclaration.insideWhile) && resetData == ResetData.False) {
+                    if ((dataDeclaration == DataDeclaration.beforeWhile/* || dataDeclaration == DataDeclaration.insideWhile*/) && resetData == ResetData.False) {
                       // When checking semantics - no need to check this combination because it makes no sense
                       continue;
                     }
