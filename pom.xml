@@ -23,13 +23,30 @@
                 <checksumPolicy>ignore</checksumPolicy>
             </releases>
         </repository>
+        <!-- Patch for Atilla's code-->
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
     </repositories>
     <dependencies>
-             <!-- A patched BPjs version to overcome the equals bug -->
         <dependency>
             <groupId>com.github.bthink-bgu</groupId>
             <artifactId>BPjs</artifactId>
-            <version>0.12.1-modified-0.2</version>
+            <version>0.12.3</version>
+            <!-- Patch for Atilla's code-->
+            <exclusions>
+                <exclusion>
+                    <groupId>org.mozilla</groupId>
+                    <artifactId>rhino</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- Patch for Atilla's code-->
+        <dependency>
+            <groupId>com.github.szegedi</groupId>
+            <artifactId>rhino</artifactId>
+            <version>equal-graphs-values-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.jgrapht</groupId>

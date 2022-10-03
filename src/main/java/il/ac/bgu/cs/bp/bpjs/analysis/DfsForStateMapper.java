@@ -376,8 +376,9 @@ public class DfsForStateMapper extends DfsBProgramVerifier {
     this.debugMode = debugMode;
   }
 
-  public void addInspection( ExecutionTraceInspection ins ) {
+  public ExecutionTraceInspection addInspection(ExecutionTraceInspection ins ) {
     inspections.add(ins);
+    return ins;
   }
 
   public Set<ExecutionTraceInspection> getInspections() {
