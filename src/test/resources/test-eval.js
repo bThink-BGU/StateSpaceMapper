@@ -1,4 +1,4 @@
-"0$0$18$5$33$1$func$oneLine$TRUE$TRUE$global$none$FALSE$var$/* global bp, Packages, EventSets , Set, java*/ // <-- Turn off warnings
+"111$0$13$4$16$2$func$oneLine$FALSE$FALSE$global$insideWhile$FALSE$let$/* global bp, Packages, EventSets , Set, java*/ // <-- Turn off warnings
 importPackage(Packages.il.ac.bgu.cs.bp.statespacemapper)
 
 function Any(name) {
@@ -14,36 +14,24 @@ function globalWhenHelper(d, f) {
 }
 
 function login(data) {
-  SpaceMapperCliRunner.removeParent.accept(data);
   bp.sync({ request: bp.Event('Login', data) });
 }
 
 function addToCart(data) {
-  SpaceMapperCliRunner.removeParent.accept(data);
   bp.sync({ request: bp.Event('AddToCart', data) })
 }
 
-function checkOut(data) {
-  SpaceMapperCliRunner.removeParent.accept(data);
-  bp.sync({ request: bp.Event('CheckOut', data) })
+function func (e) {
+  addToCart({ s: e.s });
 }
 
-const func = function(e) {
-  addToCart({ s: e.s });
-};
-
-const when = function (eventSet, f) {
-  const innerWhenHelper = function(d) {
-    bp.registerBThread('when helper', function () {
-      f(d);
-    });
-  };
+function when (eventSet, f) {
   while (true) {
-    bp.sync({ request: bp.Event('foo') });
-    globalWhenHelper(bp.sync({ waitFor: eventSet }).data, f);
-
+    let e = bp.sync({ waitFor: eventSet });
+    let data = e.data
+    globalWhenHelper(data, f);
   }
-};
+}
 
 bp.registerBThread('C1 Login story', function () {
   login({ s: 'C1' })
