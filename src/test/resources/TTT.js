@@ -131,7 +131,7 @@ function addBlockForkBThread(X,O) {
 }
 
 function addWinForkBThread(X,O) {
-  bp.registerBThread('PreventFork', function () {
+  bp.registerBThread('WinFork', function () {
     bp.sync({ waitFor: X })
     bp.sync({ waitFor: X })
     bp.sync({ request: O }, 34)

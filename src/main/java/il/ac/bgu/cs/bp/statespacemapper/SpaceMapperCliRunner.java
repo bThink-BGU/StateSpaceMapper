@@ -3,13 +3,12 @@ package il.ac.bgu.cs.bp.statespacemapper;
 import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgram;
 import il.ac.bgu.cs.bp.bpjs.model.ResourceBProgram;
-import il.ac.bgu.cs.bp.statespacemapper.jgrapht.MapperEdge;
+import il.ac.bgu.cs.bp.bpjs.model.eventselection.PrioritizedBSyncEventSelectionStrategy;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.DotExporter;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.Exporter;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.GoalExporter;
 import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.JsonExporter;
 import org.jgrapht.GraphPath;
-import org.jgrapht.nio.DefaultAttribute;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.EvaluatorException;
 import org.mozilla.javascript.Scriptable;
@@ -27,8 +26,6 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import static java.util.stream.Collectors.joining;
-
 public class SpaceMapperCliRunner {
   public void run(String[] args) throws Exception {
     if (args.length == 0) {
@@ -43,8 +40,8 @@ public class SpaceMapperCliRunner {
     System.out.println("// start");
 
     // You can use a different EventSelectionStrategy, for example:
-    /* var ess = new PrioritizedBSyncEventSelectionStrategy();
-    bprog.setEventSelectionStrategy(ess); */
+    var ess = new PrioritizedBSyncEventSelectionStrategy();
+    bprog.setEventSelectionStrategy(ess);
 
     MapperResult res = mapSpace(bprog);
 
@@ -102,7 +99,7 @@ public class SpaceMapperCliRunner {
     return res;
   }
 
-  public static BProgram getBProgram(String[] args) {
+  public BProgram getBProgram(String[] args) {
     BProgram bprog = null;
     try {
       bprog = new ResourceBProgram(args);
