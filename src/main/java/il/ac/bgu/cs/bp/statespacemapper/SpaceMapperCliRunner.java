@@ -58,6 +58,9 @@ public class SpaceMapperCliRunner {
   }
 
   protected void setExporterProviders(Exporter exporter, String runName, MapperResult res) {
+    // Add verbose attributes to the graph (e.g., bthreads, statements, hashcodes, etc.)
+    // exporter.setVerbose(true);
+
     // exporter parameters can be changed. For example:
     /*exporter.setVertexAttributeProvider(v ->
         Map.of("hash", DefaultAttribute.createAttribute(v.hashCode()))

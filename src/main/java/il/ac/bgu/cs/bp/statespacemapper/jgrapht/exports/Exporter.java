@@ -36,6 +36,7 @@ public class Exporter {
   private Function<MapperEdge, Map<String, Attribute>> edgeAttributeProvider;
   private Supplier<Map<String, Attribute>> graphAttributeProvider;
   private Function<String, String> sanitizerProvider;
+  private boolean verbose = false;
 
   public Exporter(MapperResult res, String path, String runName,
                   BaseExporter<MapperVertex, MapperEdge> exporter) {
@@ -47,7 +48,7 @@ public class Exporter {
     this.edgeAttributeProvider = edgeAttributeProvider();
     this.graphAttributeProvider = graphAttributeProvider();
     this.sanitizerProvider = sanitizerProvider();
-    this.exporter.setVertexIdProvider(v-> String.valueOf(res.vertexMapper.get(v)));
+    this.exporter.setVertexIdProvider(v -> String.valueOf(res.vertexMapper.get(v)));
   }
 
   public void setVertexAttributeProvider(Function<MapperVertex, Map<String, Attribute>> vertexAttributeProvider) {
@@ -88,12 +89,13 @@ public class Exporter {
     exporter.setGraphAttributeProvider(this.graphAttributeProvider);
     Files.createDirectories(Paths.get(path).getParent());
     try (var out = new PrintStream(path)) {
-      ((GraphExporter<MapperVertex, MapperEdge>)exporter).exportGraph(res.graph, out);
+      ((GraphExporter<MapperVertex, MapperEdge>) exporter).exportGraph(res.graph, out);
     }
   }
 
   protected Function<MapperVertex, Map<String, Attribute>> vertexAttributeProvider() {
-    return v -> new HashMap<>(Map.of(
+    if (verbose) {
+      return v -> new HashMap<>(Map.of(
         "id", DefaultAttribute.createAttribute(res.vertexMapper.get(v)),
         "hash", DefaultAttribute.createAttribute(v.hashCode()),
         "store", DefaultAttribute.createAttribute(sanitizerProvider.apply(getStore(v.bpss))),
@@ -101,26 +103,41 @@ public class Exporter {
         "bthreads", DefaultAttribute.createAttribute(sanitizerProvider.apply(getBThreads(v.bpss))),
         "start", DefaultAttribute.createAttribute(v.startVertex),
         "accepting", DefaultAttribute.createAttribute(v.accepting)
-    ));
+      ));
+    } else {
+      return v -> new HashMap<>(Map.of(
+        "id", DefaultAttribute.createAttribute(res.vertexMapper.get(v))
+      ));
+    }
   }
 
   protected Supplier<Map<String, Attribute>> graphAttributeProvider() {
     return () -> new HashMap<>(Map.of(
-        "name", DefaultAttribute.createAttribute("\"" + sanitizerProvider.apply(runName) + "\""),
-        "run_date", DefaultAttribute.createAttribute("\"" + DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now()) + "\""),
-        "num_of_vertices", DefaultAttribute.createAttribute(res.states().size()),
-        "num_of_edges", DefaultAttribute.createAttribute(res.edges().size()),
-        "num_of_events", DefaultAttribute.createAttribute(res.events.size())
+      "name", DefaultAttribute.createAttribute("\"" + sanitizerProvider.apply(runName) + "\""),
+      "run_date", DefaultAttribute.createAttribute("\"" + DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now()) + "\""),
+      "num_of_vertices", DefaultAttribute.createAttribute(res.states().size()),
+      "num_of_edges", DefaultAttribute.createAttribute(res.edges().size()),
+      "num_of_events", DefaultAttribute.createAttribute(res.events.size())
     ));
   }
 
   protected Function<MapperEdge, Map<String, Attribute>> edgeAttributeProvider() {
-    return e -> new HashMap<>(Map.of(
-        "label", DefaultAttribute.createAttribute(sanitizerProvider.apply(e.event.toString())),
+    if (verbose) {
+      return e -> new HashMap<>(Map.of(
+        "label", DefaultAttribute.createAttribute(sanitizerProvider.apply(eventToString(e.event))),
         "Event", DefaultAttribute.createAttribute(sanitizerProvider.apply(e.event.toString())),
         "Event_name", DefaultAttribute.createAttribute(sanitizerProvider.apply(e.event.name)),
         "Event_value", DefaultAttribute.createAttribute(sanitizerProvider.apply(Objects.toString(e.event.maybeData)))
-    ));
+      ));
+    } else {
+      return e -> new HashMap<>(Map.of(
+        "label", DefaultAttribute.createAttribute(sanitizerProvider.apply(eventToString(e.event)))
+      ));
+    }
+  }
+
+  protected String eventToString(BEvent event) {
+    return event.name + event.getDataField().map(v -> " (" + ScriptableUtils.stringify(event.maybeData)).orElse("");
   }
 
 
@@ -130,30 +147,39 @@ public class Exporter {
 
   protected Function<String, String> sanitizerProvider() {
     return in -> in
-        .replace("\r\n", "")
-        .replace("\n", "")
-        .replace("\"", "'")
-        .replace("JS_Obj ", "");
+      .replace("\r\n", "")
+      .replace("\n", "")
+      .replace("\"", "'")
+      .replace("JS_Obj ", "");
   }
 
   protected String getStore(BProgramSyncSnapshot bpss) {
     return bpss.getDataStore().entrySet().stream()
-        .map(entry -> "{" + ScriptableUtils.stringify(entry.getKey()) + "," + ScriptableUtils.stringify(entry.getValue()) + "}")
-        .collect(joining(",", "[", "]"));
+      .map(entry -> "{" + ScriptableUtils.stringify(entry.getKey()) + "," + ScriptableUtils.stringify(entry.getValue()) + "}")
+      .collect(joining(",", "[", "]"));
   }
 
   protected String getStatments(BProgramSyncSnapshot bpss) {
     return bpss.getBThreadSnapshots().stream()
-        .map(btss -> {
-          SyncStatement syst = btss.getSyncStatement();
-          return
-              "{name: " + btss.getName() + ", " +
-                  "isHot: " + syst.isHot() + ", " +
-                  "request: " + syst.getRequest().stream().map(BEvent::toString).collect(joining(",", "[", "]")) + ", " +
-                  "waitFor: " + syst.getWaitFor().toString() + ", " +
-                  "block: " + syst.getBlock().toString() + ", " +
-                  "interrupt: " + syst.getInterrupt().toString() + "}";
-        })
-        .collect(joining(",\n", "[", "]"));
+      .map(btss -> {
+        SyncStatement syst = btss.getSyncStatement();
+        return
+          "{name: " + btss.getName() + ", " +
+            "isHot: " + syst.isHot() + ", " +
+            "request: " + syst.getRequest().stream().map(BEvent::toString).collect(joining(",", "[", "]")) + ", " +
+            "waitFor: " + syst.getWaitFor().toString() + ", " +
+            "block: " + syst.getBlock().toString() + ", " +
+            "interrupt: " + syst.getInterrupt().toString() + "}";
+      })
+      .collect(joining(",\n", "[", "]"));
+  }
+
+  /**
+   * Set verbose mode. In verbose mode, the exporter will add more information to the exported graph.
+   * Specifically, it will add the following attributes to the vertices: hash, store, statements, bthreads, start, accepting
+   * and the following attributes to the edges: Event, Event_name, Event_value
+   */
+  public void setVerbose(boolean verbose) {
+    this.verbose = verbose;
   }
 }
