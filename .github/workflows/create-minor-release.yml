@@ -51,7 +51,7 @@ jobs:
           git add .
           git commit -m "raise version"
           git push
-          echo "$(git rev-parse --short HEAD"
+          echo "$(git rev-parse --short HEAD)"
           
       - name: Set SHA version
         id: vars
