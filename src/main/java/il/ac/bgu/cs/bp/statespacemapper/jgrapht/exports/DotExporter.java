@@ -6,14 +6,13 @@ import org.jgrapht.nio.Attribute;
 import org.jgrapht.nio.DefaultAttribute;
 import org.jgrapht.nio.dot.DOTExporter;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class DotExporter extends Exporter {
-  public DotExporter(MapperResult res, String path, String runName) {
-    super(res, path, runName, new DOTExporter<>());
+  public DotExporter(MapperResult res) {
+    super("GraphViz", ".dot", res, new DOTExporter<>());
   }
 
   @Override
@@ -26,6 +25,8 @@ public class DotExporter extends Exporter {
         map.put("shape", DefaultAttribute.createAttribute("circle"));
       } else if(v.accepting) {
         map.put("shape", DefaultAttribute.createAttribute("doublecircle"));
+      } else {
+        map.put("shape", DefaultAttribute.createAttribute("point"));
       }
       return map;
     };

@@ -10,7 +10,6 @@ import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
 import org.jgrapht.Graphs;
 import org.jgrapht.graph.AbstractBaseGraph;
-import org.jgrapht.nio.Attribute;
 import org.jgrapht.nio.DefaultAttribute;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.EvaluatorException;
@@ -74,16 +73,16 @@ public class PerBTSpaceMapperRunner {
 
     System.out.println("// Export to JSON...");
     var path = Paths.get(outputDir, runName + ".json").toString();
-    var jsonExporter = new JsonExporter(res, path, runName);
+    var jsonExporter = new JsonExporter(res);
     setExporterProviders(res, jsonExporter);
-    jsonExporter.export();
+    jsonExporter.export(path, runName);
 
 
     System.out.println("// Export to GraphViz...");
     path = Paths.get(outputDir, runName + ".dot").toString();
-    var dotExporter = new DotExporter(res, path, runName);
+    var dotExporter = new DotExporter(res);
     setExporterProviders(res, dotExporter);
-    dotExporter.export();
+    dotExporter.export(path, runName);
   }
 
   public static void setExporterProviders(MapperResult res, Exporter exporter) {
@@ -117,9 +116,9 @@ public class PerBTSpaceMapperRunner {
 
   public static MapperResult mapSpace(BProgram bprog) throws Exception {
     System.out.println("// Start mapping space");
-    var mpr = new StateSpaceMapper();
+    var mpr = new StateSpaceMapper(bprog);
     // the maximal trace length can be limited: mpr.setMaxTraceLength(50);
-    var res = mpr.mapSpace(bprog);
+    var res = mpr.mapSpace();
 
     System.out.println("// completed mapping the states graph");
     System.out.println(res.toString());

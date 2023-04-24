@@ -109,7 +109,7 @@ public class LevelCrossingMain {
     final BProgram bprog = new ResourceBProgram(filename);
     bprog.putInGlobalScope("n", railways);
     logger.info("// Start mapping the states graph");
-    MapperResult res = new StateSpaceMapper().mapSpace(bprog);
+    MapperResult res = new StateSpaceMapper(bprog).mapSpace();
     logger.info("// Completed mapping the states graph");
     logger.info(res.toString());
     logger.info("-------------\n");
@@ -169,7 +169,7 @@ public class LevelCrossingMain {
   private static void exportGraph(String outputDir, String runName, MapperResult res) throws IOException {
     logger.info("// Export to GraphViz...");
     var path = Paths.get(outputDir, runName + ".dot").toString();
-    var exporter = new DotExporter(res, path, runName);
+    var exporter = new DotExporter(res);
     var vertexProvider = exporter.getVertexAttributeProvider();
     exporter.setVertexAttributeProvider(v -> {
       var map = vertexProvider.apply(v);
@@ -181,7 +181,7 @@ public class LevelCrossingMain {
     exporter.setEdgeAttributeProvider(v -> Map.of(
         "label", DefaultAttribute.createAttribute(v.event.name)
     ));
-    exporter.export();
+    exporter.export(path, runName);
   }
 
   private static void printJVMStats() {

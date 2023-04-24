@@ -43,63 +43,18 @@ public class SpaceMapperCliRunner {
     var ess = new PrioritizedBSyncEventSelectionStrategy();
     bprog.setEventSelectionStrategy(ess);
 
-    MapperResult res = mapSpace(bprog);
-
-    exportSpace(runName, res);
+    var mapper = new StateSpaceMapper(bprog, runName);
+    mapper.mapSpace();
+    mapper.exportSpace();
 
 //    WARNING: May take extremely long time and may generate extremely large files
-//    writeCompressedPaths(runName + ".csv", null, res, "exports");
+//    mapper.writeCompressedPaths();
 
     System.out.println("// done");
   }
 
   public static void main(String[] args) throws Exception {
     new SpaceMapperCliRunner().run(args);
-  }
-
-  protected void setExporterProviders(Exporter exporter, String runName, MapperResult res) {
-    // Add verbose attributes to the graph (e.g., bthreads, statements, hashcodes, etc.)
-    // exporter.setVerbose(true);
-
-    // exporter parameters can be changed. For example:
-    /*exporter.setVertexAttributeProvider(v ->
-        Map.of("hash", DefaultAttribute.createAttribute(v.hashCode()))
-    );*/
-    // See DotExporter for another option that uses the base provider.
-  }
-
-  public void exportSpace(String runName, MapperResult res) throws IOException {
-    var outputDir = "exports";
-
-    System.out.println("// Export to GraphViz...");
-    var path = Paths.get(outputDir, runName + ".dot").toString();
-    var dotExporter = new DotExporter(res, path, runName);
-    setExporterProviders(dotExporter, runName, res);
-    dotExporter.export();
-
-    System.out.println("// Export to JSON...");
-    path = Paths.get(outputDir, runName + ".json").toString();
-    var jsonExporter = new JsonExporter(res, path, runName);
-    setExporterProviders(jsonExporter, runName, res);
-    jsonExporter.export();
-
-    System.out.println("// Export to GOAL...");
-    boolean simplifyTransitions = true;
-    path = Paths.get(outputDir, runName + ".gff").toString();
-    var goalExporter = new GoalExporter(res, path, runName, simplifyTransitions);
-    setExporterProviders(goalExporter, runName, res);
-    goalExporter.export();
-  }
-
-  public MapperResult mapSpace(BProgram bprog) throws Exception {
-    System.out.println("// Start mapping space");
-    var mpr = new StateSpaceMapper();
-    // the maximal trace length can be limited: mpr.setMaxTraceLength(50);
-    var res = mpr.mapSpace(bprog);
-
-    System.out.println("// completed mapping the states graph");
-    System.out.println(res.toString());
-    return res;
   }
 
   public BProgram getBProgram(String[] args) {
@@ -198,48 +153,6 @@ public class SpaceMapperCliRunner {
     System.out.println("EventPath2 = " + eventPaths2);
 
     System.out.println("ep1==ep2: " + (eventPaths1.equals(eventPaths2)));
-  }
-
-  /**
-   * Generate all paths and write them to a zip file containing a csv file with the paths.
-   * See {@link il.ac.bgu.cs.bp.statespacemapper.jgrapht.AllDirectedPaths} for all the possible algorithm configurations.
-   */
-  public void writeCompressedPaths(String csvFileName, Integer maxPathLength, MapperResult res, String outputDir) throws IOException {
-    System.out.println("// Generating paths...");
-    var allDirectedPathsAlgorithm = res.createAllDirectedPathsBuilder()
-        .setSimplePathsOnly(maxPathLength == null)
-        .setIncludeReturningEdgesInSimplePaths(maxPathLength == null)
-        .setLongestPathsOnly(false)
-        .setMaxPathLength(maxPathLength)
-        .build();
-    var graphPaths = allDirectedPathsAlgorithm.getAllPaths();
-
-    int maxLength = graphPaths.parallelStream().map(GraphPath::getLength).max(Integer::compareTo).orElse(0);
-    System.out.println("// Number of paths = " + graphPaths.size());
-    System.out.println("// Max path length = " + maxLength);
-
-    System.out.println("// Writing paths...");
-    try (var fos = new FileOutputStream(Paths.get(outputDir, csvFileName) + ".zip");
-         var zipOut = new ZipOutputStream(fos)) {
-      var zipEntry = new ZipEntry(csvFileName);
-      zipOut.putNextEntry(zipEntry);
-      zipOut.setLevel(9);
-      MapperResult.GraphPaths2BEventPaths(graphPaths)
-          .parallelStream()
-          .map(l -> l.stream()
-              .map(BEvent::getName)
-//            .filter(s -> !List.of("KeepDown", "ClosingRequest", "OpeningRequest").contains(s))
-              .collect(Collectors.joining(",", "", "\n")))
-          .distinct()
-          .sorted()
-          .forEachOrdered(s -> {
-            try {
-              zipOut.write(s.getBytes(StandardCharsets.UTF_8));
-            } catch (IOException e) {
-              e.printStackTrace();
-            }
-          });
-    }
   }
 }
 

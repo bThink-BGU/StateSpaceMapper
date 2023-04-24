@@ -28,9 +28,10 @@ import java.util.function.Supplier;
 import static java.util.stream.Collectors.joining;
 
 public class Exporter {
+  public final String name;
+  public final String fileType;
   protected final MapperResult res;
-  protected final String path;
-  protected final String runName;
+  protected String programName = null;
   protected final BaseExporter<MapperVertex, MapperEdge> exporter;
   private Function<MapperVertex, Map<String, Attribute>> vertexAttributeProvider;
   private Function<MapperEdge, Map<String, Attribute>> edgeAttributeProvider;
@@ -38,11 +39,11 @@ public class Exporter {
   private Function<String, String> sanitizerProvider;
   private boolean verbose = false;
 
-  public Exporter(MapperResult res, String path, String runName,
+  public Exporter(String name, String fileType, MapperResult res,
                   BaseExporter<MapperVertex, MapperEdge> exporter) {
+    this.name = name;
+    this.fileType = fileType;
     this.res = res;
-    this.path = path;
-    this.runName = runName;
     this.exporter = exporter;
     this.vertexAttributeProvider = vertexAttributeProvider();
     this.edgeAttributeProvider = edgeAttributeProvider();
@@ -83,7 +84,8 @@ public class Exporter {
     return sanitizerProvider;
   }
 
-  public void export() throws IOException {
+  public void export(String path, String programName) throws IOException {
+    this.programName = programName;
     exporter.setEdgeAttributeProvider(this.edgeAttributeProvider);
     exporter.setVertexAttributeProvider(this.vertexAttributeProvider);
     exporter.setGraphAttributeProvider(this.graphAttributeProvider);
@@ -112,13 +114,16 @@ public class Exporter {
   }
 
   protected Supplier<Map<String, Attribute>> graphAttributeProvider() {
-    return () -> new HashMap<>(Map.of(
-      "name", DefaultAttribute.createAttribute("\"" + sanitizerProvider.apply(runName) + "\""),
-      "run_date", DefaultAttribute.createAttribute("\"" + DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now()) + "\""),
-      "num_of_vertices", DefaultAttribute.createAttribute(res.states().size()),
-      "num_of_edges", DefaultAttribute.createAttribute(res.edges().size()),
-      "num_of_events", DefaultAttribute.createAttribute(res.events.size())
-    ));
+    return () -> {
+      var map = new HashMap<>(Map.of(
+        "run_date", DefaultAttribute.createAttribute("\"" + DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now()) + "\""),
+        "num_of_vertices", DefaultAttribute.createAttribute(res.states().size()),
+        "num_of_edges", DefaultAttribute.createAttribute(res.edges().size()),
+        "num_of_events", DefaultAttribute.createAttribute(res.events.size())));
+      if (programName != null)
+        map.put("name", DefaultAttribute.createAttribute("\"" + sanitizerProvider.apply(programName) + "\""));
+      return map;
+    };
   }
 
   protected Function<MapperEdge, Map<String, Attribute>> edgeAttributeProvider() {
