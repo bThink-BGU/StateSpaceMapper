@@ -41,7 +41,7 @@ Create a Maven project and add the followings to your pom.xml:
 	<dependency>
 		<groupId>com.github.bThink-BGU</groupId>
 		<artifactId>StateSpaceMapper</artifactId>
-		<version>0.5.0</version>
+		<version>0.4.15</version>
 	</dependency>
 </dependencies>
 ```
