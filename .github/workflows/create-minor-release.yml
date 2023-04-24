@@ -67,11 +67,8 @@ jobs:
           git commit -m "raise version"
           git push
           
-      - name: Set SHA version
-        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-      
       - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         run: |
-          gh release create -t "Release ${{ env.VER }}" ./target/StateSpaceMapper-${{ env.VER }}.uber.jar
+          gh release create ${{ env.VER }} -t "Release ${{ env.VER }}" ./target/StateSpaceMapper-${{ env.VER }}.uber.jar
