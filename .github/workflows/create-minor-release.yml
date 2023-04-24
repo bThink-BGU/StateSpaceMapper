@@ -46,48 +46,32 @@ jobs:
         run: |
           perl -pi -e '$a=1 if(!$a && s|(<version>)[0-9]+\.[0-9]+\.[0-9]*|${1}${{ env.VER }}|);' pom.xml
           perl -pi -e '$a=1 if(!$a && s|(<version>)[0-9]+\.[0-9]+\.[0-9]*|${1}${{ env.VER }}|);' README.md
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add .
-          git commit -m "raise version"
-          git push
-          echo "$(git rev-parse --short HEAD)"
           
-      - name: Set SHA version
-        id: vars
-        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-      
-      - name: Create release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-        with:
-          tag_name: ${{ env.VER }}
-          release_name: Release ${{ env.VER }}
-          draft: false
-          prerelease: false
-          commitish: ${{ env.sha_short }}
-          
-      # From here: create uber-jar and upload as an asset to the release.
       - name: Set up JDK 11
         uses: actions/setup-java@v2
         with:
           java-version: '11'
           distribution: 'adopt'
+          
       - name: Build with Maven
         run: |
           mvn package -P"uber-jar"
           ls -al
           ls -al target/
-        
-      - name: Upload Release Asset
-        id: upload-release-asset 
-        uses: actions/upload-release-asset@v1
+          
+      - name: Push changes
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "raise version"
+          git push
+          
+      - name: Set SHA version
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+      
+      - name: Create release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: ./target/StateSpaceMapper-${{ env.VER }}.uber.jar
-          asset_name: StateSpaceMapper-${{ env.VER }}.uber.jar
-          asset_content_type: application/java-archive
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        run: |
+          gh release create -t "Release ${{ env.VER }}" ./target/StateSpaceMapper-${{ env.VER }}.uber.jar
