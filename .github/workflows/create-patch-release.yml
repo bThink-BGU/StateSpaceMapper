@@ -34,6 +34,7 @@ jobs:
           
           VER_PATCH=$((${VER_PATCH} +1))
           VER=${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}
+          echo "VER=${VER}"
           
           echo "VER_PATCH=${VER_PATCH}" >> $GITHUB_ENV
           echo "VER_MINOR=${VER_MINOR}" >> $GITHUB_ENV
@@ -42,9 +43,8 @@ jobs:
       
       - name: Raise POM and README.md version
         run: |
-          echo "VER==${{ env.VER }} ===  VER_MAJOR==${{ env.VER_MAJOR }} === VER_PATCH==${{ env.VER_PATCH }}"
-          perl -pi -e '$a=1 if(!$a && s|(<version>[0-9]+\.[0-9]+\.)[0-9]*|${1}${{ env.VER_MINOR }}|);' pom.xml
-          perl -pi -e '$a=1 if(!$a && s|(<version>[0-9]+\.[0-9]+\.)[0-9]*|${1}${{ env.VER_MINOR }}|);' README.md
+          perl -pi -e '$a=1 if(!$a && s|(<version>)[0-9]+\.[0-9]+\.[0-9]*|${1}${{ env.VER }}|);' pom.xml
+          perl -pi -e '$a=1 if(!$a && s|(<version>)[0-9]+\.[0-9]+\.[0-9]*|${1}${{ env.VER }}|);' README.md
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add .
