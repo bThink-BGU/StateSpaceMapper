@@ -4,27 +4,18 @@ import il.ac.bgu.cs.bp.bpjs.model.BEvent;
 import il.ac.bgu.cs.bp.bpjs.model.BProgram;
 import il.ac.bgu.cs.bp.bpjs.model.ResourceBProgram;
 import il.ac.bgu.cs.bp.bpjs.model.eventselection.PrioritizedBSyncEventSelectionStrategy;
-import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.DotExporter;
-import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.Exporter;
-import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.GoalExporter;
-import il.ac.bgu.cs.bp.statespacemapper.jgrapht.exports.JsonExporter;
-import org.jgrapht.GraphPath;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.EvaluatorException;
 import org.mozilla.javascript.Scriptable;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 public class SpaceMapperCliRunner {
   public void run(String[] args) throws Exception {

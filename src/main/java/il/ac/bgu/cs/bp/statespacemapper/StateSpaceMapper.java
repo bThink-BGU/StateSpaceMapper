@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -36,6 +37,7 @@ public class StateSpaceMapper {
   private MapperResult mpr = null;
   public final String programName;
   private String exportDirectory;
+  private Consumer<Exporter> attributeProviderSetter = null;
 
   public StateSpaceMapper(BProgram bprog) {
     this(bprog, bprog.getName());
@@ -79,28 +81,14 @@ public class StateSpaceMapper {
     bprog.putInGlobalScope("AcceptingState", new AcceptingStateProxy());
   }
 
-  /**
-   * Set the attributes providers for the graph {@link Exporter}.
-   * The function can be use the set the verbosity level of the exporter (see {@link Exporter#setVerbose(boolean)}).
-   * <p>
-   * Another option is to explicitly call one or more of the following methods:
-   * {@link Exporter#setVertexAttributeProvider(Function)},
-   * {@link Exporter#setEdgeAttributeProvider(Function)}, or
-   * {@link Exporter#setGraphAttributeProvider(Supplier)}
-   * </p>
-   *
-   * @param exporter The exporter to change
-   */
-  protected void setExporterProviders(final Exporter exporter) {
-  }
-
   public void exportSpace(Exporter... exporters) throws IOException {
     logger.info("// Exporting space to: " + Paths.get(exportDirectory).toAbsolutePath());
     for (int i = 0; i < exporters.length; i++) {
       var exporter = exporters[i];
       logger.info("// Space exporting to " + exporter.name + " started");
       var path = Paths.get(exportDirectory, programName + exporter.fileType).toString();
-      setExporterProviders(exporter);
+      if (attributeProviderSetter != null)
+        attributeProviderSetter.accept(exporter);
       exporter.export(path, programName);
       logger.info("// Space exporting to " + exporter.name + " completed");
     }
@@ -159,10 +147,10 @@ public class StateSpaceMapper {
 
   /**
    * Write paths with a limit on path length, unless maxPathLength is null.
-   * @see #writeCompressedPaths(AllDirectedPathsBuilder)
    *
    * @param maxPathLength the maximal path length. no limit if the parameter is null.
    * @throws IOException if file could not be created
+   * @see #writeCompressedPaths(AllDirectedPathsBuilder)
    */
   public void writeCompressedPaths(Integer maxPathLength) throws IOException {
     writeCompressedPaths(
@@ -176,9 +164,9 @@ public class StateSpaceMapper {
 
   /**
    * Write paths with no limit on path length.
-   * @see #writeCompressedPaths(AllDirectedPathsBuilder)
    *
    * @throws IOException if file could not be created
+   * @see #writeCompressedPaths(AllDirectedPathsBuilder)
    */
   public void writeCompressedPaths() throws IOException {
     writeCompressedPaths((Integer) null);
@@ -190,5 +178,21 @@ public class StateSpaceMapper {
 
   public void setExportDirectory(String exportDirectory) {
     this.exportDirectory = exportDirectory;
+  }
+
+  /**
+   * Set the attributes providers for the graph {@link Exporter}.
+   * The consumer function can be use the set the verbosity level of the exporter (see {@link Exporter#setVerbose(boolean)}).
+   * <p>
+   * Another option is to explicitly call one or more of the following methods:
+   * {@link Exporter#setVertexAttributeProvider(Function)},
+   * {@link Exporter#setEdgeAttributeProvider(Function)}, or
+   * {@link Exporter#setGraphAttributeProvider(Supplier)}
+   * </p>
+   *
+   * @param attributeProviderSetter The exporter to change
+   */
+  public void setAttributeProviderSetter(Consumer<Exporter> attributeProviderSetter) {
+    this.attributeProviderSetter = attributeProviderSetter;
   }
 }
