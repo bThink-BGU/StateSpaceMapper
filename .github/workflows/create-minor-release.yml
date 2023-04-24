@@ -22,7 +22,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -51,10 +51,11 @@ jobs:
           git add .
           git commit -m "raise version"
           git push
+          echo "$(git rev-parse --short HEAD"
           
       - name: Set SHA version
         id: vars
-        run: echo "::set-output name=sha_short::$(git rev-parse HEAD)"
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
       
       - name: Create release
         id: create_release
@@ -66,7 +67,7 @@ jobs:
           release_name: Release ${{ env.VER }}
           draft: false
           prerelease: false
-          commitish: ${{ steps.vars.outputs.sha_short }}
+          commitish: ${{ env.sha_short }}
           
       # From here: create uber-jar and upload as an asset to the release.
       - name: Set up JDK 11
