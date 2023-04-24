@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Create a new release
+name: Create a new patch release
 
 # Controls when the workflow will run
 on:
@@ -28,11 +28,17 @@ jobs:
 
       - name: Extract next version
         run: |
-          echo "VER_PATCH=$((`sed -nE 's|<version>[0-9]+\.[0-9]+\.([0-9]*)<.*|\1|p' pom.xml | head -n 1` + 1))" >> $GITHUB_ENV
-          VER_PATCH=$((`sed -nE 's|<version>[0-9]+\.[0-9]+\.([0-9]*)<.*|\1|p' pom.xml | head -n 1` + 1))
-          echo "VER_MAJOR=`sed -nE 's|[ \t]*<version>([0-9]+\.[0-9]+\.)[0-9]*<.*|\1|p' pom.xml | head -n 1`" >> $GITHUB_ENV
-          VER_MAJOR=`sed -nE 's|[ \t]*<version>([0-9]+\.[0-9]+\.)[0-9]*<.*|\1|p' pom.xml | head -n 1`
-          echo "VER=${VER_MAJOR}${VER_PATCH}" >> $GITHUB_ENV
+          VER_MAJOR=`sed -nE 's|[ \t]*<version>([0-9]+)\.[0-9]+\.[0-9]*<.*|\1|p' pom.xml | head -n 1`
+          VER_MINOR=`sed -nE 's|[ \t]*<version>[0-9]+\.([0-9]+)\.[0-9]*<.*|\1|p' pom.xml | head -n 1`
+          VER_PATCH=`sed -nE 's|[ \t]*<version>[0-9]+\.[0-9]+\.([0-9]*)<.*|\1|p' pom.xml | head -n 1`
+          
+          VER_PATCH=$((${VER_PATCH} +1))
+          VER=${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}
+          
+          echo "VER_PATCH=${VER_PATCH}" >> $GITHUB_ENV
+          echo "VER_MINOR=${VER_MINOR}" >> $GITHUB_ENV
+          echo "VER_MAJOR=${VER_MAJOR}" >> $GITHUB_ENV
+          echo "VER=${VER}" >> $GITHUB_ENV
       
       - name: Raise POM and README.md version
         run: |
