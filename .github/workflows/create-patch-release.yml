@@ -28,15 +28,15 @@ jobs:
 
       - name: Extract next version
         run: |
-          echo "VER_MINOR=$((`sed -nE 's|<version>[0-9]+\.[0-9]+\.([0-9]*)<.*|\1|p' pom.xml | head -n 1` + 1))" >> $GITHUB_ENV
-          VER_MINOR=$((`sed -nE 's|<version>[0-9]+\.[0-9]+\.([0-9]*)<.*|\1|p' pom.xml | head -n 1` + 1))
+          echo "VER_PATCH=$((`sed -nE 's|<version>[0-9]+\.[0-9]+\.([0-9]*)<.*|\1|p' pom.xml | head -n 1` + 1))" >> $GITHUB_ENV
+          VER_PATCH=$((`sed -nE 's|<version>[0-9]+\.[0-9]+\.([0-9]*)<.*|\1|p' pom.xml | head -n 1` + 1))
           echo "VER_MAJOR=`sed -nE 's|[ \t]*<version>([0-9]+\.[0-9]+\.)[0-9]*<.*|\1|p' pom.xml | head -n 1`" >> $GITHUB_ENV
           VER_MAJOR=`sed -nE 's|[ \t]*<version>([0-9]+\.[0-9]+\.)[0-9]*<.*|\1|p' pom.xml | head -n 1`
-          echo "VER=${VER_MAJOR}${VER_MINOR}" >> $GITHUB_ENV
+          echo "VER=${VER_MAJOR}${VER_PATCH}" >> $GITHUB_ENV
       
       - name: Raise POM and README.md version
         run: |
-          echo "VER==${{ env.VER }} ===  VER_MAJOR==${{ env.VER_MAJOR }} === VER_MINOR==${{ env.VER_MINOR }}"
+          echo "VER==${{ env.VER }} ===  VER_MAJOR==${{ env.VER_MAJOR }} === VER_PATCH==${{ env.VER_PATCH }}"
           perl -pi -e '$a=1 if(!$a && s|(<version>[0-9]+\.[0-9]+\.)[0-9]*|${1}${{ env.VER_MINOR }}|);' pom.xml
           perl -pi -e '$a=1 if(!$a && s|(<version>[0-9]+\.[0-9]+\.)[0-9]*|${1}${{ env.VER_MINOR }}|);' README.md
           git config user.name github-actions
