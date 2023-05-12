@@ -17,8 +17,8 @@ public class DotExporter extends Exporter {
 
   @Override
   protected Function<MapperVertex, Map<String, Attribute>> vertexAttributeProvider() {
-    var provider = super.vertexAttributeProvider();
     return v -> {
+      var provider = super.vertexAttributeProvider();
       var map = provider.apply(v);
       if(v.startVertex) {
         map.put("color", DefaultAttribute.createAttribute("#338866"));

@@ -21,8 +21,8 @@ public class GoalExporter extends Exporter {
 
   @Override
   protected Function<MapperEdge, Map<String, Attribute>> edgeAttributeProvider() {
-    var provider = super.edgeAttributeProvider();
     return e -> {
+      var provider = super.edgeAttributeProvider();
       var map = provider.apply(e);
       map.put("Description", DefaultAttribute.createAttribute(e.event.toString()));
       return map;

@@ -101,7 +101,7 @@ public class Exporter {
         "id", DefaultAttribute.createAttribute(res.vertexMapper.get(v)),
         "hash", DefaultAttribute.createAttribute(v.hashCode()),
         "store", DefaultAttribute.createAttribute(sanitizerProvider.apply(getStore(v.bpss))),
-        "statements", DefaultAttribute.createAttribute(sanitizerProvider.apply(getStatments(v.bpss))),
+        "statements", DefaultAttribute.createAttribute(sanitizerProvider.apply(getStatements(v.bpss))),
         "bthreads", DefaultAttribute.createAttribute(sanitizerProvider.apply(getBThreads(v.bpss))),
         "start", DefaultAttribute.createAttribute(v.startVertex),
         "accepting", DefaultAttribute.createAttribute(v.accepting)
@@ -141,12 +141,12 @@ public class Exporter {
     }
   }
 
-  protected String eventToString(BEvent event) {
+  public String eventToString(BEvent event) {
     return event.name + event.getDataField().map(v -> " (" + ScriptableUtils.stringify(event.maybeData)).orElse("");
   }
 
 
-  protected String getBThreads(BProgramSyncSnapshot bpss) {
+  public String getBThreads(BProgramSyncSnapshot bpss) {
     return bpss.getBThreadSnapshots().stream().map(BThreadSyncSnapshot::getName).collect(joining(","));
   }
 
@@ -158,13 +158,13 @@ public class Exporter {
       .replace("JS_Obj ", "");
   }
 
-  protected String getStore(BProgramSyncSnapshot bpss) {
+  public String getStore(BProgramSyncSnapshot bpss) {
     return bpss.getDataStore().entrySet().stream()
       .map(entry -> "{" + ScriptableUtils.stringify(entry.getKey()) + "," + ScriptableUtils.stringify(entry.getValue()) + "}")
       .collect(joining(",", "[", "]"));
   }
 
-  protected String getStatments(BProgramSyncSnapshot bpss) {
+  public String getStatements(BProgramSyncSnapshot bpss) {
     return bpss.getBThreadSnapshots().stream()
       .map(btss -> {
         SyncStatement syst = btss.getSyncStatement();
