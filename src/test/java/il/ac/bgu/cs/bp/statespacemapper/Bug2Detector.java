@@ -93,24 +93,24 @@ public class Bug2Detector extends SpaceMapperCliRunner {
     });
   }
 
-  private static class Stats {
+  public static class Stats {
     public final int iteration;
     public final int round;
     public final int states;
     public final int events;
     public final int transitions;
     public final int accepting;
-    private final FuncName funcName;
-    private final FuncBody funcBody;
-    private final RemoveObjectParent removeObjectParent;
-    private final SyncFoo syncFoo;
-    private final HelperType helperType;
-    private final DataDeclaration dataDeclaration;
-    private final ResetData resetData;
-    private final DataType dataType;
+    public final FuncName funcName;
+    public final FuncBody funcBody;
+    public final RemoveObjectParent removeObjectParent;
+    public final SyncFoo syncFoo;
+    public final HelperType helperType;
+    public final DataDeclaration dataDeclaration;
+    public final ResetData resetData;
+    public final DataType dataType;
     public final String code;
 
-    private Stats(int iteration, int round, int states, int events, int transitions, int accepting,
+    public Stats(int iteration, int round, int states, int events, int transitions, int accepting,
                   FuncName funcName, FuncBody funcBody, RemoveObjectParent removeObjectParent, SyncFoo syncFoo,
                   HelperType helperType, DataDeclaration dataDeclaration, ResetData resetData, DataType dataType,
                   String code) {
@@ -131,7 +131,7 @@ public class Bug2Detector extends SpaceMapperCliRunner {
       this.code = code;
     }
 
-    private Stats(String[] args) {
+    public Stats(String[] args) {
       this(
           Integer.parseInt(args[0]),
           Integer.parseInt(args[1]),
@@ -175,7 +175,7 @@ public class Bug2Detector extends SpaceMapperCliRunner {
     }
   }
 
-  enum HelperType {
+  public enum HelperType {
     global("globalWhenHelper(%%data-variable-name%%, f);\n"),
     inner("innerWhenHelper(%%data-variable-name%%, f);\n"),
     inline("(function(d) {\n" +
@@ -197,7 +197,7 @@ public class Bug2Detector extends SpaceMapperCliRunner {
     }
   }
 
-  enum DataType {
+  public enum DataType {
     var,
     let;
 
@@ -206,7 +206,7 @@ public class Bug2Detector extends SpaceMapperCliRunner {
     }
   }
 
-  enum DataDeclaration {
+  public enum DataDeclaration {
     none,
     beforeWhile,
     insideWhile;
@@ -235,7 +235,7 @@ public class Bug2Detector extends SpaceMapperCliRunner {
     }
   }
 
-  enum FuncName {
+  public enum FuncName {
     func,
     inline;
 
@@ -252,7 +252,7 @@ public class Bug2Detector extends SpaceMapperCliRunner {
     }
   }
 
-  enum FuncBody {
+  public enum FuncBody {
     oneLine,
     twoLines;
 
@@ -267,7 +267,7 @@ public class Bug2Detector extends SpaceMapperCliRunner {
     }
   }
 
-  enum ResetData {
+  public enum ResetData {
     True(true),
     False(false);
     private final boolean value;
@@ -281,7 +281,7 @@ public class Bug2Detector extends SpaceMapperCliRunner {
     }
   }
 
-  enum RemoveObjectParent {
+  public enum RemoveObjectParent {
     True(true),
     False(false);
     private final boolean value;
@@ -295,7 +295,7 @@ public class Bug2Detector extends SpaceMapperCliRunner {
     }
   }
 
-  enum SyncFoo {
+  public enum SyncFoo {
     True(true),
     False(false);
     private final boolean value;
@@ -381,7 +381,7 @@ public class Bug2Detector extends SpaceMapperCliRunner {
     }
   }
 
-  private static Stats runOnce(PrintStream out, Stats stats) throws Exception {
+  public static Stats runOnce(PrintStream out, Stats stats) throws Exception {
     return runOnce(out, stats.iteration, stats.round,
         stats.funcName, stats.funcBody, stats.syncFoo,
         stats.removeObjectParent, stats.helperType,

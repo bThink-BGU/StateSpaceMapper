@@ -21,17 +21,26 @@ function addToCart(data) {
   bp.sync({ request: bp.Event('AddToCart', data) })
 }
 
-function func (e) {
-  addToCart({ s: e.s });
+function checkOut(data) {
+  bp.sync({ request: bp.Event('CheckOut', data) })
 }
 
-function when (eventSet, f) {
+const func = function(e) {
+  addToCart({ s: e.s });
+};
+
+const when = function (eventSet, f) {
+  const innerWhenHelper = function(d) {
+    bp.registerBThread('when helper', function () {
+      f(d);
+    });
+  };
   while (true) {
-    let e = bp.sync({ waitFor: eventSet });
-    let data = e.data
+    let data = bp.sync({ waitFor: eventSet }).data;
     globalWhenHelper(data, f);
+
   }
-}
+};
 
 bp.registerBThread('C1 Login story', function () {
   login({ s: 'C1' })
