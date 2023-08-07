@@ -55,14 +55,14 @@ public class Atilla {
     vfr.setProgressListener(new PrintDfsVerifierListener());
     vfr.verify(bprog);
 
+    var cont1 = atillaInspection.bpss1.getBThreadSnapshots().stream().filter(btss -> btss.getName().equals("Add women jacket story")).findFirst().get().getContinuation();
+    var cont2 = atillaInspection.bpss2.getBThreadSnapshots().stream().filter(btss -> btss.getName().equals("Add women jacket story")).findFirst().get().getContinuation();
+    System.out.println("equals before serialization: " + NativeContinuation.equalImplementations(cont1, cont2));
 
-    System.out.println("equals before serialization: "+ atillaInspection.bpss1.equals(atillaInspection.bpss2));
     var clonedBpss1 = BProgramSyncSnapshotCloner.clone(atillaInspection.bpss1);
     var clonedBpss2 = BProgramSyncSnapshotCloner.clone(atillaInspection.bpss2);
-    var btss1 = clonedBpss1.getBThreadSnapshots().stream().filter(btss -> btss.getName().equals("Add women jacket story")).findFirst().get();
-    var btss2 = clonedBpss2.getBThreadSnapshots().stream().filter(btss -> btss.getName().equals("Add women jacket story")).findFirst().get();
-    var cont1 = btss1.getContinuation();
-    var cont2 = btss2.getContinuation();
-    System.out.println("equals after serialization: "+ NativeContinuation.equalImplementations(cont1, cont2));
+    var clonedCont1 = clonedBpss1.getBThreadSnapshots().stream().filter(btss -> btss.getName().equals("Add women jacket story")).findFirst().get().getContinuation();
+    var clonedCont2 = clonedBpss2.getBThreadSnapshots().stream().filter(btss -> btss.getName().equals("Add women jacket story")).findFirst().get().getContinuation();
+    System.out.println("equals after serialization: " + NativeContinuation.equalImplementations(clonedCont1, clonedCont2));
   }
 }
