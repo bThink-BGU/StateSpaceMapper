@@ -59,6 +59,10 @@ public class Atilla {
     System.out.println("equals before serialization: "+ atillaInspection.bpss1.equals(atillaInspection.bpss2));
     var clonedBpss1 = BProgramSyncSnapshotCloner.clone(atillaInspection.bpss1);
     var clonedBpss2 = BProgramSyncSnapshotCloner.clone(atillaInspection.bpss2);
-    System.out.println("equals after serialization: "+ clonedBpss1.equals(clonedBpss2));
+    var btss1 = clonedBpss1.getBThreadSnapshots().stream().filter(btss -> btss.getName().equals("Add women jacket story")).findFirst().get();
+    var btss2 = clonedBpss2.getBThreadSnapshots().stream().filter(btss -> btss.getName().equals("Add women jacket story")).findFirst().get();
+    var cont1 = btss1.getContinuation();
+    var cont2 = btss2.getContinuation();
+    System.out.println("equals after serialization: "+ NativeContinuation.equalImplementations(cont1, cont2));
   }
 }
