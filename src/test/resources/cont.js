@@ -1,11 +1,54 @@
-function g(data) {
-  java.lang.System.out.println("data is " + data)
-}
-function f() {
-  while(true) {
-    let x =capture();
-    g(x)
-  }
+importPackage(Packages.il.ac.bgu.cs.bp.statespacemapper)
+
+function Any(name) {
+  return bp.EventSet('Any(' + name + ')', function (e) {
+    return e.name.equals(name);
+  });
 }
 
-f();
+function globalWhenHelper(d, f) {
+  bp.registerBThread('when helper', function () {
+    f(d);
+  });
+}
+
+function login(data) {
+  bp.sync({ request: bp.Event('Login', data) });
+}
+
+function addToCart(data) {
+  bp.sync({ request: bp.Event('AddToCart', data) })
+}
+
+function checkOut(data) {
+  bp.sync({ request: bp.Event('CheckOut', data) })
+}
+
+const func = function(e) {
+  addToCart({ s: e.s });
+};
+
+const when = function (eventSet, f) {
+  const innerWhenHelper = function(d) {
+    bp.registerBThread('when helper', function () {
+      f(d);
+    });
+  };
+  while (true) {
+    let data = bp.sync({ waitFor: eventSet }).data;
+    globalWhenHelper(data, f);
+
+  }
+};
+
+bp.registerBThread('C1 Login story', function () {
+  login({ s: 'C1' })
+})
+
+bp.registerBThread('C2 Login story', function () {
+  login({ s: 'C2' })
+})
+
+bp.registerBThread('Add women jacket story', function () {
+  when(Any('Login'), func);
+});
