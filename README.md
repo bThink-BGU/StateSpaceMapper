@@ -1,13 +1,15 @@
 [![](https://jitpack.io/v/bThink-BGU/StateSpaceMapper.svg)](https://jitpack.io/#bThink-BGU/StateSpaceMapper)
 
 # StateSpaceMapper
-A utility for mapping state spaces of b-programs written in BPjs.
+A utility for mapping state spaces of b-programs written in BPjs. For example, it will generate the following graph for the [vault](https://github.com/bThink-BGU/StateSpaceMapper/blob/master/src/test/resources/vault.js) example:
+<img width="1471" height="816" alt="image" src="https://github.com/user-attachments/assets/9959c96b-49ba-4dfb-bb44-b044f3890db6" />
+
 
 The utility makes use of [BPjs](https://github.com/bThink-BGU/BPjs), [JGraphT](https://jgrapht.org/), and [GOAL](http://goal.im.ntu.edu.tw/).
 
 ## Running from JAR
 1. Download JAR for the [latest version](https://github.com/bThink-BGU/StateSpaceMapper/releases/latest).
-2. Create a js file in and add your b-thread to the file.
+2. Create a JS file and add your b-thread to the file.
 3. Run:
 ```
 java -jar <path-to-download-jar> "path-to-your-js-file(s)"
@@ -20,14 +22,14 @@ git clone https://github.com/bThink-BGU/StateSpaceMapper.git
 cd StateSpaceMapper
 mvn compile
 ```
-2. Create a js file in and add your b-thread to the file.
+2. Create a JS file and add your b-thread to the file.
 3. Run:
 ```
 mvn exec:java -D"exec.args"="path-to-your-js-file(s)"
 ```
 
 ## Embedding StateSpaceMapper 
-Create a Maven project and add the followings to your pom.xml:
+Create a Maven project and add the following to your pom.xml:
 ```xml
 <repositories>
 	<repository>
@@ -54,7 +56,7 @@ There are several usage examples, in:
 Once the run is completed, a new directory, called "exports", will be created, with the output files inside.
 
 ## Accepting states
-In your js code, you may mark certain states as accepting by using the following code:
+In your JS code, you may mark certain states as accepting by using the following code:
 ```javascript
 if(typeof use_accepting_states !== 'undefined') {
   AcceptingState.Stopping() // or AcceptingState.Continuing()
@@ -66,7 +68,7 @@ The ```if(typeof use_accepting_states !== 'undefined')``` condition will allow y
 The ```AcceptingState.Stopping()``` will cause the StateMapper to stop the mapping for this branch and mark the state as accepting. The StateMapper **will** continue the state mapping in other branches.
 
 The ```AcceptingState.Continuing()``` will mark the state as accepting, without stopping the mapping for this branch.
-This type of accepting state is useful for Büchi automata, that accepts an input iff there is a run of the automaton over the input that begins at an initial state and  at least one of the infinitely often occurring states is an accepting state.
+This type of accepting state is useful for Büchi automata, which accept an input iff there is a run of the automaton over the input that begins at an initial state and at least one of the infinitely often occurring states is an accepting state.
 
 ## Export formats
 Currently, the supported formats are:
@@ -81,21 +83,21 @@ Currently, the supported formats are:
 [comment]: <> (* [Neo4J]&#40;https://neo4j.com/&#41; &#40;requires an installation of Neo4J and configuring the driver ```mpr.setNeo4jDriver&#40;driver&#41;;```&#41;)
 
 ### Manipulating current exporter
-Current exporter can be easily manipulated without extending them. See the setters of the [Exporter](src/main/java/il/ac/bgu/cs/bp/statespacemapper/jgrapht/exports/Exporter.java) class.
+Current exporters can be easily manipulated without extending them. See the setters of the [Exporter](src/main/java/il/ac/bgu/cs/bp/statespacemapper/jgrapht/exports/Exporter.java) class.
 These setters allow for manipulating the vertex, edge, and graph attributes. 
-Additionally, they allow for changing the String sanitizer, to replace special exporter characters. 
+Additionally, they allow for changing the String sanitizer to replace special exporter characters. 
 
 ### Adding and extending the Output formats
 You can create your own output format by extending the [Exporter](src/main/java/il/ac/bgu/cs/bp/statespacemapper/jgrapht/exports/Exporter.java) class. 
-If jgrapht support this format - you can follow the example of [DotExporter](src/main/java/il/ac/bgu/cs/bp/statespacemapper/jgrapht/exports/DotExporter.java). 
+If jgrapht supports this format, you can follow the example of [DotExporter](src/main/java/il/ac/bgu/cs/bp/statespacemapper/jgrapht/exports/DotExporter.java). 
 Otherwise, you can follow the example of [GoalExporter](src/main/java/il/ac/bgu/cs/bp/statespacemapper/jgrapht/exports/GoalExporter.java).
 
-The writers can configure the format/text of each node and edge, and to define the overall format of the output file. 
+The writers can configure the format/text of each node and edge, and define the overall format of the output file. 
 
 ## Getting all possible traces
 You can generate a set of all possible traces, see [SpaceMapperCliRunner.java](src/main/java/il/ac/bgu/cs/bp/statespacemapper/SpaceMapperCliRunner.java). 
 
-**Warning:** the list of all possible traces may grow exponentially in the graph depth. Consider limiting the maximum traces length.
+**Warning:** The list of all possible traces may grow exponentially in the graph depth. Consider limiting the maximum trace length.
 
 ## Per-BThread StateSpaceMapper
 Since version 0.4.0, it is possible to generate a forest of b-threads state-spaces (i.e., one state-space for each b-thread).
